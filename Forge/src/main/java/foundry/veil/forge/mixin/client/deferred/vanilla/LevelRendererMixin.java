@@ -3,7 +3,7 @@ package foundry.veil.forge.mixin.client.deferred.vanilla;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import foundry.veil.api.client.render.VeilVanillaShaders;
+import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import foundry.veil.impl.client.render.deferred.DeferredShaderStateCache;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;

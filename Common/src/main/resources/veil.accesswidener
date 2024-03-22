@@ -11,7 +11,6 @@ accessible field net/minecraft/client/renderer/PostChain passes Ljava/util/List;
 accessible method net/minecraft/client/renderer/GameRenderer getFov (Lnet/minecraft/client/Camera;FZ)D
 accessible class com/mojang/blaze3d/preprocessor/GlslPreprocessor$Context
 accessible field net/minecraft/client/Minecraft timer Lnet/minecraft/client/Timer;
-accessible class net/minecraft/client/renderer/RenderStateShard$OutputStateShard
 accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;IZZLnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 accessible field net/minecraft/client/renderer/RenderStateShard LIGHTMAP Lnet/minecraft/client/renderer/RenderStateShard$LightmapStateShard;
 accessible field net/minecraft/client/renderer/RenderStateShard RENDERTYPE_CUTOUT_SHADER Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
@@ -64,3 +63,19 @@ accessible field com/mojang/blaze3d/vertex/BufferUploader lastImmediateBuffer Lc
 # Quasar
 accessible class net/minecraft/resources/RegistryDataLoader$Loader
 accessible method net/minecraft/resources/RegistryDataLoader createContext (Lnet/minecraft/core/RegistryAccess;Ljava/util/List;)Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;
+
+# Dynamic Render Types
+accessible class net/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$TransparencyStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$DepthTestStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$CullStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$LightmapStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$OverlayStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$LayeringStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$OutputStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$TexturingStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$WriteMaskStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$LineStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$ColorLogicStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$OffsetTexturingStateShard
+accessible class net/minecraft/client/renderer/RenderStateShard$MultiTextureStateShard

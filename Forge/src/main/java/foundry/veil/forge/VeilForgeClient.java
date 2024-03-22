@@ -3,7 +3,7 @@ package foundry.veil.forge;
 import foundry.veil.Veil;
 import foundry.veil.VeilClient;
 import foundry.veil.api.client.render.VeilRenderSystem;
-import foundry.veil.api.client.render.VeilVanillaShaders;
+import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import foundry.veil.forge.event.ForgeVeilRegisterFixedBuffersEvent;
 import foundry.veil.forge.event.ForgeVeilRendererEvent;
 import foundry.veil.impl.VeilBuiltinPacks;

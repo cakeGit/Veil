@@ -49,8 +49,7 @@ public class FabricRegistrationFactory implements RegistrationProvider.Factory {
 
         @Override
         @SuppressWarnings("unchecked")
-        public <I extends T> RegistryObject<I> register(String name, Supplier<? extends I> supplier) {
-            ResourceLocation id = new ResourceLocation(this.modId, name);
+        public <I extends T> RegistryObject<I> register(ResourceLocation id, Supplier<? extends I> supplier) {
             RegistryObject<I> old = (RegistryObject<I>) this.registry.get(id);
             if (old != null) {
                 return old;
@@ -69,6 +68,11 @@ public class FabricRegistrationFactory implements RegistrationProvider.Factory {
                 @Override
                 public ResourceLocation getId() {
                     return id;
+                }
+
+                @Override
+                public boolean isPresent() {
+                    return true;
                 }
 
                 @Override

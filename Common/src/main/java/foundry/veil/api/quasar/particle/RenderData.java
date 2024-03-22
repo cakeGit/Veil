@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import foundry.veil.Veil;
-import foundry.veil.api.client.render.VeilRenderType;
+import foundry.veil.api.client.render.rendertype.VeilRenderType;
 import foundry.veil.api.quasar.data.QuasarParticleData;
 import foundry.veil.api.quasar.fx.Trail;
 import net.minecraft.client.Minecraft;

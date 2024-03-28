@@ -179,7 +179,7 @@ public record FramebufferDefinition(MolangExpression width,
                 builder.setMipmaps(definition.levels())
                         .setLinear(definition.linear())
                         .setName(definition.name())
-                        .setFormat(definition.format().getId(), definition.format().getInternalId())
+                        .setFormat(definition.format())
                         .addColorTextureBuffer(definition.dataType().getId());
             }
         }
@@ -192,7 +192,7 @@ public record FramebufferDefinition(MolangExpression width,
                 builder.setMipmaps(this.depthBuffer.levels())
                         .setLinear(this.depthBuffer.linear())
                         .setName(this.depthBuffer.name())
-                        .setFormat(this.depthBuffer.format().getId(), this.depthBuffer.format().getInternalId())
+                        .setFormat(this.depthBuffer.format())
                         .setDepthTextureBuffer(this.depthBuffer.dataType().getId());
             }
         }

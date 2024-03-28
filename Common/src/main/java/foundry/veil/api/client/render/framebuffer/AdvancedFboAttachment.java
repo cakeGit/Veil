@@ -18,10 +18,10 @@ public interface AdvancedFboAttachment extends NativeResource {
     void create();
 
     /**
-     * Attaches this attachment to the provided target under the specified attachment id.
+     * Attaches this attachment to the provided target under the specified attachment point.
      *
      * @param target     The target to attach this attachment to
-     * @param attachment The attachment to attach this attachment under
+     * @param attachment The attachment point to add this attachment to
      */
     void attach(int target, int attachment);
 

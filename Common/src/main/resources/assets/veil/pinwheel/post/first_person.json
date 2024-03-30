@@ -9,6 +9,10 @@
       "depth": true
     },
     {
+      "type": "veil:depth_function",
+      "function": "LEQUAL"
+    },
+    {
       "type": "veil:blit",
       "shader": "veil:blit_depth",
       "in": "veil:first_person",

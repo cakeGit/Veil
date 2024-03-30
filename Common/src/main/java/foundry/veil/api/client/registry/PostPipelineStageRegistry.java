@@ -5,6 +5,7 @@ import foundry.veil.Veil;
 import foundry.veil.api.client.render.post.PostPipeline;
 import foundry.veil.api.client.render.post.stage.BlitPostStage;
 import foundry.veil.api.client.render.post.stage.CopyPostStage;
+import foundry.veil.api.client.render.post.stage.DepthFunctionPostStage;
 import foundry.veil.api.client.render.post.stage.MaskPostStage;
 import foundry.veil.platform.registry.RegistrationProvider;
 import net.minecraft.core.Registry;
@@ -25,6 +26,7 @@ public class PostPipelineStageRegistry {
     public static final Supplier<PipelineType<BlitPostStage>> BLIT = register("blit", BlitPostStage.CODEC);
     public static final Supplier<PipelineType<CopyPostStage>> COPY = register("copy", CopyPostStage.CODEC);
     public static final Supplier<PipelineType<MaskPostStage>> MASK = register("mask", MaskPostStage.CODEC);
+    public static final Supplier<PipelineType<DepthFunctionPostStage>> DEPTH_FUNC = register("depth_function", DepthFunctionPostStage.CODEC);
 
     @ApiStatus.Internal
     public static void bootstrap() {

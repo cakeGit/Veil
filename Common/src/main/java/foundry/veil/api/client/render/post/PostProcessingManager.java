@@ -33,8 +33,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
-import static org.lwjgl.opengl.GL11C.GL_ALWAYS;
-import static org.lwjgl.opengl.GL11C.GL_LEQUAL;
+import static org.lwjgl.opengl.GL11C.*;
 
 /**
  * <p>Manages all post pipelines.</p>
@@ -142,6 +141,7 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
 
     private void clearPipeline() {
         RenderSystem.colorMask(true, true, true, true);
+        RenderSystem.depthFunc(GL_ALWAYS);
         RenderSystem.depthMask(false);
     }
 

@@ -1,0 +1,19 @@
+{
+  "stages": [
+    {
+      "type": "veil:mask",
+      "red": false,
+      "green": false,
+      "blue": false,
+      "alpha": false,
+      "depth": true
+    },
+    {
+      "type": "veil:blit",
+      "shader": "veil:blit_depth",
+      "in": "veil:first_person",
+      "out": "veil:post",
+      "clear": false
+    }
+  ]
+}

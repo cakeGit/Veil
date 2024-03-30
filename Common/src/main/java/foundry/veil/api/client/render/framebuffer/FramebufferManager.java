@@ -51,6 +51,7 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
     private final Map<ResourceLocation, AdvancedFbo> framebuffers;
     private final Map<ResourceLocation, AdvancedFbo> framebuffersView;
     private final Set<ResourceLocation> screenFramebuffers;
+    private final Set<ResourceLocation> manualFramebuffers;
 
     /**
      * Creates a new instance of the framebuffer manager.
@@ -61,6 +62,7 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
         this.framebuffers = new HashMap<>();
         this.framebuffersView = Collections.unmodifiableMap(this.framebuffers);
         this.screenFramebuffers = new HashSet<>();
+        this.manualFramebuffers = new HashSet<>();
     }
 
     private void init() {
@@ -80,7 +82,8 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
             }
         });
         AdvancedFbo.unbind();
-        this.framebuffers.put(MAIN, AdvancedFbo.getMainFramebuffer());
+
+        this.setFramebuffer(MAIN, AdvancedFbo.getMainFramebuffer());
     }
 
     private void initFramebuffer(ResourceLocation name, FramebufferDefinition definition, MolangEnvironment runtime) {
@@ -120,7 +123,7 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
     public void clear() {
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
         this.framebuffers.forEach((name, fbo) -> {
-            if (MAIN.equals(name)) {
+            if (this.manualFramebuffers.contains(name)) {
                 return;
             }
 
@@ -130,6 +133,38 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
 
         // Manual unbind to restore the default mc state
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    /**
+     * Sets the value of the specified framebuffer to a manually defined buffer.
+     * Old buffers defined using the data-driven API will be overwritten and deleted.
+     *
+     * @param name The name of the framebuffer to add
+     * @param fbo  The framebuffer to add
+     */
+    public void setFramebuffer(ResourceLocation name, AdvancedFbo fbo) {
+        if (this.manualFramebuffers.add(name)) {
+            AdvancedFbo oldBuffer = this.framebuffers.remove(name);
+            if (oldBuffer != null) {
+                oldBuffer.free();
+                Veil.LOGGER.warn("Replaced defined framebuffer {} with manual buffer", name);
+            }
+        }
+
+        this.framebuffers.put(name, fbo);
+    }
+
+    /**
+     * Removes the specified manual framebuffer without freeing it
+     *
+     * @param name The name of the framebuffer to remove
+     * @return The framebuffer previously defined or <code>null</code> if there was no manual buffer defined
+     */
+    public @Nullable AdvancedFbo removeFramebuffer(ResourceLocation name) {
+        if (this.manualFramebuffers.remove(name)) {
+            return this.framebuffers.remove(name);
+        }
+        return null;
     }
 
     /**
@@ -159,9 +194,10 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
 
     @Override
     public void free() {
-        this.framebuffers.remove(MAIN);
+        this.framebuffers.keySet().removeAll(this.manualFramebuffers);
         this.framebuffers.values().forEach(AdvancedFbo::free);
         this.framebuffers.clear();
+        this.manualFramebuffers.clear();
         this.screenFramebuffers.clear();
     }
 }

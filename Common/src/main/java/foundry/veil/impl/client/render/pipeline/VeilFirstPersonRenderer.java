@@ -12,10 +12,6 @@ import foundry.veil.api.client.render.post.PostProcessingManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
-import org.lwjgl.opengl.GL11C;
-
-import static org.lwjgl.opengl.GL11.GL_NEAREST;
-import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
 
 @ApiStatus.Internal
 public final class VeilFirstPersonRenderer {
@@ -60,16 +56,7 @@ public final class VeilFirstPersonRenderer {
             return;
         }
 
-        AdvancedFbo postFramebuffer = renderer.getFramebufferManager().getFramebuffer(VeilFramebuffers.POST);
-        if (postFramebuffer != null) {
-            AdvancedFbo.getMainFramebuffer().resolveToAdvancedFbo(postFramebuffer);
-        }
-
-        postProcessingManager.runPipeline(pipeline);
-
-        if (postFramebuffer != null) {
-            postFramebuffer.resolveToFramebuffer(Minecraft.getInstance().getMainRenderTarget());
-        }
+        postProcessingManager.runPipeline(pipeline, false);
     }
 
     public static void free() {

@@ -34,6 +34,11 @@ public class FabricVeilEventPlatform implements VeilEventPlatform {
     }
 
     @Override
+    public void onVeilRegisterBlockLayers(VeilRegisterBlockLayerEvent event) {
+        FabricVeilRegisterBlockLayerEvent.EVENT.register(event);
+    }
+
+    @Override
     public void onVeilRenderTypeStageRender(VeilRenderLevelStageEvent event) {
         FabricVeilRenderLevelStageEvent.EVENT.register(event);
     }

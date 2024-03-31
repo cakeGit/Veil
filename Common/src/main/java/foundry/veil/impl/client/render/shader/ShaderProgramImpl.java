@@ -243,7 +243,7 @@ public class ShaderProgramImpl implements ShaderProgram {
 
     @Override
     public void removeSampler(CharSequence name) {
-        this.textures.remove(name);
+        this.textures.removeInt(name);
     }
 
     @Override

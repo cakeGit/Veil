@@ -4,10 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import foundry.veil.api.event.*;
-import foundry.veil.neoforge.event.NeoForgeFreeNativeResourcesEvent;
-import foundry.veil.neoforge.event.NeoForgeVeilPostProcessingEvent;
-import foundry.veil.neoforge.event.NeoForgeVeilRegisterFixedBuffersEvent;
-import foundry.veil.neoforge.event.NeoForgeVeilRendererEvent;
+import foundry.veil.neoforge.event.*;
 import foundry.veil.platform.VeilEventPlatform;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -71,6 +68,11 @@ public class NeoForgeVeilEventPlatform implements VeilEventPlatform {
                 forgeEvent.register(forgeStage, renderType);
             }
         }));
+    }
+
+    @Override
+    public void onVeilRegisterBlockLayers(VeilRegisterBlockLayerEvent event) {
+        NeoForge.EVENT_BUS.<NeoForgeVeilRegisterBlockLayerEvent>addListener(event::onRegisterBlockLayers);
     }
 
     @Override

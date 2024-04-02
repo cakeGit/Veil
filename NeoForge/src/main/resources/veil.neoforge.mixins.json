@@ -9,6 +9,7 @@
   },
   "client": [
     "client.MinecraftMixin",
+    "client.RenderTypeMixin",
     "client.deferred.ModelBlockRendererMixin",
     "client.deferred.ParticleEngineMixin",
     "client.deferred.vanilla.LevelRendererMixin",

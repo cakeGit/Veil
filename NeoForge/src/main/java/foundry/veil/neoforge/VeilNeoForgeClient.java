@@ -1,5 +1,6 @@
 package foundry.veil.neoforge;
 
+import com.google.common.collect.ImmutableList;
 import foundry.veil.Veil;
 import foundry.veil.VeilClient;
 import foundry.veil.api.client.render.VeilRenderSystem;
@@ -7,8 +8,11 @@ import foundry.veil.api.client.render.VeilVanillaShaders;
 import foundry.veil.impl.VeilBuiltinPacks;
 import foundry.veil.impl.VeilReloadListeners;
 import foundry.veil.impl.client.render.VeilUITooltipRenderer;
+import foundry.veil.mixin.client.stage.RenderStateShardAccessor;
+import foundry.veil.neoforge.event.NeoForgeVeilRegisterBlockLayerEvent;
 import foundry.veil.neoforge.event.NeoForgeVeilRegisterFixedBuffersEvent;
 import foundry.veil.neoforge.event.NeoForgeVeilRendererEvent;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -41,6 +45,15 @@ public class VeilNeoForgeClient {
         modEventBus.addListener(VeilNeoForgeClient::registerListeners);
         modEventBus.addListener(VeilNeoForgeClient::registerShaders);
         modEventBus.addListener(VeilNeoForgeClient::addPackFinders);
+
+        ImmutableList.Builder<RenderType> blockLayers = ImmutableList.builder();
+        NeoForge.EVENT_BUS.post(new NeoForgeVeilRegisterBlockLayerEvent(renderType -> {
+            if (Veil.platform().isDevelopmentEnvironment() && renderType.bufferSize() > RenderType.SMALL_BUFFER_SIZE) {
+                Veil.LOGGER.warn("Block render layer '{}' uses a large buffer size: {}. If this is intended you can ignore this message", ((RenderStateShardAccessor) renderType).getName(), renderType.bufferSize());
+            }
+            blockLayers.add(renderType);
+        }));
+        NeoForgeRenderTypeStageHandler.setBlockLayers(blockLayers);
     }
 
     private static void registerListeners(RegisterClientReloadListenersEvent event) {

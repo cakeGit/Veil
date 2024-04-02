@@ -142,6 +142,7 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
 
     private void clearPipeline() {
         RenderSystem.colorMask(true, true, true, true);
+        RenderSystem.depthFunc(GL_ALWAYS);
         RenderSystem.depthMask(false);
     }
 
@@ -186,11 +187,26 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
     }
 
     /**
-     * Applies only the specified pipeline.
+     * Applies only the specified pipeline. Copies the main buffer into the post framebuffer and back before running the pipeline.
      *
      * @param pipeline The pipeline to run
      */
     public void runPipeline(PostPipeline pipeline) {
+        this.runPipeline(pipeline, true);
+    }
+
+    /**
+     * Applies only the specified pipeline.
+     *
+     * @param pipeline The pipeline to run
+     * @param resolvePost Whether to copy the main buffer into the post framebuffer before running the pipeline
+     */
+    public void runPipeline(PostPipeline pipeline, boolean resolvePost) {
+        AdvancedFbo postFramebuffer = resolvePost ? VeilRenderSystem.renderer().getFramebufferManager().getFramebuffer(VeilFramebuffers.POST) : null;
+        if (postFramebuffer != null) {
+            AdvancedFbo.getMainFramebuffer().resolveToAdvancedFbo(postFramebuffer);
+        }
+
         this.context.begin();
         this.setup();
         int activeTexture = GlStateManager._getActiveTexture();
@@ -205,6 +221,10 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
         RenderSystem.activeTexture(activeTexture);
         this.clear();
         this.context.end();
+
+        if (postFramebuffer != null) {
+            postFramebuffer.resolveToFramebuffer(Minecraft.getInstance().getMainRenderTarget());
+        }
     }
 
     private CompositePostPipeline loadPipeline(Resource resource) throws IOException {

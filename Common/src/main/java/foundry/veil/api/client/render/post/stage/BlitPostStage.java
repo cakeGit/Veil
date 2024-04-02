@@ -1,6 +1,5 @@
 package foundry.veil.api.client.render.post.stage;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import foundry.veil.Veil;
@@ -13,10 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 
-import java.util.Arrays;
 import java.util.Optional;
-
-import static org.lwjgl.opengl.GL31C.GL_INVALID_INDEX;
 
 /**
  * A basic stage that draws a quad to the output using a specified shader.
@@ -62,8 +58,6 @@ public class BlitPostStage extends FramebufferPostStage {
 
         shader.bind();
         shader.applyRenderSystem();
-        float[] color = RenderSystem.getShaderColor();
-        shader.setVector("ColorModulator", color[0], color[1], color[2], color[3]);
         context.applySamplers(shader);
         this.setupFramebuffer(context, shader);
         shader.applyShaderSamplers(context, 0);

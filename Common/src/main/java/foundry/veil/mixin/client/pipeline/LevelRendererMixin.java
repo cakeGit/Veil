@@ -9,6 +9,7 @@ import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.ext.LevelRendererExtension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
-public class LevelRendererMixin implements LevelRendererExtension {
+public abstract class LevelRendererMixin implements LevelRendererExtension {
 
     @Shadow
     private Frustum cullingFrustum;
@@ -30,6 +31,9 @@ public class LevelRendererMixin implements LevelRendererExtension {
     @Shadow
     @Nullable
     private Frustum capturedFrustum;
+
+    @Shadow
+    protected abstract void renderChunkLayer(RenderType p_172994_, PoseStack p_172995_, double p_172996_, double p_172997_, double p_172998_, Matrix4f p_254039_);
 
     @Unique
     private final Vector3f veil$tempCameraPos = new Vector3f();
@@ -43,5 +47,10 @@ public class LevelRendererMixin implements LevelRendererExtension {
     @Override
     public CullFrustum veil$getCullFrustum() {
         return VeilRenderBridge.create(this.capturedFrustum != null ? this.capturedFrustum : this.cullingFrustum);
+    }
+
+    @Override
+    public void veil$drawBlockLayer(RenderType renderType, PoseStack poseStack, double x, double y, double z, Matrix4f projection) {
+        this.renderChunkLayer(renderType, poseStack, x, y, z, projection);
     }
 }

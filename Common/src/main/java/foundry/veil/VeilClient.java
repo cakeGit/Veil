@@ -38,6 +38,7 @@ public class VeilClient {
                 editorManager.add(new DeviceInfoViewer());
                 editorManager.add(new DeferredEditor());
                 editorManager.add(new LightEditor());
+                editorManager.add(new FramebufferEditor());
             }
         });
         // This fixes moving transparent blocks drawing too early

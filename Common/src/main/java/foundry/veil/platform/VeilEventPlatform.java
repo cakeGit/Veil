@@ -23,5 +23,7 @@ public interface VeilEventPlatform {
 
     void onVeilRegisterFixedBuffers(VeilRegisterFixedBuffersEvent event);
 
+    void onVeilRegisterBlockLayers(VeilRegisterBlockLayerEvent event);
+
     void onVeilRenderTypeStageRender(VeilRenderLevelStageEvent event);
 }

@@ -1,13 +1,18 @@
 package foundry.veil.fabric.mixin.client;
 
+import com.google.common.collect.ImmutableList;
+import foundry.veil.Veil;
 import foundry.veil.VeilClient;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.fabric.FabricRenderTypeStageHandler;
 import foundry.veil.fabric.event.FabricFreeNativeResourcesEvent;
+import foundry.veil.fabric.event.FabricVeilRegisterBlockLayerEvent;
 import foundry.veil.fabric.event.FabricVeilRegisterFixedBuffersEvent;
 import foundry.veil.fabric.event.FabricVeilRendererEvent;
+import foundry.veil.mixin.client.stage.RenderStateShardAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
+import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,6 +26,18 @@ public class MinecraftMixin {
         VeilClient.initRenderer();
         FabricVeilRendererEvent.EVENT.invoker().onVeilRendererAvailable(VeilRenderSystem.renderer());
         FabricVeilRegisterFixedBuffersEvent.EVENT.invoker().onRegisterFixedBuffers(FabricRenderTypeStageHandler::register);
+    }
+
+    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setupDefaultState(IIII)V"))
+    public void registerBlockLayers(GameConfig gameConfig, CallbackInfo ci) {
+        ImmutableList.Builder<RenderType> blockLayers = ImmutableList.builder();
+        FabricVeilRegisterBlockLayerEvent.EVENT.invoker().onRegisterBlockLayers(renderType -> {
+            if (Veil.platform().isDevelopmentEnvironment() && renderType.bufferSize() > RenderType.SMALL_BUFFER_SIZE) {
+                Veil.LOGGER.warn("Block render layer '{}' uses a large buffer size: {}. If this is intended you can ignore this message", ((RenderStateShardAccessor) renderType).getName(), renderType.bufferSize());
+            }
+            blockLayers.add(renderType);
+        });
+        FabricRenderTypeStageHandler.setBlockLayers(blockLayers);
     }
 
     @Inject(method = "close", at = @At(value = "INVOKE", target = "Lnet/minecraft/Util;shutdownExecutors()V", shift = At.Shift.BEFORE))

@@ -199,7 +199,7 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
         PostPipeline postPipeline = this.postProcessingManager.getPipeline(post);
         if (postPipeline != null) {
             profiler.push("post");
-            this.postProcessingManager.runPipeline(postPipeline);
+            this.postProcessingManager.runPipeline(postPipeline, false);
             profiler.pop();
         }
 
@@ -212,7 +212,7 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
         PostPipeline lightPipeline = this.postProcessingManager.getPipeline(LIGHT_POST);
         if (lightPipeline != null) {
             profiler.push("light_post");
-            this.postProcessingManager.runPipeline(lightPipeline);
+            this.postProcessingManager.runPipeline(lightPipeline, false);
             profiler.pop();
         }
 
@@ -220,7 +220,7 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
         PostPipeline mixPipeline = this.postProcessingManager.getPipeline(mix);
         if (mixPipeline != null) {
             profiler.push("mix");
-            this.postProcessingManager.runPipeline(mixPipeline);
+            this.postProcessingManager.runPipeline(mixPipeline, false);
             profiler.pop();
         }
     }
@@ -263,7 +263,7 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
         if (screenPipeline != null) {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            this.postProcessingManager.runPipeline(screenPipeline);
+            this.postProcessingManager.runPipeline(screenPipeline, false);
             RenderSystem.disableBlend();
         }
 

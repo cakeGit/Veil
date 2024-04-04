@@ -6,8 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
 import foundry.veil.ext.LevelRendererBlockLayerExtension;
 import foundry.veil.fabric.event.FabricVeilRenderLevelStageEvent;
-import foundry.veil.fabric.ext.LevelRendererExtension;
-import foundry.veil.mixin.client.deferred.RenderBuffersAccessor;
+import foundry.veil.mixin.client.deferred.BufferSourceAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -30,7 +29,7 @@ public class FabricRenderTypeStageHandler {
     private static List<RenderType> BLOCK_LAYERS;
 
     public static void register(@Nullable VeilRenderLevelStageEvent.Stage stage, RenderType renderType) {
-        SortedMap<RenderType, BufferBuilder> fixedBuffers = ((RenderBuffersAccessor) Minecraft.getInstance().renderBuffers()).getFixedBuffers();
+        Map<RenderType, BufferBuilder> fixedBuffers = ((BufferSourceAccessor) Minecraft.getInstance().renderBuffers().bufferSource()).getFixedBuffers();
         fixedBuffers.put(renderType, new BufferBuilder(renderType.bufferSize()));
 
         if (stage != null) {

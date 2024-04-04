@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import foundry.veil.Veil;
 import foundry.veil.ext.LevelRendererBlockLayerExtension;
-import foundry.veil.mixin.client.deferred.RenderBuffersAccessor;
+import foundry.veil.mixin.client.deferred.BufferSourceAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -28,7 +28,7 @@ public class ForgeRenderTypeStageHandler {
     private static List<RenderType> BLOCK_LAYERS;
 
     public static synchronized void register(@Nullable RenderLevelStageEvent.Stage stage, RenderType renderType) {
-        SortedMap<RenderType, BufferBuilder> fixedBuffers = ((RenderBuffersAccessor) Minecraft.getInstance().renderBuffers()).getFixedBuffers();
+        Map<RenderType, BufferBuilder> fixedBuffers = ((BufferSourceAccessor) Minecraft.getInstance().renderBuffers().bufferSource()).getFixedBuffers();
         fixedBuffers.computeIfAbsent(renderType, type -> new BufferBuilder(type.bufferSize()));
 
         if (stage != null) {
@@ -44,7 +44,7 @@ public class ForgeRenderTypeStageHandler {
             stages.forEach(renderType -> {
                 if (CUSTOM_BLOCK_LAYERS.contains(renderType)) {
                     Vec3 pos = event.getCamera().getPosition();
-                    ((LevelRendererBlockLayerExtension)event.getLevelRenderer()).veil$drawBlockLayer(renderType, event.getPoseStack(), pos.x, pos.y, pos.z, event.getProjectionMatrix());
+                    ((LevelRendererBlockLayerExtension) event.getLevelRenderer()).veil$drawBlockLayer(renderType, event.getPoseStack(), pos.x, pos.y, pos.z, event.getProjectionMatrix());
                 }
                 bufferSource.endBatch(renderType);
             });

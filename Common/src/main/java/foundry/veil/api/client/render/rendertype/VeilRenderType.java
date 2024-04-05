@@ -1,9 +1,10 @@
-package foundry.veil.api.client.render;
+package foundry.veil.api.client.render.rendertype;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import foundry.veil.Veil;
+import foundry.veil.api.client.render.VeilVanillaShaders;
 import foundry.veil.mixin.client.pipeline.RenderTypeAccessor;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderType;

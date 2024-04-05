@@ -3,11 +3,10 @@ package foundry.veil.api.client.render;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
-import foundry.veil.impl.client.render.pipeline.PatchSizeState;
+import foundry.veil.impl.client.render.pipeline.PatchState;
 import foundry.veil.impl.client.render.pipeline.ShaderProgramState;
 import foundry.veil.impl.client.render.wrapper.VanillaAdvancedFboWrapper;
 import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.resources.ResourceLocation;
 
@@ -121,7 +120,7 @@ public interface VeilRenderBridge {
      * @param patchVertices The number of vertices per patch
      * @return A new patch state
      */
-    static PatchSizeState patchSize(int patchVertices) {
-        return new PatchSizeState(patchVertices);
+    static PatchState patchState(int patchVertices) {
+        return new PatchState(patchVertices);
     }
 }

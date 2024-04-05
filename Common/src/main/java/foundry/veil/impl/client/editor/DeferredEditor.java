@@ -8,21 +8,12 @@ import foundry.veil.api.client.render.deferred.VeilDeferredRenderer;
 import foundry.veil.api.client.render.deferred.light.renderer.LightRenderer;
 import foundry.veil.api.client.render.framebuffer.*;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
-import foundry.veil.api.client.util.TextureDownloader;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
-import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
 
 import static org.lwjgl.opengl.GL11C.*;
 

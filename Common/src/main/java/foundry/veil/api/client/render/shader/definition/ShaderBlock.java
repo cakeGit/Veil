@@ -32,7 +32,7 @@ public interface ShaderBlock<T> extends NativeResource {
      * @param <T>        The type of data to write
      * @return A new shader block
      */
-    static <T> ShaderBlock<T> withSize(int binding,int size, BiConsumer<T, ByteBuffer> serializer) {
+    static <T> ShaderBlock<T> withSize(int binding, int size, BiConsumer<T, ByteBuffer> serializer) {
         return new SizedShaderBlockImpl<>(binding, size, serializer);
     }
 
@@ -44,7 +44,7 @@ public interface ShaderBlock<T> extends NativeResource {
      * @param <T>        The type of data to write
      * @return A new shader block
      */
-    static <T> DynamicShaderBlock<T> dynamic(int binding,BiConsumer<T, ByteBuffer> serializer) {
+    static <T> DynamicShaderBlock<T> dynamic(int binding, BiConsumer<T, ByteBuffer> serializer) {
         return dynamic(binding, 256, serializer);
     }
 
@@ -57,7 +57,7 @@ public interface ShaderBlock<T> extends NativeResource {
      * @param <T>         The type of data to write
      * @return A new shader block
      */
-    static <T> DynamicShaderBlock<T> dynamic(int binding,int initialSize, BiConsumer<T, ByteBuffer> serializer) {
+    static <T> DynamicShaderBlock<T> dynamic(int binding, int initialSize, BiConsumer<T, ByteBuffer> serializer) {
         return new DynamicShaderBlockImpl<>(binding, initialSize, serializer);
     }
 
@@ -69,7 +69,7 @@ public interface ShaderBlock<T> extends NativeResource {
      * @return A new shader block
      */
     static DynamicShaderBlock<?> wrapper(int binding, int buffer) {
-        return new WrapperShaderBlockImpl(binding , buffer);
+        return new WrapperShaderBlockImpl(binding, buffer);
     }
 
     /**
@@ -93,5 +93,6 @@ public interface ShaderBlock<T> extends NativeResource {
     /**
      * @return The value stored in this block
      */
-    @Nullable T getValue();
+    @Nullable
+    T getValue();
 }

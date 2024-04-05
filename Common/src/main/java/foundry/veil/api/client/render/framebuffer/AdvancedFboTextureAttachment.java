@@ -6,7 +6,6 @@ import foundry.veil.impl.client.render.AdvancedFboImpl;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.commons.lang3.Validate;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.lwjgl.opengl.GL11C.*;

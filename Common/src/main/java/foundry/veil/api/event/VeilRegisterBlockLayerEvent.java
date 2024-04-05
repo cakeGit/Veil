@@ -1,7 +1,6 @@
 package foundry.veil.api.event;
 
 import net.minecraft.client.renderer.RenderType;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * <p>Fired to register block layers.</p>

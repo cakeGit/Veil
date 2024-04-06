@@ -3,6 +3,7 @@ package foundry.veil.api.client.render;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
+import foundry.veil.impl.client.render.pipeline.PatchState;
 import foundry.veil.impl.client.render.pipeline.ShaderProgramState;
 import foundry.veil.impl.client.render.wrapper.VanillaAdvancedFboWrapper;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -111,5 +112,15 @@ public interface VeilRenderBridge {
                 fbo.bindDraw(true);
             }
         }, AdvancedFbo::unbindDraw);
+    }
+
+    /**
+     * Creates a new render state shard for tesselation patch size.
+     *
+     * @param patchVertices The number of vertices per patch
+     * @return A new patch state
+     */
+    static PatchState patchState(int patchVertices) {
+        return new PatchState(patchVertices);
     }
 }

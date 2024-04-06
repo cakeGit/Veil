@@ -3,15 +3,24 @@ package foundry.veil.mixin.client.pipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import foundry.veil.api.client.render.VeilRenderSystem;
+import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.ext.VertexBufferExtension;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static org.lwjgl.opengl.GL11C.glDrawArrays;
 import static org.lwjgl.opengl.GL15C.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15C.glBindBuffer;
+import static org.lwjgl.opengl.GL31C.glDrawArraysInstanced;
 import static org.lwjgl.opengl.GL31C.glDrawElementsInstanced;
+import static org.lwjgl.opengl.GL40C.GL_PATCHES;
 import static org.lwjgl.opengl.GL43C.glMultiDrawElementsIndirect;
 
 @Mixin(VertexBuffer.class)
@@ -31,7 +40,7 @@ public abstract class VertexBufferMixin implements VertexBufferExtension {
 
     @Shadow
     @Nullable
-    private RenderSystem.@Nullable AutoStorageIndexBuffer sequentialIndices;
+    private RenderSystem.AutoStorageIndexBuffer sequentialIndices;
 
     @Shadow
     private VertexFormat.IndexType indexType;
@@ -59,19 +68,58 @@ public abstract class VertexBufferMixin implements VertexBufferExtension {
         return this.indexCount;
     }
 
+    @Inject(method = "draw", at = @At("HEAD"), cancellable = true)
+    public void drawPatches(CallbackInfo ci) {
+        if (this.mode != VertexFormat.Mode.QUADS) {
+            return;
+        }
+
+        ShaderProgram shader = VeilRenderSystem.getShader();
+        if (shader != null && shader.hasTesselation()) {
+            // Quads are internally switched to triangles with indices in vanilla mc, so just use draw arrays
+            // This will be wrong if custom indices are used! (transparent objects)
+            glDrawArrays(GL_PATCHES, 0, this.indexCount * 4 / 6);
+            ci.cancel();
+        }
+    }
+
+    @ModifyArg(method = "draw", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;drawElements(III)V"), index = 0)
+    public int modifyDrawMode(int glMode) {
+        return this.veil$getDrawMode(glMode);
+    }
+
+    @Unique
+    private int veil$getDrawMode(int defaultMode) {
+        ShaderProgram shader = VeilRenderSystem.getShader();
+        if (shader != null && shader.hasTesselation()) {
+            return GL_PATCHES;
+        }
+        return defaultMode;
+    }
+
     @Unique
     private void _veil$drawInstanced(int instances) {
-        glDrawElementsInstanced(this.mode.asGLMode, this.indexCount, this.getIndexType().asGLType, 0L, instances);
+        if (this.mode == VertexFormat.Mode.QUADS) {
+            ShaderProgram shader = VeilRenderSystem.getShader();
+            if (shader != null && shader.hasTesselation()) {
+                // Quads are internally switched to triangles with indices in vanilla mc, so just use draw arrays
+                // This will be wrong if custom indices are used! (transparent objects)
+                glDrawArraysInstanced(GL_PATCHES, 0, this.indexCount * 4 / 6, instances);
+            }
+            return;
+        }
+
+        glDrawElementsInstanced(this.veil$getDrawMode(this.mode.asGLMode), this.indexCount, this.getIndexType().asGLType, 0L, instances);
     }
 
     @Unique
     private void _veil$drawIndirect(long indirect, int drawCount, int stride) {
         if (this.sequentialIndices != null) {
             this.sequentialIndices.bind(this.indexCount);
-            glMultiDrawElementsIndirect(this.mode.asGLMode, this.sequentialIndices.type().asGLType, indirect, drawCount, stride);
+            glMultiDrawElementsIndirect(this.veil$getDrawMode(this.mode.asGLMode), this.sequentialIndices.type().asGLType, indirect, drawCount, stride);
         } else {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.indexBufferId);
-            glMultiDrawElementsIndirect(this.mode.asGLMode, this.indexType.asGLType, indirect, drawCount, stride);
+            glMultiDrawElementsIndirect(this.veil$getDrawMode(this.mode.asGLMode), this.indexType.asGLType, indirect, drawCount, stride);
         }
     }
 }

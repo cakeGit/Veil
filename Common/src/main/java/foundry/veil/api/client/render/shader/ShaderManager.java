@@ -13,6 +13,7 @@ import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import foundry.veil.api.client.render.shader.processor.ShaderModifyProcessor;
 import foundry.veil.api.client.render.shader.program.ProgramDefinition;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.FileToIdConverter;
@@ -132,8 +133,8 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
                 throw new IllegalStateException("Duplicate shader ignored with ID " + id);
             }
 
-            for (Map.Entry<Integer, ResourceLocation> shader : definition.shaders().entrySet()) {
-                FileToIdConverter typeConverter = this.sourceSet.getTypeConverter(shader.getKey());
+            for (Int2ObjectMap.Entry<ResourceLocation> shader : definition.shaders().int2ObjectEntrySet()) {
+                FileToIdConverter typeConverter = this.sourceSet.getTypeConverter(shader.getIntKey());
                 ResourceLocation location = typeConverter.idToFile(shader.getValue());
 
                 if (!checkedSources.add(location)) {
@@ -145,6 +146,8 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
                     byte[] source = stream.readAllBytes();
                     Resource fileResource = new Resource(resource.source(), () -> new ByteArrayInputStream(source));
                     shaderSources.put(location, fileResource);
+                } catch (Throwable t) {
+                    throw new IOException("Failed to load " + getTypeName(shader.getIntKey()) + " shader", t);
                 }
             }
         } catch (IOException | IllegalArgumentException | JsonParseException e) {

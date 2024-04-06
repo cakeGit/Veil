@@ -1,4 +1,4 @@
-package foundry.veil.impl.client;
+package foundry.veil.impl.client.imgui;
 
 import foundry.veil.Veil;
 import foundry.veil.api.client.imgui.VeilImGui;
@@ -74,6 +74,11 @@ public class VeilImGuiImpl implements VeilImGui {
     @Override
     public void onGrabMouse() {
         ImGui.setWindowFocus(null);
+    }
+
+    @Override
+    public void toggle() {
+        VeilRenderSystem.renderer().getEditorManager().toggle();
     }
 
     @Override

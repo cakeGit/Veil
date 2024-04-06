@@ -6,7 +6,6 @@ import foundry.veil.impl.client.render.AdvancedFboImpl;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.commons.lang3.Validate;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.lwjgl.opengl.GL11C.*;
@@ -91,7 +90,7 @@ public class AdvancedFboTextureAttachment extends AbstractTexture implements Adv
     }
 
     @Override
-    public @NotNull AdvancedFboTextureAttachment createCopy() {
+    public AdvancedFboTextureAttachment createCopy() {
         return new AdvancedFboTextureAttachment(this.attachmentType, this.format, this.texelFormat, this.dataType, this.width, this.height, this.mipmapLevels, this.linear, this.name);
     }
 
@@ -150,6 +149,6 @@ public class AdvancedFboTextureAttachment extends AbstractTexture implements Adv
     }
 
     @Override
-    public void load(@NotNull ResourceManager manager) {
+    public void load(ResourceManager manager) {
     }
 }

@@ -529,8 +529,20 @@ public interface AdvancedFbo extends NativeResource {
         }
 
         /**
+         * Sets the format to use for texture attachments.
+         *
+         <<<<<<< HEAD
+         =======
+         * @param format The new format to use
+         */
+        public Builder setFormat(FramebufferAttachmentDefinition.Format format) {
+            return this.setFormat(format.getId(), format.getInternalId());
+        }
+
+        /**
          * Sets the format to use for texture attachments. {@link GL11#GL_RGBA} is the default.
          *
+         >>>>>>> 1.20
          * @param format         The new format to use
          * @param internalFormat The new internal format to use
          */
@@ -567,16 +579,36 @@ public interface AdvancedFbo extends NativeResource {
          */
         public Builder addColorBuffer(AdvancedFboAttachment attachment) {
             this.colorAttachments.add(attachment);
+            this.name = null;
             this.validateColorSize();
             return this;
+        }
+
+        /**
+         * Adds the specified texture as a texture attachment with the size of the framebuffer.
+         *
+         * @param textureId The id of the texture to add
+         */
+        public Builder addColorTextureWrapper(int textureId) {
+            return this.addColorTextureWrapper(textureId, this.width, this.height);
+        }
+
+        /**
+         * Adds the specified texture as a texture attachment.
+         *
+         * @param textureId The id of the texture to add
+         * @param width     The width of the texture
+         * @param height    The height of the texture
+         */
+        public Builder addColorTextureWrapper(int textureId, int width, int height) {
+            return this.addColorBuffer(new AdvancedFboTextureWrapperAttachment(textureId, GL_COLOR_ATTACHMENT0, width, height));
         }
 
         /**
          * Adds a color texture buffer with the size of the framebuffer and {@link GL11C#GL_UNSIGNED_BYTE GL_UNSIGNED_BYTE} as the format.
          */
         public Builder addColorTextureBuffer() {
-            this.addColorTextureBuffer(this.width, this.height, GL_UNSIGNED_BYTE);
-            return this;
+            return this.addColorTextureBuffer(this.width, this.height, GL_UNSIGNED_BYTE);
         }
 
         /**
@@ -586,8 +618,7 @@ public interface AdvancedFbo extends NativeResource {
          * @param height The height of the texture buffer
          */
         public Builder addColorTextureBuffer(int width, int height) {
-            this.addColorTextureBuffer(width, height, GL_UNSIGNED_BYTE);
-            return this;
+            return this.addColorTextureBuffer(width, height, GL_UNSIGNED_BYTE);
         }
 
         /**
@@ -596,8 +627,7 @@ public interface AdvancedFbo extends NativeResource {
          * @param dataType The format of the data internally
          */
         public Builder addColorTextureBuffer(int dataType) {
-            this.addColorTextureBuffer(this.width, this.height, dataType);
-            return this;
+            return this.addColorTextureBuffer(this.width, this.height, dataType);
         }
 
         /**
@@ -608,19 +638,15 @@ public interface AdvancedFbo extends NativeResource {
          * @param dataType The format of the data internally
          */
         public Builder addColorTextureBuffer(int width, int height, int dataType) {
-            this.colorAttachments.add(
-                    new AdvancedFboTextureAttachment(GL_COLOR_ATTACHMENT0,
-                            this.internalFormat,
-                            this.format,
-                            dataType,
-                            width,
-                            height,
-                            this.mipmaps,
-                            this.linear,
-                            this.name));
-            this.name = null;
-            this.validateColorSize();
-            return this;
+            return this.addColorBuffer(new AdvancedFboTextureAttachment(GL_COLOR_ATTACHMENT0,
+                    this.internalFormat,
+                    this.format,
+                    dataType,
+                    width,
+                    height,
+                    this.mipmaps,
+                    this.linear,
+                    this.name));
         }
 
         /**
@@ -628,8 +654,7 @@ public interface AdvancedFbo extends NativeResource {
          * <p><b><i>NOTE: COLOR RENDER BUFFERS CAN ONLY BE COPIED TO OTHER FRAMEBUFFERS</i></b></p>
          */
         public Builder addColorRenderBuffer() {
-            this.addColorRenderBuffer(this.width, this.height);
-            return this;
+            return this.addColorRenderBuffer(this.width, this.height);
         }
 
         /**
@@ -640,13 +665,11 @@ public interface AdvancedFbo extends NativeResource {
          * @param height The height of the render buffer
          */
         public Builder addColorRenderBuffer(int width, int height) {
-            this.colorAttachments.add(new AdvancedFboRenderAttachment(GL_COLOR_ATTACHMENT0,
+            return this.addColorBuffer(new AdvancedFboRenderAttachment(GL_COLOR_ATTACHMENT0,
                     this.format,
                     width,
                     height,
                     this.samples));
-            this.validateColorSize();
-            return this;
         }
 
         /**
@@ -657,15 +680,35 @@ public interface AdvancedFbo extends NativeResource {
         public Builder setDepthBuffer(@Nullable AdvancedFboAttachment attachment) {
             Validate.isTrue(attachment == null || this.depthAttachment == null, "Only one depth attachment can be applied to an FBO.");
             this.depthAttachment = attachment;
+            this.name = null;
             return this;
+        }
+
+        /**
+         * Adds the specified texture as a texture attachment with the size of the framebuffer.
+         *
+         * @param textureId The id of the texture to add
+         */
+        public Builder setDepthTextureWrapper(int textureId) {
+            return this.addColorTextureWrapper(textureId, this.width, this.height);
+        }
+
+        /**
+         * Adds the specified texture as a texture attachment.
+         *
+         * @param textureId The id of the texture to add
+         * @param width     The width of the texture
+         * @param height    The height of the texture
+         */
+        public Builder setDepthTextureWrapper(int textureId, int width, int height) {
+            return this.setDepthBuffer(new AdvancedFboTextureWrapperAttachment(textureId, GL_DEPTH_ATTACHMENT, width, height));
         }
 
         /**
          * Sets the depth texture buffer to the size of the framebuffer and {@link GL11C#GL_FLOAT GL_FLOAT} as the format.
          */
         public Builder setDepthTextureBuffer() {
-            this.setDepthTextureBuffer(this.width, this.height, GL_FLOAT);
-            return this;
+            return this.setDepthTextureBuffer(this.width, this.height, GL_FLOAT);
         }
 
         /**
@@ -675,8 +718,7 @@ public interface AdvancedFbo extends NativeResource {
          * @param height The height of the texture buffer
          */
         public Builder setDepthTextureBuffer(int width, int height) {
-            this.setDepthTextureBuffer(width, height, GL_FLOAT);
-            return this;
+            return this.setDepthTextureBuffer(width, height, GL_FLOAT);
         }
 
         /**
@@ -685,8 +727,7 @@ public interface AdvancedFbo extends NativeResource {
          * @param dataType The format of the data internally
          */
         public Builder setDepthTextureBuffer(int dataType) {
-            this.setDepthTextureBuffer(this.width, this.height, dataType);
-            return this;
+            return this.setDepthTextureBuffer(this.width, this.height, dataType);
         }
 
         /**
@@ -697,8 +738,7 @@ public interface AdvancedFbo extends NativeResource {
          * @param dataType The format of the data internally
          */
         public Builder setDepthTextureBuffer(int width, int height, int dataType) {
-            Validate.isTrue(this.depthAttachment == null, "Only one depth attachment can be applied to an FBO.");
-            this.depthAttachment = new AdvancedFboTextureAttachment(GL_DEPTH_ATTACHMENT,
+            return this.setDepthBuffer(new AdvancedFboTextureAttachment(GL_DEPTH_ATTACHMENT,
                     this.internalFormat,
                     this.format,
                     dataType,
@@ -706,9 +746,7 @@ public interface AdvancedFbo extends NativeResource {
                     height,
                     this.mipmaps,
                     this.linear,
-                    this.name);
-            this.name = null;
-            return this;
+                    this.name));
         }
 
         /**
@@ -716,8 +754,7 @@ public interface AdvancedFbo extends NativeResource {
          * <p><b><i>NOTE: DEPTH RENDER BUFFERS CAN ONLY BE COPIED TO OTHER FRAMEBUFFERS</i></b></p>
          */
         public Builder setDepthRenderBuffer() {
-            this.setDepthRenderBuffer(this.width, this.height);
-            return this;
+            return this.setDepthRenderBuffer(this.width, this.height);
         }
 
         /**
@@ -728,13 +765,11 @@ public interface AdvancedFbo extends NativeResource {
          * @param height The height of the render buffer
          */
         public Builder setDepthRenderBuffer(int width, int height) {
-            Validate.isTrue(this.depthAttachment == null, "Only one depth attachment can be applied to an FBO.");
-            this.depthAttachment = new AdvancedFboRenderAttachment(GL_DEPTH_ATTACHMENT,
+            return this.setDepthBuffer(new AdvancedFboRenderAttachment(GL_DEPTH_ATTACHMENT,
                     GL_DEPTH_COMPONENT24,
                     width,
                     height,
-                    this.samples);
-            return this;
+                    this.samples));
         }
 
         /**
@@ -746,6 +781,9 @@ public interface AdvancedFbo extends NativeResource {
         public AdvancedFbo build(boolean create) {
             if (this.colorAttachments.isEmpty()) {
                 throw new IllegalArgumentException("Framebuffer needs at least one color attachment to be complete.");
+            }
+            if (this.width <= 0 || this.height <= 0) {
+                throw new IllegalArgumentException("Framebuffer needs a positive area to be complete. (Was " + this.width + "x" + this.height + ")");
             }
             this.validateSamples();
             AdvancedFbo framebuffer = new AdvancedFboImpl(this.width, this.height, this.colorAttachments.toArray(new AdvancedFboAttachment[0]), this.depthAttachment);

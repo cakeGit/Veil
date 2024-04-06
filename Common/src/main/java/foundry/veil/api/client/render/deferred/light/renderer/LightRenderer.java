@@ -53,7 +53,6 @@ public class LightRenderer implements NativeResource {
     public void applyShader() {
         ShaderProgram shader = VeilRenderSystem.getShader();
         if (shader == null) {
-            VeilRenderSystem.throwShaderError();
             return;
         }
 

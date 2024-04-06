@@ -272,8 +272,6 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
                     VeilRenderSystem.unbind(this.indirectBlock);
                     glBindBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, 0, 0, Integer.BYTES);
                 }
-            } else {
-                VeilRenderSystem.throwShaderError();
             }
         }
 

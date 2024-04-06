@@ -9,7 +9,7 @@ import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.definition.ShaderBlock;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.api.opencl.VeilOpenCL;
-import foundry.veil.impl.client.VeilImGuiImpl;
+import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import foundry.veil.impl.client.render.pipeline.VeilUniformBlockState;
 import foundry.veil.impl.client.render.shader.ShaderProgramImpl;
 import net.minecraft.client.Minecraft;
@@ -148,33 +148,42 @@ public final class VeilRenderSystem {
      * Sets the shader instance to be a reference to the shader manager.
      *
      * @param shader The name of the shader to use
+     * @return The Veil shader instance applied or <code>null</code> if there was an error
      */
-    public static void setShader(ResourceLocation shader) {
+    public static @Nullable ShaderProgram setShader(ResourceLocation shader) {
         ShaderManager shaderManager = renderer.getShaderManager();
-        VeilRenderSystem.setShader(() -> shaderManager.getShader(shader));
         VeilRenderSystem.shaderLocation = shader;
+        return VeilRenderSystem.setShader(() -> shaderManager.getShader(shader));
     }
 
     /**
      * Sets the shader instance to a specific instance of a shader. {@link #setShader(ResourceLocation)} should be used in most cases.
      *
      * @param shader The shader instance to use
+     * @return The Veil shader instance applied or <code>null</code> if there was an error
      */
-    public static void setShader(@Nullable ShaderProgram shader) {
-        VeilRenderSystem.setShader(() -> shader);
+    public static @Nullable ShaderProgram setShader(@Nullable ShaderProgram shader) {
         VeilRenderSystem.shaderLocation = shader != null ? shader.getId() : null;
+        return VeilRenderSystem.setShader(() -> shader);
     }
 
     /**
      * Sets the shader instance to a specific instance reference of a shader. {@link #setShader(ResourceLocation)} should be used in most cases.
      *
      * @param shader The reference to the shader to use
+     * @return The Veil shader instance applied or <code>null</code> if there was an error
      */
-    public static void setShader(Supplier<ShaderProgram> shader) {
+    public static @Nullable ShaderProgram setShader(Supplier<ShaderProgram> shader) {
         RenderSystem.setShader(() -> {
             ShaderProgram program = shader.get();
             return program != null ? program.toShaderInstance() : null;
         });
+
+        ShaderProgram value = getShader();
+        if (value == null) {
+            throwShaderError();
+        }
+        return value;
     }
 
     /**
@@ -224,6 +233,7 @@ public final class VeilRenderSystem {
     }
 
     /**
+     * Retrieves the maximum bindings for the specified buffer binding.
      * @param target The target to query the maximum bindings of
      * @return The GL maximum amount of buffer bindings available
      */
@@ -233,8 +243,7 @@ public final class VeilRenderSystem {
             case GL_UNIFORM_BUFFER -> maxUniformBuffersBindings();
             case GL_ATOMIC_COUNTER_BUFFER -> maxAtomicCounterBufferBindings();
             case GL_SHADER_STORAGE_BUFFER -> maxShaderStorageBufferBindings();
-            default ->
-                    throw new IllegalArgumentException("Invalid Target: 0x" + Integer.toHexString(target).toUpperCase(Locale.ROOT));
+            default -> throw new IllegalArgumentException("Invalid Target: 0x" + Integer.toHexString(target).toUpperCase(Locale.ROOT));
         };
     }
 

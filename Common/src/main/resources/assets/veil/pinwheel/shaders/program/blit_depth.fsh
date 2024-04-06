@@ -1,10 +1,12 @@
+#include veil:deferred_utils
+
 uniform sampler2D DiffuseDepthSampler;
-uniform sampler2D AuxDepthSampler;
 
 in vec2 texCoord;
 
+out vec4 OutColor;
+
 void main() {
-    float main = texture(DiffuseDepthSampler, texCoord).r;
-    float aux = texture(AuxDepthSampler, texCoord).r;
-    gl_FragDepth = min(main, aux);
+    gl_FragDepth = texture(DiffuseDepthSampler, texCoord).r;
+    OutColor = vec4(vec3(depthSampleToWorldDepth(gl_FragDepth)), 1.0);
 }

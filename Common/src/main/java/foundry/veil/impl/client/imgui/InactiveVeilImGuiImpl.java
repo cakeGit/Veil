@@ -1,4 +1,4 @@
-package foundry.veil.impl.client;
+package foundry.veil.impl.client.imgui;
 
 import foundry.veil.api.client.imgui.VeilImGui;
 import org.jetbrains.annotations.ApiStatus;

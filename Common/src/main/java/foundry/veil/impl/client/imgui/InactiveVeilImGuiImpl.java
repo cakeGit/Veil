@@ -19,6 +19,10 @@ public class InactiveVeilImGuiImpl implements VeilImGui {
     }
 
     @Override
+    public void toggle() {
+    }
+
+    @Override
     public boolean mouseButtonCallback(long window, int button, int action, int mods) {
         return false;
     }

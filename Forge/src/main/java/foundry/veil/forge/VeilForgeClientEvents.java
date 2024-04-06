@@ -7,6 +7,7 @@ import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.quasar.data.QuasarParticles;
 import foundry.veil.api.quasar.particle.ParticleEmitter;
 import foundry.veil.api.quasar.particle.ParticleSystemManager;
+import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -47,7 +48,7 @@ public class VeilForgeClientEvents {
     @SubscribeEvent
     public static void keyPressed(InputEvent.Key event) {
         if (event.getAction() == GLFW_PRESS && VeilClient.EDITOR_KEY.matches(event.getKey(), event.getScanCode())) {
-            VeilRenderSystem.renderer().getEditorManager().toggle();
+            VeilImGuiImpl.get().toggle();
         }
     }
 
@@ -77,7 +78,7 @@ public class VeilForgeClientEvents {
     @SubscribeEvent
     public static void mousePressed(InputEvent.MouseButton.Pre event) {
         if (event.getAction() == GLFW_PRESS && VeilClient.EDITOR_KEY.matchesMouse(event.getButton())) {
-            VeilRenderSystem.renderer().getEditorManager().toggle();
+            VeilImGuiImpl.get().toggle();
         }
     }
 

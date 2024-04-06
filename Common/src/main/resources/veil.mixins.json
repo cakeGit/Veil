@@ -13,10 +13,6 @@
     "tooltip.BlockEntityMixin"
   ],
   "client": [
-    "client.anim.AgeableListModelMixin",
-    "client.anim.HumanoidModelMixin",
-    "client.anim.ItemInHandRendererMixin",
-    "client.anim.ModelPartMixin",
     "client.deferred.AmbientOcclusionFaceMixin",
     "client.deferred.DebugScreenOverlayMixin",
     "client.deferred.LevelRendererMixin",

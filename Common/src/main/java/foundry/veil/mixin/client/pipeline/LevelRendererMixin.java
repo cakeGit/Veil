@@ -33,7 +33,7 @@ public abstract class LevelRendererMixin implements LevelRendererExtension {
     private Frustum capturedFrustum;
 
     @Shadow
-    protected abstract void renderChunkLayer(RenderType p_172994_, PoseStack p_172995_, double p_172996_, double p_172997_, double p_172998_, Matrix4f p_254039_);
+    protected abstract void renderSectionLayer(RenderType pRenderType, PoseStack pPoseStack, double pX, double pY, double pZ, Matrix4f pProjectionMatrix);
 
     @Unique
     private final Vector3f veil$tempCameraPos = new Vector3f();
@@ -51,6 +51,6 @@ public abstract class LevelRendererMixin implements LevelRendererExtension {
 
     @Override
     public void veil$drawBlockLayer(RenderType renderType, PoseStack poseStack, double x, double y, double z, Matrix4f projection) {
-        this.renderChunkLayer(renderType, poseStack, x, y, z, projection);
+        this.renderSectionLayer(renderType, poseStack, x, y, z, projection);
     }
 }

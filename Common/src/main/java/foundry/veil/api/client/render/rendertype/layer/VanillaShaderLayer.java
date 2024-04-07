@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import foundry.veil.api.client.registry.RenderTypeLayerRegistry;
+import foundry.veil.api.client.render.rendertype.VeilRenderTypeBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 
@@ -16,8 +17,8 @@ public record VanillaShaderLayer(String shaderName) implements RenderTypeLayer {
     ).apply(instance, VanillaShaderLayer::new));
 
     @Override
-    public void addLayer(RenderTypeBuilder builder) {
-        builder.setShaderState(new RenderStateShard.ShaderStateShard(() -> Minecraft.getInstance().gameRenderer.getShader(this.shaderName)));
+    public void addLayer(VeilRenderTypeBuilder builder) {
+        builder.shaderState(new RenderStateShard.ShaderStateShard(() -> Minecraft.getInstance().gameRenderer.getShader(this.shaderName)));
     }
 
     @Override

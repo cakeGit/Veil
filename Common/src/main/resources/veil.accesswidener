@@ -65,6 +65,7 @@ accessible class net/minecraft/resources/RegistryDataLoader$Loader
 accessible method net/minecraft/resources/RegistryDataLoader createContext (Lnet/minecraft/core/RegistryAccess;Ljava/util/List;)Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;
 
 # Dynamic Render Types
+accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder <init> ()V
 accessible class net/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard
 accessible class net/minecraft/client/renderer/RenderStateShard$TransparencyStateShard
 accessible class net/minecraft/client/renderer/RenderStateShard$DepthTestStateShard
@@ -79,3 +80,4 @@ accessible class net/minecraft/client/renderer/RenderStateShard$LineStateShard
 accessible class net/minecraft/client/renderer/RenderStateShard$ColorLogicStateShard
 accessible class net/minecraft/client/renderer/RenderStateShard$OffsetTexturingStateShard
 accessible class net/minecraft/client/renderer/RenderStateShard$MultiTextureStateShard
+accessible class net/minecraft/client/renderer/RenderType$OutlineProperty

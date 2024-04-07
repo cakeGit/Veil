@@ -3,6 +3,7 @@ package foundry.veil.api.client.render.rendertype.layer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import foundry.veil.api.client.registry.RenderTypeLayerRegistry;
+import foundry.veil.api.client.render.rendertype.VeilRenderTypeBuilder;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.resources.ResourceLocation;
 
@@ -15,8 +16,8 @@ public record TextureLayer(ResourceLocation texture, boolean blur, boolean mipma
     ).apply(instance, TextureLayer::new));
 
     @Override
-    public void addLayer(RenderTypeBuilder builder) {
-        builder.setTextureState(new RenderStateShard.TextureStateShard(this.texture, this.blur, this.blur));
+    public void addLayer(VeilRenderTypeBuilder builder) {
+        builder.textureState(new RenderStateShard.TextureStateShard(this.texture, this.blur, this.blur));
     }
 
     @Override

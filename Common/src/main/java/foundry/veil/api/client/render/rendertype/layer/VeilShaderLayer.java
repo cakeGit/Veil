@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import foundry.veil.api.client.registry.RenderTypeLayerRegistry;
 import foundry.veil.api.client.render.VeilRenderBridge;
 import foundry.veil.api.client.render.VeilRenderSystem;
-import net.minecraft.client.Minecraft;
+import foundry.veil.api.client.render.rendertype.VeilRenderTypeBuilder;
 import net.minecraft.resources.ResourceLocation;
 
 public record VeilShaderLayer(ResourceLocation shaderId) implements RenderTypeLayer {
@@ -18,8 +18,8 @@ public record VeilShaderLayer(ResourceLocation shaderId) implements RenderTypeLa
     ).apply(instance, VeilShaderLayer::new));
 
     @Override
-    public void addLayer(RenderTypeBuilder builder) {
-        builder.setShaderState(VeilRenderBridge.shaderState(this.shaderId));
+    public void addLayer(VeilRenderTypeBuilder builder) {
+        builder.shaderState(VeilRenderBridge.shaderState(this.shaderId));
     }
 
     @Override

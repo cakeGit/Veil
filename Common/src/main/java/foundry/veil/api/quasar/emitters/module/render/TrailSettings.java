@@ -3,7 +3,7 @@ package foundry.veil.api.quasar.emitters.module.render;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import foundry.veil.api.quasar.fx.Trail;
-import foundry.veil.impl.quasar.CodecUtil;
+import foundry.veil.api.util.CodecUtil;
 import imgui.ImGui;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.type.ImBoolean;

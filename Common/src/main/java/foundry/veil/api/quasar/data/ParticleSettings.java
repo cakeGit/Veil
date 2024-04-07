@@ -2,7 +2,7 @@ package foundry.veil.api.quasar.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import foundry.veil.impl.quasar.CodecUtil;
+import foundry.veil.api.util.CodecUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;

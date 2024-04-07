@@ -2,6 +2,8 @@ package foundry.veil.platform.registry;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Collection;
 import java.util.ServiceLoader;
@@ -21,6 +23,7 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of the objects that this class registers
  */
+@ApiStatus.Internal
 public interface RegistrationProvider<T> {
 
     /**
@@ -61,7 +64,20 @@ public interface RegistrationProvider<T> {
      * @return a wrapper containing the lazy registered object. <strong>Calling {@link RegistryObject#get() get} too early
      * on the wrapper might result in crashes!</strong>
      */
-    <I extends T> RegistryObject<I> register(String name, Supplier<? extends I> supplier);
+    default <I extends T> RegistryObject<I> register(String name, Supplier<? extends I> supplier) {
+        return this.register(new ResourceLocation(this.getModId(), name), supplier);
+    }
+
+    /**
+     * Registers an object.
+     *
+     * @param id       the id of the object
+     * @param supplier a supplier of the object to register
+     * @param <I>      the type of the object
+     * @return a wrapper containing the lazy registered object. <strong>Calling {@link RegistryObject#get() get} too early
+     * on the wrapper might result in crashes!</strong>
+     */
+    <I extends T> RegistryObject<I> register(ResourceLocation id, Supplier<? extends I> supplier);
 
     /**
      * @return An <strong>immutable</strong> view of all the objects currently registered

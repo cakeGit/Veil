@@ -252,7 +252,7 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
                 try {
                     data.put(id, this.loadPipeline(Iterables.getOnlyElement(entry.getValue())));
                 } catch (Exception e) {
-                    this.logger.error("Couldn't parse data file {} from {}", id, location, e);
+                    Veil.LOGGER.error("Couldn't parse data file {} from {}", id, location, e);
                 }
                 continue;
             }
@@ -262,7 +262,7 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
                 try {
                     pipelines.add(this.loadPipeline(resource));
                 } catch (Exception e) {
-                    this.logger.error("Couldn't parse data file {} from {}", id, location, e);
+                    Veil.LOGGER.error("Couldn't parse data file {} from {}", id, location, e);
                 }
             }
 

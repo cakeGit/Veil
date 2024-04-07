@@ -3,10 +3,10 @@ package foundry.veil.api;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import foundry.veil.Veil;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -15,7 +15,6 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 
 import java.io.Reader;
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import java.util.Map;
  */
 public abstract class CodecReloadListener<T> extends SimplePreparableReloadListener<Map<ResourceLocation, T>> {
 
-    protected final Logger logger;
     protected final Codec<T> codec;
     protected final FileToIdConverter converter;
 
@@ -41,7 +39,6 @@ public abstract class CodecReloadListener<T> extends SimplePreparableReloadListe
      * @param converter The converter to use for listing files
      */
     public CodecReloadListener(Codec<T> codec, FileToIdConverter converter) {
-        this.logger = LogUtils.getLogger();
         this.codec = codec;
         this.converter = converter;
     }
@@ -66,7 +63,7 @@ public abstract class CodecReloadListener<T> extends SimplePreparableReloadListe
                     throw new IllegalStateException("Duplicate data file ignored with ID " + id);
                 }
             } catch (Exception e) {
-                this.logger.error("Couldn't parse data file {} from {}", id, location, e);
+                Veil.LOGGER.error("Couldn't parse data file {} from {}", id, location, e);
             }
         }
 

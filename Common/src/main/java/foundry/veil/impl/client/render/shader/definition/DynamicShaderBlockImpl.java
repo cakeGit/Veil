@@ -71,6 +71,7 @@ public class DynamicShaderBlockImpl<T> extends ShaderBlockImpl<T> implements Dyn
                 if (this.value != null) {
                     ByteBuffer buffer = stack.malloc((int) this.size);
                     this.serializer.accept(this.value, buffer);
+                    buffer.rewind();
                     glBufferSubData(this.binding, 0, buffer);
                 } else {
                     glBufferSubData(this.binding, 0, stack.calloc((int) this.size));

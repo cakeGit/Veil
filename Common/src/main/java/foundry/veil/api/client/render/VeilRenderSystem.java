@@ -9,7 +9,7 @@ import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.definition.ShaderBlock;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.api.opencl.VeilOpenCL;
-import foundry.veil.impl.client.VeilImGuiImpl;
+import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import foundry.veil.impl.client.render.pipeline.VeilUniformBlockState;
 import foundry.veil.impl.client.render.shader.ShaderProgramImpl;
 import net.minecraft.client.Minecraft;
@@ -57,6 +57,7 @@ public final class VeilRenderSystem {
     private static final BooleanSupplier COMPUTE_SUPPORTED = glCapability(caps -> caps.OpenGL43 || caps.GL_ARB_compute_shader);
     private static final BooleanSupplier ATOMIC_COUNTER_SUPPORTED = glCapability(caps -> caps.OpenGL42 || caps.GL_ARB_shader_atomic_counters);
     private static final IntSupplier MAX_COLOR_ATTACHMENTS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COLOR_ATTACHMENTS));
+    private static final IntSupplier MAX_SAMPLES = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_SAMPLES));
     private static final IntSupplier MAX_TRANSFORM_FEEDBACK_BUFFERS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_TRANSFORM_FEEDBACK_BUFFERS));
     private static final IntSupplier MAX_UNIFORM_BUFFER_BINDINGS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_UNIFORM_BUFFER_BINDINGS));
     private static final IntSupplier MAX_ATOMIC_COUNTER_BUFFER_BINDINGS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS));
@@ -222,6 +223,13 @@ public final class VeilRenderSystem {
      */
     public static int maxColorAttachments() {
         return VeilRenderSystem.MAX_COLOR_ATTACHMENTS.getAsInt();
+    }
+
+    /**
+     * @return The GL maximum amount of samples a render buffer can have
+     */
+    public static int maxSamples() {
+        return VeilRenderSystem.MAX_SAMPLES.getAsInt();
     }
 
     /**

@@ -1,10 +1,12 @@
-package foundry.veil.impl.quasar;
+package foundry.veil.api.util;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.*;
 import org.joml.*;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class CodecUtil {
 

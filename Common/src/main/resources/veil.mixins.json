@@ -13,10 +13,6 @@
     "tooltip.BlockEntityMixin"
   ],
   "client": [
-    "client.anim.AgeableListModelMixin",
-    "client.anim.HumanoidModelMixin",
-    "client.anim.ItemInHandRendererMixin",
-    "client.anim.ModelPartMixin",
     "client.deferred.AmbientOcclusionFaceMixin",
     "client.deferred.DebugScreenOverlayMixin",
     "client.deferred.LevelRendererMixin",
@@ -29,6 +25,7 @@
     "client.imgui.KeyboardHandlerMixin",
     "client.imgui.MouseHandlerMixin",
     "client.pipeline.BufferBuilderAccessor",
+    "client.pipeline.CompositeStateBuilderMixin",
     "client.pipeline.FrustumMixin",
     "client.pipeline.GameRendererMixin",
     "client.pipeline.LevelRendererMixin",

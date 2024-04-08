@@ -3,13 +3,15 @@ package foundry.veil.impl.client.render.pipeline;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.shader.definition.ShaderBlock;
 import foundry.veil.impl.client.render.shader.definition.ShaderBlockImpl;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Objects;
 
 import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
@@ -23,14 +25,14 @@ import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
 @ApiStatus.Internal
 public class VeilUniformBlockState {
 
-    private final Map<ShaderBlockImpl<?>, Integer> boundBlocks;
-    private final Map<Integer, CharSequence> shaderBindings;
+    private final Object2IntMap<ShaderBlockImpl<?>> boundBlocks;
+    private final Int2ObjectMap<CharSequence> shaderBindings;
     private final IntSet usedBindings;
     private int nextBinding;
 
     public VeilUniformBlockState() {
-        this.boundBlocks = new HashMap<>();
-        this.shaderBindings = new HashMap<>();
+        this.boundBlocks = new Object2IntArrayMap<>();
+        this.shaderBindings = new Int2ObjectArrayMap<>();
         this.usedBindings = new IntOpenHashSet();
     }
 
@@ -38,10 +40,10 @@ public class VeilUniformBlockState {
      * Looks for a stale binding that can be replaced with a new one.
      */
     private void freeBinding() {
-        Iterator<Map.Entry<ShaderBlockImpl<?>, Integer>> iterator = this.boundBlocks.entrySet().iterator();
+        ObjectIterator<Object2IntMap.Entry<ShaderBlockImpl<?>>> iterator = this.boundBlocks.object2IntEntrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<ShaderBlockImpl<?>, Integer> entry = iterator.next();
-            int binding = entry.getValue();
+            Object2IntMap.Entry<ShaderBlockImpl<?>> entry = iterator.next();
+            int binding = entry.getIntValue();
             if (this.usedBindings.contains(binding)) {
                 continue;
             }
@@ -121,8 +123,8 @@ public class VeilUniformBlockState {
             throw new UnsupportedOperationException("Cannot unbind " + block.getClass());
         }
 
-        Integer binding = this.boundBlocks.remove(block);
-        if (binding != null) {
+        if (this.boundBlocks.containsKey(block)) {
+            int binding = this.boundBlocks.removeInt(block);
             this.unbind(binding, impl);
         }
     }

@@ -65,27 +65,6 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
         this.manualFramebuffers = new HashSet<>();
     }
 
-    private void init() {
-        this.free();
-
-        Window window = Minecraft.getInstance().getWindow();
-        MolangRuntime runtime = MolangRuntime.runtime()
-                .setQuery("screen_width", window.getWidth())
-                .setQuery("screen_height", window.getHeight())
-                .create();
-
-        RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        this.framebufferDefinitions.forEach((name, definition) -> {
-            this.initFramebuffer(name, definition, runtime);
-            if (!definition.width().isConstant() || !definition.height().isConstant()) {
-                this.screenFramebuffers.add(name);
-            }
-        });
-        AdvancedFbo.unbind();
-
-        this.setFramebuffer(MAIN, AdvancedFbo.getMainFramebuffer());
-    }
-
     private void initFramebuffer(ResourceLocation name, FramebufferDefinition definition, MolangEnvironment runtime) {
         try {
             AdvancedFbo fbo = definition.createBuilder(runtime).build(true);
@@ -188,8 +167,25 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
     protected void apply(@NotNull Map<ResourceLocation, FramebufferDefinition> data, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profilerFiller) {
         this.framebufferDefinitions.clear();
         this.framebufferDefinitions.putAll(data);
-        this.init();
         Veil.LOGGER.info("Loaded {} framebuffers", this.framebufferDefinitions.size());
+
+        this.free();
+        Window window = Minecraft.getInstance().getWindow();
+        MolangRuntime runtime = MolangRuntime.runtime()
+                .setQuery("screen_width", window.getWidth())
+                .setQuery("screen_height", window.getHeight())
+                .create();
+
+        RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
+        this.framebufferDefinitions.forEach((name, definition) -> {
+            this.initFramebuffer(name, definition, runtime);
+            if (!definition.width().isConstant() || !definition.height().isConstant()) {
+                this.screenFramebuffers.add(name);
+            }
+        });
+        AdvancedFbo.unbind();
+
+        this.setFramebuffer(MAIN, AdvancedFbo.getMainFramebuffer());
     }
 
     @Override

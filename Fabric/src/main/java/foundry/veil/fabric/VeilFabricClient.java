@@ -4,7 +4,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import foundry.veil.Veil;
 import foundry.veil.VeilClient;
 import foundry.veil.api.client.render.VeilRenderSystem;
-import foundry.veil.api.client.render.VeilVanillaShaders;
+import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import foundry.veil.api.quasar.data.QuasarParticles;
 import foundry.veil.api.quasar.particle.ParticleEmitter;
 import foundry.veil.api.quasar.particle.ParticleSystemManager;

@@ -531,6 +531,8 @@ public interface AdvancedFbo extends NativeResource {
         /**
          * Sets the format to use for texture attachments.
          *
+         <<<<<<< HEAD
+         =======
          * @param format The new format to use
          */
         public Builder setFormat(FramebufferAttachmentDefinition.Format format) {
@@ -540,6 +542,7 @@ public interface AdvancedFbo extends NativeResource {
         /**
          * Sets the format to use for texture attachments. {@link GL11#GL_RGBA} is the default.
          *
+         >>>>>>> 1.20
          * @param format         The new format to use
          * @param internalFormat The new internal format to use
          */
@@ -675,7 +678,7 @@ public interface AdvancedFbo extends NativeResource {
          * @param attachment The attachment to add
          */
         public Builder setDepthBuffer(@Nullable AdvancedFboAttachment attachment) {
-            Validate.isTrue(attachment != null && this.depthAttachment == null, "Only one depth attachment can be applied to an FBO.");
+            Validate.isTrue(attachment == null || this.depthAttachment == null, "Only one depth attachment can be applied to an FBO.");
             this.depthAttachment = attachment;
             this.name = null;
             return this;

@@ -7,6 +7,7 @@ import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
 import foundry.veil.api.client.render.framebuffer.FramebufferDefinition;
 import foundry.veil.api.client.render.post.PostPipeline;
 import foundry.veil.api.client.render.shader.texture.ShaderTextureSource;
+import gg.moonflower.molangcompiler.api.MolangRuntime;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.*;
 
@@ -73,7 +74,12 @@ public class CompositePostPipeline implements PostPipeline {
             this.screenHeight = main.getHeight();
             this.framebuffers.values().forEach(AdvancedFbo::free);
             this.framebuffers.clear();
-            this.framebufferDefinitions.forEach((name, definition) -> this.framebuffers.put(name, definition.createBuilder(this.screenWidth, this.screenHeight).build(true)));
+
+            MolangRuntime runtime = MolangRuntime.runtime()
+                    .setQuery("screen_width", this.screenWidth)
+                    .setQuery("screen_height", this.screenHeight)
+                    .create();
+            this.framebufferDefinitions.forEach((name, definition) -> this.framebuffers.put(name, definition.createBuilder(runtime).build(true)));
         }
 
         this.framebuffers.forEach(context::setFramebuffer);

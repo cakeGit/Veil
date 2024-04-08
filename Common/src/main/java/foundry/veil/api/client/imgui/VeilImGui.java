@@ -17,6 +17,8 @@ public interface VeilImGui extends NativeResource {
 
     void onGrabMouse();
 
+    void toggle();
+
     boolean mouseButtonCallback(long window, int button, int action, int mods);
 
     boolean scrollCallback(long window, double xOffset, double yOffset);

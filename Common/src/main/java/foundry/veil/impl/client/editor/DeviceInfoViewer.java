@@ -1,6 +1,7 @@
 package foundry.veil.impl.client.editor;
 
 import foundry.veil.api.client.editor.SingleWindowEditor;
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.opencl.VeilOpenCL;
 import imgui.ImGui;
 import imgui.flag.ImGuiTreeNodeFlags;
@@ -56,17 +57,6 @@ public class DeviceInfoViewer extends SingleWindowEditor {
         text("Max Framebuffer Color Attachments:", "" + glGetInteger(GL_MAX_COLOR_ATTACHMENTS), null);
     }
 
-    private static void tooltip(String text) {
-        ImGui.textDisabled("(?)");
-        if (ImGui.isItemHovered()) {
-            ImGui.beginTooltip();
-            ImGui.pushTextWrapPos(ImGui.getFontSize() * 35.0f);
-            ImGui.textUnformatted(text);
-            ImGui.popTextWrapPos();
-            ImGui.endTooltip();
-        }
-    }
-
     private static void text(String text, @Nullable String value, @Nullable String tooltip) {
         if (value != null) {
             ImGui.text(text + " " + value);
@@ -75,7 +65,7 @@ public class DeviceInfoViewer extends SingleWindowEditor {
         }
         if (tooltip != null) {
             ImGui.sameLine();
-            tooltip(tooltip);
+            VeilImGuiUtil.tooltip(tooltip);
         }
     }
 

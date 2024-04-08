@@ -19,9 +19,9 @@ import java.util.function.Supplier;
  */
 public class PostPipelineStageRegistry {
 
-    public static final ResourceKey<Registry<PostPipelineStageRegistry.PipelineType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(Veil.veilPath("post_pipeline_stage"));
-    private static final RegistrationProvider<PostPipelineStageRegistry.PipelineType<?>> PROVIDER = RegistrationProvider.get(REGISTRY_KEY, Veil.MODID);
-    public static final Registry<PostPipelineStageRegistry.PipelineType<?>> REGISTRY = PROVIDER.asVanillaRegistry();
+    public static final ResourceKey<Registry<PipelineType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(Veil.veilPath("post_pipeline_stage"));
+    private static final RegistrationProvider<PipelineType<?>> PROVIDER = RegistrationProvider.get(REGISTRY_KEY, Veil.MODID);
+    public static final Registry<PipelineType<?>> REGISTRY = PROVIDER.asVanillaRegistry();
 
     public static final Supplier<PipelineType<BlitPostStage>> BLIT = register("blit", BlitPostStage.CODEC);
     public static final Supplier<PipelineType<CopyPostStage>> COPY = register("copy", CopyPostStage.CODEC);

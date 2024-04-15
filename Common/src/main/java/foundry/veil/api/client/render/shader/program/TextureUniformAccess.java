@@ -1,6 +1,5 @@
 package foundry.veil.api.client.render.shader.program;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
 import foundry.veil.api.client.render.framebuffer.AdvancedFboTextureAttachment;
@@ -30,7 +29,6 @@ public interface TextureUniformAccess {
      * @param framebuffer The framebuffer to bind samplers from
      */
     default void setFramebufferSamplers(AdvancedFbo framebuffer) {
-        int activeTexture = GlStateManager._getActiveTexture();
         for (int i = 0; i < framebuffer.getColorAttachments(); i++) {
             if (!framebuffer.isColorTextureAttachment(i)) {
                 continue;
@@ -45,13 +43,11 @@ public interface TextureUniformAccess {
 
         if (framebuffer.isDepthTextureAttachment()) {
             AdvancedFboTextureAttachment attachment = framebuffer.getDepthTextureAttachment();
-            this.addSampler("DiffuseDepthSampler", framebuffer.getDepthTextureAttachment().getId());
+            this.addSampler("DiffuseDepthSampler", attachment.getId());
             if (attachment.getName() != null) {
                 this.addSampler(attachment.getName(), attachment.getId());
             }
         }
-
-        RenderSystem.activeTexture(activeTexture);
     }
 
     /**

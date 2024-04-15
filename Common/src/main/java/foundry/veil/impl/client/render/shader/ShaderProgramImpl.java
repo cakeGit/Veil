@@ -214,14 +214,14 @@ public class ShaderProgramImpl implements ShaderProgram {
         RenderSystem.bindTexture(MissingTextureAtlasSprite.getTexture().getId());
         sampler++;
 
-        for (Map.Entry<CharSequence, Integer> entry : this.textures.entrySet()) {
+        for (Object2IntMap.Entry<CharSequence> entry : this.textures.object2IntEntrySet()) {
             CharSequence name = entry.getKey();
             if (this.getUniform(name) == -1) {
                 continue;
             }
 
             // If the texture is "missing", then refer back to the bound missing texture
-            Integer textureId = entry.getValue();
+            int textureId = entry.getIntValue();
             if (textureId == 0) {
                 this.setInt(name, 0);
                 continue;

@@ -2,6 +2,7 @@ package foundry.veil.impl.client.editor;
 
 import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
+import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.opencl.VeilOpenCL;
 import imgui.ImGui;
 import imgui.flag.ImGuiTreeNodeFlags;
@@ -33,21 +34,24 @@ public class DeviceInfoViewer extends SingleWindowEditor {
         ImGui.text("Version: " + glGetString(GL_VERSION));
         ImGui.separator();
 
+        ImGui.text("Transform Feedback");
+        ImGui.separator();
+
         GLCapabilities caps = GL.getCapabilities();
-        text("Max Uniform Buffer Bindings:", "" + glGetInteger(GL_MAX_UNIFORM_BUFFER_BINDINGS), "The limit on the number of uniform buffer binding points. This is the limit for glBindBufferRange when using GL_UNIFORM_BUFFER.");
+        text("Max Uniform Buffer Bindings:", "" + VeilRenderSystem.maxUniformBuffersBindings(), "The limit on the number of uniform buffer binding points. This is the limit for glBindBufferRange when using GL_UNIFORM_BUFFER.");
         text("Max Combined Uniform Blocks:", "" + glGetInteger(GL_MAX_COMBINED_UNIFORM_BLOCKS), "The maximum number of uniform blocks that all of the active programs can use. If two (or more) shader stages use the same block, they count separately towards this limit.");
-        text("Max Combined Texture Image Units:", "" + glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), "The total number of texture units that can be used from all active programs. This is the limit on glActiveTexture(GL_TEXTURE0 + i) and glBindSampler.");
+        text("Max Combined Texture Image Units:", "" + VeilRenderSystem.maxCombinedTextureUnits(), "The total number of texture units that can be used from all active programs. This is the limit on glActiveTexture(GL_TEXTURE0 + i) and glBindSampler.");
         text("Max Transform Feedback Separate Attributes:", "" + glGetInteger(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS), "When doing separate mode Transform Feedback, this is the maximum number of varying variables that can be captured.");
         text("Max Transform Feedback Separate Components:", "" + glGetInteger(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS), "When doing separate mode Transform Feedback, this is the maximum number of components for a single varying variable (note that varyings can be arrays or structs) that can be captured.");
         text("Max Transform Feedback Interleaved Components:", "" + glGetInteger(GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS), "When doing interleaved Transform Feedback, this is the total number of components that can be captured within a single buffer.");
 
-        text("Max Transform Feedback Buffers:", caps.OpenGL40 || caps.GL_ARB_transform_feedback3 ? "" + glGetInteger(GL_MAX_TRANSFORM_FEEDBACK_BUFFERS) : null, "The maximum number of buffers that can be written to in transform feedback operations.");
+        text("Max Transform Feedback Buffers:", VeilRenderSystem.transformFeedbackSupported() ? "" + VeilRenderSystem.maxTransformFeedbackBindings() : null, "The maximum number of buffers that can be written to in transform feedback operations.");
 
         boolean atomicCounters = caps.OpenGL42 || caps.GL_ARB_shader_atomic_counters;
-        text("Max Atomic Counter Buffer Bindings:", atomicCounters ? "" + glGetInteger(GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS) : null, "The total number of atomic counter buffer binding points. This is the limit for glBindBufferRange when using GL_ATOMIC_COUNTER_BUFFER.");
+        text("Max Atomic Counter Buffer Bindings:", atomicCounters ? "" + VeilRenderSystem.maxAtomicCounterBufferBindings() : null, "The total number of atomic counter buffer binding points. This is the limit for glBindBufferRange when using GL_ATOMIC_COUNTER_BUFFER.");
         text("Max Combined Atomic Counter Buffers:", atomicCounters ? "" + glGetInteger(GL_MAX_COMBINED_ATOMIC_COUNTER_BUFFERS) : null, "The maximum number of atomic counter buffers variables across all active programs.");
         text("Max Combined Atomic Counters:", atomicCounters ? "" + glGetInteger(GL_MAX_COMBINED_ATOMIC_COUNTERS) : null, "The maximum number of atomic counter variables across all active programs.");
-        text("Max Shader Storage Buffer Bindings:", atomicCounters ? "" + glGetInteger(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS) : null, "The total number of shader storage buffer binding points. This is the limit for glBindBufferRange when using GL_SHADER_STORAGE_BUFFER.");
+        text("Max Shader Storage Buffer Bindings:", atomicCounters ? "" + VeilRenderSystem.maxShaderStorageBufferBindings() : null, "The total number of shader storage buffer binding points. This is the limit for glBindBufferRange when using GL_SHADER_STORAGE_BUFFER.");
 
         boolean shaderStorageBuffers = caps.OpenGL43 || caps.GL_ARB_shader_storage_buffer_object;
         text("Max Combined Shader Storage Blocks:", shaderStorageBuffers ? "" + glGetInteger(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS) : null, "The maximum number of shader storage blocks across all active programs. As with UBOs, blocks that are the same between stages are counted for each stage.");

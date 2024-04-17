@@ -56,9 +56,11 @@ public final class VeilRenderSystem {
 
     private static final BooleanSupplier COMPUTE_SUPPORTED = glCapability(caps -> caps.OpenGL43 || caps.GL_ARB_compute_shader);
     private static final BooleanSupplier ATOMIC_COUNTER_SUPPORTED = glCapability(caps -> caps.OpenGL42 || caps.GL_ARB_shader_atomic_counters);
+    private static final BooleanSupplier TRANSFORM_FEEDBACK_SUPPORTED = glCapability(caps -> caps.OpenGL40 || caps.GL_ARB_transform_feedback3);
+    private static final IntSupplier MAX_COMBINED_TEXTURE_IMAGE_UNITS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
     private static final IntSupplier MAX_COLOR_ATTACHMENTS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COLOR_ATTACHMENTS));
     private static final IntSupplier MAX_SAMPLES = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_SAMPLES));
-    private static final IntSupplier MAX_TRANSFORM_FEEDBACK_BUFFERS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_TRANSFORM_FEEDBACK_BUFFERS));
+    private static final IntSupplier MAX_TRANSFORM_FEEDBACK_BUFFERS = VeilRenderSystem.glGetter(() -> TRANSFORM_FEEDBACK_SUPPORTED.getAsBoolean() ? glGetInteger(GL_MAX_TRANSFORM_FEEDBACK_BUFFERS) : 0);
     private static final IntSupplier MAX_UNIFORM_BUFFER_BINDINGS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_UNIFORM_BUFFER_BINDINGS));
     private static final IntSupplier MAX_ATOMIC_COUNTER_BUFFER_BINDINGS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS));
     private static final IntSupplier MAX_SHADER_STORAGE_BUFFER_BINDINGS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS));
@@ -200,7 +202,7 @@ public final class VeilRenderSystem {
      */
     public static void throwShaderError() {
         if (VeilRenderSystem.shaderLocation != null && ERRORED_SHADERS.add(VeilRenderSystem.shaderLocation)) {
-            Veil.LOGGER.error("Failed to apply shader: " + VeilRenderSystem.shaderLocation);
+            Veil.LOGGER.error("Failed to apply shader: {}", VeilRenderSystem.shaderLocation);
         }
     }
 
@@ -216,6 +218,20 @@ public final class VeilRenderSystem {
      */
     public static boolean atomicCounterSupported() {
         return VeilRenderSystem.ATOMIC_COUNTER_SUPPORTED.getAsBoolean();
+    }
+
+    /**
+     * @return Whether transform feedback from shaders is supported
+     */
+    public static boolean transformFeedbackSupported() {
+        return VeilRenderSystem.TRANSFORM_FEEDBACK_SUPPORTED.getAsBoolean();
+    }
+
+    /**
+     * @return The GL maximum number of texture units that can be bound
+     */
+    public static int maxCombinedTextureUnits() {
+        return VeilRenderSystem.MAX_COMBINED_TEXTURE_IMAGE_UNITS.getAsInt();
     }
 
     /**
@@ -248,28 +264,28 @@ public final class VeilRenderSystem {
     }
 
     /**
-     * @return The GL maximum amount of transform feedback buffers bindings available
+     * @return The GL maximum number of transform feedback buffers bindings available
      */
     public static int maxTransformFeedbackBindings() {
         return VeilRenderSystem.MAX_TRANSFORM_FEEDBACK_BUFFERS.getAsInt();
     }
 
     /**
-     * @return The GL maximum amount of uniform buffers bindings available
+     * @return The GL maximum number of uniform buffers bindings available
      */
     public static int maxUniformBuffersBindings() {
         return VeilRenderSystem.MAX_UNIFORM_BUFFER_BINDINGS.getAsInt();
     }
 
     /**
-     * @return The GL maximum amount of atomic counter buffers bindings available
+     * @return The GL maximum number of atomic counter buffers bindings available
      */
     public static int maxAtomicCounterBufferBindings() {
         return VeilRenderSystem.MAX_ATOMIC_COUNTER_BUFFER_BINDINGS.getAsInt();
     }
 
     /**
-     * @return The GL maximum amount of shader storage buffers bindings available
+     * @return The GL maximum number of shader storage buffers bindings available
      */
     public static int maxShaderStorageBufferBindings() {
         return VeilRenderSystem.MAX_SHADER_STORAGE_BUFFER_BINDINGS.getAsInt();

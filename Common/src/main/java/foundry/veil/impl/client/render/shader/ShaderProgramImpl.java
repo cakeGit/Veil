@@ -5,6 +5,8 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
+import foundry.veil.Veil;
+import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.shader.CompiledShader;
 import foundry.veil.api.client.render.shader.ShaderCompiler;
 import foundry.veil.api.client.render.shader.ShaderException;
@@ -214,6 +216,7 @@ public class ShaderProgramImpl implements ShaderProgram {
         RenderSystem.bindTexture(MissingTextureAtlasSprite.getTexture().getId());
         sampler++;
 
+        int maxSampler = VeilRenderSystem.maxCombinedTextureUnits();
         for (Object2IntMap.Entry<CharSequence> entry : this.textures.object2IntEntrySet()) {
             CharSequence name = entry.getKey();
             if (this.getUniform(name) == -1) {
@@ -227,8 +230,18 @@ public class ShaderProgramImpl implements ShaderProgram {
                 continue;
             }
 
+
+            if (sampler >= maxSampler) {
+                Veil.LOGGER.error("Too many samplers were bound for shader (max {}): {}", maxSampler, this.id);
+                continue;
+            }
+
             RenderSystem.activeTexture(GL_TEXTURE0 + sampler);
-            RenderSystem.bindTexture(textureId);
+            if (sampler > 12) { // Minecraft cache only goes up to 12
+                glBindTexture(GL_TEXTURE_2D, textureId);
+            } else {
+                RenderSystem.bindTexture(textureId);
+            }
             this.setInt(name, sampler);
             sampler++;
         }

@@ -203,6 +203,10 @@ public class ShaderProgramImpl implements ShaderProgram {
         return this.program;
     }
 
+    public void updateBuiltinSamplers(ShaderTextureSource.Context context) {
+
+    }
+
     @Override
     public int applyShaderSamplers(@Nullable ShaderTextureSource.Context context, int sampler) {
         if (context != null) {
@@ -223,6 +227,13 @@ public class ShaderProgramImpl implements ShaderProgram {
                 continue;
             }
 
+            // If there are too many samplers, then
+            if (sampler >= maxSampler) {
+                this.setInt(name, 0);
+                Veil.LOGGER.error("Too many samplers were bound for shader (max {}): {}", maxSampler, this.id);
+                continue;
+            }
+
             // If the texture is "missing", then refer back to the bound missing texture
             int textureId = entry.getIntValue();
             if (textureId == 0) {
@@ -230,14 +241,8 @@ public class ShaderProgramImpl implements ShaderProgram {
                 continue;
             }
 
-
-            if (sampler >= maxSampler) {
-                Veil.LOGGER.error("Too many samplers were bound for shader (max {}): {}", maxSampler, this.id);
-                continue;
-            }
-
             RenderSystem.activeTexture(GL_TEXTURE0 + sampler);
-            if (sampler > 12) { // Minecraft cache only goes up to 12
+            if (sampler >= 12) { // Minecraft cache only goes up to 12
                 glBindTexture(GL_TEXTURE_2D, textureId);
             } else {
                 RenderSystem.bindTexture(textureId);

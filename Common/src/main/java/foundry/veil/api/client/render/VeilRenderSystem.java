@@ -23,8 +23,10 @@ import org.joml.Vector2ic;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL44C;
 import org.lwjgl.opengl.GLCapabilities;
 
+import java.nio.IntBuffer;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -38,6 +40,7 @@ import static org.lwjgl.opengl.GL11C.glGetInteger;
 import static org.lwjgl.opengl.GL30C.GL_MAX_COLOR_ATTACHMENTS;
 import static org.lwjgl.opengl.GL31C.GL_MAX_UNIFORM_BUFFER_BINDINGS;
 import static org.lwjgl.opengl.GL43C.*;
+import static org.lwjgl.opengl.GL44C.glBindTextures;
 
 /**
  * Additional functionality for {@link RenderSystem}.
@@ -57,6 +60,7 @@ public final class VeilRenderSystem {
     private static final BooleanSupplier COMPUTE_SUPPORTED = glCapability(caps -> caps.OpenGL43 || caps.GL_ARB_compute_shader);
     private static final BooleanSupplier ATOMIC_COUNTER_SUPPORTED = glCapability(caps -> caps.OpenGL42 || caps.GL_ARB_shader_atomic_counters);
     private static final BooleanSupplier TRANSFORM_FEEDBACK_SUPPORTED = glCapability(caps -> caps.OpenGL40 || caps.GL_ARB_transform_feedback3);
+    private static final BooleanSupplier TEXTURE_MULTIBIND_SUPPORTED = glCapability(caps -> caps.OpenGL44 || caps.glBindTextures != 0L);
     private static final IntSupplier MAX_COMBINED_TEXTURE_IMAGE_UNITS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
     private static final IntSupplier MAX_COLOR_ATTACHMENTS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COLOR_ATTACHMENTS));
     private static final IntSupplier MAX_SAMPLES = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_SAMPLES));
@@ -146,6 +150,33 @@ public final class VeilRenderSystem {
         VeilImGuiImpl.init(client.getWindow().getWindow());
     }
 
+    private static void invalidateTextures(int first, int count) {
+        int invalidCount = Math.min(12 - first, count);
+        for (int i = first; i < invalidCount; i++) {
+            GlStateManager.TEXTURES[i].binding = -1;
+        }
+    }
+
+    /**
+     * Binds the specified texture ids to sequential texture units and invalidates the GLStateManager.
+     * @param first The first unit to bind to
+     * @param textures The textures to bind
+     */
+    public static void bindTextures(int first, IntBuffer textures) {
+        invalidateTextures(first, textures.limit());
+        glBindTextures(first, textures);
+    }
+
+    /**
+     * Binds the specified texture ids to sequential texture units and invalidates the GLStateManager.
+     * @param first The first unit to bind to
+     * @param textures The textures to bind
+     */
+    public static void bindTextures(int first, int... textures) {
+        invalidateTextures(first, textures.length);
+        glBindTextures(first, textures);
+    }
+
     /**
      * Sets the shader instance to be a reference to the shader manager.
      *
@@ -225,6 +256,13 @@ public final class VeilRenderSystem {
      */
     public static boolean transformFeedbackSupported() {
         return VeilRenderSystem.TRANSFORM_FEEDBACK_SUPPORTED.getAsBoolean();
+    }
+
+    /**
+     * @return Whether {@link GL44C#glBindTextures} is supported
+     */
+    public static boolean textureMultibindSupported() {
+        return VeilRenderSystem.TEXTURE_MULTIBIND_SUPPORTED.getAsBoolean();
     }
 
     /**

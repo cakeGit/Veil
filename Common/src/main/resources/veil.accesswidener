@@ -28,6 +28,8 @@ accessible method net/minecraft/client/renderer/PostChain load (Lnet/minecraft/c
 
 # Shader Instance Wrapper
 accessible field net/minecraft/client/renderer/ShaderInstance uniformMap Ljava/util/Map;
+accessible class com/mojang/blaze3d/platform/GlStateManager$TextureState
+accessible field com/mojang/blaze3d/platform/GlStateManager TEXTURES [Lcom/mojang/blaze3d/platform/GlStateManager$TextureState;
 
 # Uniform Wrapper
 extendable method com/mojang/blaze3d/shaders/Uniform set (F)V

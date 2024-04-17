@@ -51,7 +51,7 @@ public class BlitPostStage extends FramebufferPostStage {
         if (shader == null) {
             if (!this.printedError) {
                 this.printedError = true;
-                Veil.LOGGER.warn("Failed to find post shader: " + this.shader);
+                Veil.LOGGER.warn("Failed to find post shader: {}", this.shader);
             }
             return;
         }

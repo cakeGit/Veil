@@ -5,6 +5,7 @@ import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.opencl.VeilOpenCL;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiTreeNodeFlags;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -17,13 +18,11 @@ import java.util.stream.Collectors;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL20C.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS;
 import static org.lwjgl.opengl.GL30C.*;
 import static org.lwjgl.opengl.GL31C.GL_MAX_COMBINED_UNIFORM_BLOCKS;
-import static org.lwjgl.opengl.GL31C.GL_MAX_UNIFORM_BUFFER_BINDINGS;
-import static org.lwjgl.opengl.GL40C.GL_MAX_TRANSFORM_FEEDBACK_BUFFERS;
 import static org.lwjgl.opengl.GL42C.*;
-import static org.lwjgl.opengl.GL43C.*;
+import static org.lwjgl.opengl.GL43C.GL_MAX_COMBINED_SHADER_OUTPUT_RESOURCES;
+import static org.lwjgl.opengl.GL43C.GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS;
 
 @ApiStatus.Internal
 public class DeviceInfoViewer extends SingleWindowEditor {
@@ -34,7 +33,11 @@ public class DeviceInfoViewer extends SingleWindowEditor {
         ImGui.text("Version: " + glGetString(GL_VERSION));
         ImGui.separator();
 
-        ImGui.text("Transform Feedback");
+        ImGui.text("Feature Flags:");
+        supportedText("Compute?", VeilRenderSystem.computeSupported(), "Whether compute shaders can be used");
+        supportedText("Atomic Counter?", VeilRenderSystem.atomicCounterSupported(), "Whether atomic counters can be used in shaders");
+        supportedText("Transform Feedback?", VeilRenderSystem.transformFeedbackSupported(), "Whether transform feedback can be used");
+        supportedText("Texture Multi-bind?", VeilRenderSystem.textureMultibindSupported(), "Whether glBindTextures can be used instead of glBindTexture");
         ImGui.separator();
 
         GLCapabilities caps = GL.getCapabilities();
@@ -67,6 +70,18 @@ public class DeviceInfoViewer extends SingleWindowEditor {
         } else {
             ImGui.textDisabled(text + " Unsupported");
         }
+        if (tooltip != null) {
+            ImGui.sameLine();
+            VeilImGuiUtil.tooltip(tooltip);
+        }
+    }
+
+    private static void supportedText(String text, boolean supported, @Nullable String tooltip) {
+        ImGui.text(text);
+        ImGui.sameLine(0);
+        ImGui.pushStyleColor(ImGuiCol.Text, supported ? 0xFF00FF00 : 0xFF0000FF);
+        ImGui.text((supported ? "Yes" : "No"));
+        ImGui.popStyleColor();
         if (tooltip != null) {
             ImGui.sameLine();
             VeilImGuiUtil.tooltip(tooltip);

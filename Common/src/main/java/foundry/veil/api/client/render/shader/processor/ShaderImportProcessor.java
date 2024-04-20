@@ -24,6 +24,7 @@ public class ShaderImportProcessor implements ShaderPreProcessor {
     private final Set<ResourceLocation> addedImports;
     private final Map<ResourceLocation, String> imports;
     private final List<ResourceLocation> importOrder;
+    private int layer;
 
     /**
      * Creates a new import processor that loads import files from the specified resource provider.
@@ -35,6 +36,7 @@ public class ShaderImportProcessor implements ShaderPreProcessor {
         this.addedImports = new HashSet<>();
         this.imports = new HashMap<>();
         this.importOrder = new ArrayList<>();
+        this.layer = 0;
     }
 
     @Override
@@ -74,10 +76,12 @@ public class ShaderImportProcessor implements ShaderPreProcessor {
                     }
 
                     long lineNumber = String.join("\n", output).lines().filter(s -> !s.startsWith("#line")).count() + 2;
-                    int sourceNumber = this.importOrder.indexOf(source);
-                    output.add("#line 0 " + (sourceNumber + 1));
+                    int sourceNumber = this.importOrder.indexOf(source) + 1;
+                    output.add("#line 0 " + sourceNumber);
+                    this.layer++;
                     output.add(context.modify(source, importString));
-                    output.add("#line " + lineNumber + " " + sourceNumber);
+                    this.layer--;
+                    output.add("#line " + lineNumber + " " + (this.layer == 0 ? 0 : sourceNumber));
                 } catch (Exception e) {
                     throw new IOException("Failed to add import: " + line, e);
                 }

@@ -5,6 +5,8 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
+import foundry.veil.Veil;
+import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.shader.CompiledShader;
 import foundry.veil.api.client.render.shader.ShaderCompiler;
 import foundry.veil.api.client.render.shader.ShaderException;
@@ -16,6 +18,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -30,11 +33,14 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
@@ -44,6 +50,7 @@ import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL31C.GL_INVALID_INDEX;
 import static org.lwjgl.opengl.GL31C.glGetUniformBlockIndex;
 import static org.lwjgl.opengl.GL43C.*;
+import static org.lwjgl.opengl.GL44C.glBindTextures;
 
 /**
  * @author Ocelot
@@ -56,9 +63,9 @@ public class ShaderProgramImpl implements ShaderProgram {
     private final Object2IntMap<CharSequence> uniforms;
     private final Object2IntMap<CharSequence> uniformBlocks;
     private final Object2IntMap<CharSequence> storageBlocks;
-    private final Object2IntMap<CharSequence> textures;
     private final Map<String, ShaderTextureSource> textureSources;
     private final Set<String> definitionDependencies;
+    private final TextureCache textures;
     private final Supplier<Wrapper> wrapper;
     private int program;
 
@@ -68,7 +75,7 @@ public class ShaderProgramImpl implements ShaderProgram {
         this.uniforms = new Object2IntArrayMap<>();
         this.uniformBlocks = new Object2IntArrayMap<>();
         this.storageBlocks = new Object2IntArrayMap<>();
-        this.textures = new Object2IntArrayMap<>();
+        this.textures = new TextureCache(this);
         this.textureSources = new HashMap<>();
         this.definitionDependencies = new HashSet<>();
         this.wrapper = Suppliers.memoize(() -> {
@@ -207,33 +214,17 @@ public class ShaderProgramImpl implements ShaderProgram {
             this.textureSources.forEach((name, source) -> this.addSampler(name, source.getId(context)));
         }
 
-        int activeTexture = GlStateManager._getActiveTexture();
+        return this.textures.bind(sampler);
+    }
 
-        // Bind missing texture to 0
-        RenderSystem.activeTexture(GL_TEXTURE0);
-        RenderSystem.bindTexture(MissingTextureAtlasSprite.getTexture().getId());
-        sampler++;
+    @Override
+    public void addSamplerListener(SamplerListener listener) {
+        this.textures.addSamplerListener(listener);
+    }
 
-        for (Map.Entry<CharSequence, Integer> entry : this.textures.entrySet()) {
-            CharSequence name = entry.getKey();
-            if (this.getUniform(name) == -1) {
-                continue;
-            }
-
-            // If the texture is "missing", then refer back to the bound missing texture
-            Integer textureId = entry.getValue();
-            if (textureId == 0) {
-                this.setInt(name, 0);
-                continue;
-            }
-
-            RenderSystem.activeTexture(GL_TEXTURE0 + sampler);
-            RenderSystem.bindTexture(textureId);
-            this.setInt(name, sampler);
-            sampler++;
-        }
-        RenderSystem.activeTexture(activeTexture);
-        return sampler;
+    @Override
+    public void removeSamplerListener(SamplerListener listener) {
+        this.textures.removeSamplerListener(listener);
     }
 
     @Override
@@ -243,12 +234,140 @@ public class ShaderProgramImpl implements ShaderProgram {
 
     @Override
     public void removeSampler(CharSequence name) {
-        this.textures.removeInt(name);
+        this.textures.remove(name);
     }
 
     @Override
     public void clearSamplers() {
         this.textures.clear();
+    }
+
+    private static class TextureCache {
+
+        private final ShaderProgram program;
+        private final Object2IntMap<CharSequence> textures;
+        private final Object2IntMap<CharSequence> boundSamplers;
+        private final Set<SamplerListener> listeners;
+        private boolean dirty;
+        private IntBuffer bindings;
+
+        private TextureCache(ShaderProgram program) {
+            this.program = program;
+            this.textures = new Object2IntArrayMap<>();
+            this.textures.defaultReturnValue(-1);
+            this.boundSamplers = new Object2IntArrayMap<>();
+            this.listeners = new ObjectArraySet<>();
+            this.bindings = null;
+        }
+
+        private int uploadTextures(int start, BiConsumer<Integer, Integer> textureConsumer) {
+            this.boundSamplers.clear();
+            if (this.textures.isEmpty()) {
+                return start;
+            }
+
+            int maxSampler = VeilRenderSystem.maxCombinedTextureUnits();
+            int count = 1;
+            textureConsumer.accept(start, MissingTextureAtlasSprite.getTexture().getId());
+
+            for (Object2IntMap.Entry<CharSequence> entry : this.textures.object2IntEntrySet()) {
+                CharSequence name = entry.getKey();
+                if (this.program.getUniform(name) == -1) {
+                    continue;
+                }
+
+                // If there are too many samplers, then refer back to the missing texture
+                int sampler = start + count;
+                if (sampler >= maxSampler) {
+                    this.program.setInt(name, 0);
+                    Veil.LOGGER.error("Too many samplers were bound for shader (max {}): {}", maxSampler, this.program.getId());
+                    continue;
+                }
+
+                // If the texture is "missing", then refer back to the bound missing texture
+                int textureId = entry.getIntValue();
+                if (textureId == 0) {
+                    this.program.setInt(name, 0);
+                    continue;
+                }
+
+                textureConsumer.accept(sampler, textureId);
+                this.program.setInt(name, sampler);
+                this.boundSamplers.put(name, sampler);
+                count++;
+            }
+            for (SamplerListener listener : this.listeners) {
+                listener.onUpdateSamplers(this.boundSamplers);
+            }
+            return count;
+        }
+
+        public int bind(int start) {
+            if (VeilRenderSystem.textureMultibindSupported()) {
+                if (this.dirty) {
+                    this.dirty = false;
+
+                    // Not enough space, so realloc
+                    if (this.bindings == null || this.bindings.capacity() < 1 + this.textures.size()) {
+                        this.bindings = MemoryUtil.memRealloc(this.bindings, 1 + this.textures.size());
+                    }
+
+                    this.bindings.clear();
+                    int count = this.uploadTextures(start, (sampler, id) -> this.bindings.put(id));
+                    if (count == 0) {
+                        this.bindings.position(0);
+                        return start;
+                    }
+
+                    this.bindings.flip();
+                    Veil.LOGGER.info("Resizing multi-bind buffer to {} for shader: {}", this.bindings.limit(), this.program.getId());
+                }
+                if (this.bindings != null && this.bindings.limit() > 0) {
+                    VeilRenderSystem.bindTextures(start, this.bindings);
+                    return start + this.bindings.limit();
+                }
+                return start;
+            }
+
+            // Ignored for normal binding
+            this.dirty = false;
+
+            int activeTexture = GlStateManager._getActiveTexture();
+            this.uploadTextures(start, (sampler, id) -> {
+                RenderSystem.activeTexture(GL_TEXTURE0 + sampler);
+                RenderSystem.bindTexture(id);
+            });
+            RenderSystem.activeTexture(activeTexture);
+            return start;
+        }
+
+        public void addSamplerListener(SamplerListener listener) {
+            this.listeners.add(listener);
+        }
+
+        public void removeSamplerListener(SamplerListener listener) {
+            this.listeners.remove(listener);
+        }
+
+        public void put(CharSequence name, int textureId) {
+            this.dirty |= this.textures.put(name, textureId) != textureId;
+        }
+
+        public void remove(CharSequence name) {
+            if (this.textures.removeInt(name) != 0) {
+                this.dirty = true;
+            }
+        }
+
+        public void clear() {
+            this.textures.clear();
+            this.boundSamplers.clear();
+            if (this.bindings != null) {
+                MemoryUtil.memFree(this.bindings);
+                this.bindings = null;
+            }
+            this.dirty = true;
+        }
     }
 
     /**

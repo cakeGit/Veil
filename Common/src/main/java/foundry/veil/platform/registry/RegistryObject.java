@@ -1,4 +1,5 @@
 package foundry.veil.platform.registry;
+
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -27,10 +28,15 @@ public interface RegistryObject<T> extends Supplier<T> {
     ResourceLocation getId();
 
     /**
-     * Gets the object behind this wrapper. Calling this method too early
-     * might result in crashes.
+     * @return If the value has been registered and assigned
+     */
+    boolean isPresent();
+
+    /**
+     * Gets the object behind this wrapper.
      *
      * @return the object behind this wrapper
+     * @throws NullPointerException If {@link #isPresent()} returns <code>false</code>
      */
     @Override
     T get();

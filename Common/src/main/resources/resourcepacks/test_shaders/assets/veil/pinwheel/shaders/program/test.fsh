@@ -2,6 +2,8 @@
 //
 //#moj_import <fog.glsl>
 
+#include veil:fog
+
 uniform sampler2D Sampler0;
 
 uniform vec4 ColorModulator;
@@ -21,6 +23,5 @@ void main() {
     if (color.a < 0.1) {
         discard;
     }
-//    fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
-    fragColor = vec4(1, 0, 1, 1) * color;
+    fragColor = linear_fog(vec4(1, 0, 1, 1) * color, vertexDistance, FogStart, FogEnd, FogColor);
 }

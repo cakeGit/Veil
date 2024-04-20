@@ -6,7 +6,7 @@ import foundry.veil.api.quasar.data.module.ModuleType;
 import foundry.veil.api.quasar.data.module.ParticleModuleData;
 import foundry.veil.api.quasar.emitters.module.force.ConstantForceModule;
 import foundry.veil.api.quasar.particle.ParticleModuleSet;
-import foundry.veil.impl.quasar.CodecUtil;
+import foundry.veil.api.util.CodecUtil;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 

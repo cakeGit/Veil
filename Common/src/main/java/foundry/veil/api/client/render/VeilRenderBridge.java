@@ -2,10 +2,13 @@ package foundry.veil.api.client.render;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
+import foundry.veil.api.client.render.rendertype.VeilRenderTypeBuilder;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
+import foundry.veil.impl.client.render.pipeline.PatchState;
 import foundry.veil.impl.client.render.pipeline.ShaderProgramState;
 import foundry.veil.impl.client.render.wrapper.VanillaAdvancedFboWrapper;
 import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.resources.ResourceLocation;
 
@@ -26,6 +29,16 @@ public interface VeilRenderBridge {
      */
     static CullFrustum create(Frustum frustum) {
         return (CullFrustum) frustum;
+    }
+
+    /**
+     * Creates a render type builder helper from the specified vanilla composite state builder.
+     *
+     * @param builder The state builder to wrap
+     * @return The render type builder
+     */
+    static VeilRenderTypeBuilder create(RenderType.CompositeState.CompositeStateBuilder builder) {
+        return (VeilRenderTypeBuilder) builder;
     }
 
     /**
@@ -111,5 +124,15 @@ public interface VeilRenderBridge {
                 fbo.bindDraw(true);
             }
         }, AdvancedFbo::unbindDraw);
+    }
+
+    /**
+     * Creates a new render state shard for tesselation patch size.
+     *
+     * @param patchVertices The number of vertices per patch
+     * @return A new patch state
+     */
+    static PatchState patchState(int patchVertices) {
+        return new PatchState(patchVertices);
     }
 }

@@ -69,6 +69,7 @@ public final class RenderTypeStageRegistry {
         }
     }
 
+    @SuppressWarnings({"UnreachableCode", "DataFlowIssue"})
     @ApiStatus.Internal
     public static void inject(RenderType.CompositeRenderType renderType) {
         List<RenderStateShard> shards = STAGES.get(((RenderStateShardAccessor) (Object) renderType).getName());

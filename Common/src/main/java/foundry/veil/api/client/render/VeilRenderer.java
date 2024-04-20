@@ -5,12 +5,13 @@ import foundry.veil.api.client.render.deferred.VeilDeferredRenderer;
 import foundry.veil.api.client.render.framebuffer.FramebufferManager;
 import foundry.veil.api.client.render.post.PostPipeline;
 import foundry.veil.api.client.render.post.PostProcessingManager;
+import foundry.veil.api.client.render.rendertype.layer.DynamicRenderTypeManager;
 import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.ShaderModificationManager;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import foundry.veil.api.quasar.particle.ParticleSystemManager;
 import foundry.veil.ext.LevelRendererExtension;
-import foundry.veil.impl.client.VeilImGuiImpl;
+import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import foundry.veil.mixin.client.pipeline.ReloadableResourceManagerAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -33,6 +34,7 @@ public class VeilRenderer implements NativeResource {
     private final FramebufferManager framebufferManager;
     private final PostProcessingManager postProcessingManager;
     private final VeilDeferredRenderer deferredRenderer;
+    private final DynamicRenderTypeManager dynamicRenderTypeManager;
     private final ParticleSystemManager quasarParticleManager;
     private final EditorManager editorManager;
     private final CameraMatrices cameraMatrices;
@@ -47,6 +49,7 @@ public class VeilRenderer implements NativeResource {
         this.postProcessingManager = new PostProcessingManager();
         ShaderManager deferredShaderManager = new ShaderManager(ShaderManager.DEFERRED_SET, this.shaderModificationManager, this.shaderPreDefinitions);
         this.deferredRenderer = new VeilDeferredRenderer(deferredShaderManager, this.shaderPreDefinitions, this.framebufferManager, this.postProcessingManager);
+        this.dynamicRenderTypeManager = new DynamicRenderTypeManager();
         this.quasarParticleManager = new ParticleSystemManager();
         this.editorManager = new EditorManager(resourceManager);
         this.cameraMatrices = new CameraMatrices();
@@ -61,6 +64,7 @@ public class VeilRenderer implements NativeResource {
         resourceManager.registerReloadListener(this.framebufferManager);
         resourceManager.registerReloadListener(this.postProcessingManager);
         resourceManager.registerReloadListener(this.deferredRenderer);
+        resourceManager.registerReloadListener(this.dynamicRenderTypeManager);
     }
 
     /**
@@ -103,6 +107,13 @@ public class VeilRenderer implements NativeResource {
      */
     public VeilDeferredRenderer getDeferredRenderer() {
         return this.deferredRenderer;
+    }
+
+    /**
+     * @return The manager for all data-driven render types
+     */
+    public DynamicRenderTypeManager getDynamicRenderTypeManager() {
+        return this.dynamicRenderTypeManager;
     }
 
     /**

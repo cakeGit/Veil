@@ -49,6 +49,7 @@ public class SizedShaderBlockImpl<T> extends ShaderBlockImpl<T> {
                 if (this.value != null) {
                     ByteBuffer buffer = stack.malloc(this.size);
                     this.serializer.accept(this.value, buffer);
+                    buffer.rewind();
                     glBufferSubData(this.binding, 0, buffer);
                 } else {
                     glBufferSubData(this.binding, 0, stack.calloc(this.size));

@@ -10,13 +10,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.javafmlmod.FMLModContainer;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryBuilder;
-import net.minecraftforge.registries.RegistryManager;
+import net.minecraftforge.registries.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,27 +35,53 @@ public class ForgeRegistrationFactory implements RegistrationProvider.Factory {
             throw new ClassCastException("The container of the mod " + modId + " is not a FML one!");
         }
 
-        DeferredRegister<T> register = DeferredRegister.create(resourceKey, modId);
+        RegistryBuilder<T> registryFactory;
         if (RegistryManager.ACTIVE.getRegistry(resourceKey) == null && !BuiltInRegistries.REGISTRY.containsKey(resourceKey.location())) {
-            register.makeRegistry(() -> RegistryBuilder.<T>of().disableSaving().disableSync());
+            registryFactory = RegistryBuilder.<T>of().disableSaving().disableSync().setName(resourceKey.location());
+        } else {
+            registryFactory = null;
         }
-        register.register(forgeContainer.getEventBus());
-        return new Provider<>(modId, register);
+        return new Provider<>(modId, resourceKey, registryFactory, forgeContainer.getEventBus());
     }
 
     private static class Provider<T> implements RegistrationProvider<T> {
 
         private final String modId;
-        private final DeferredRegister<T> registry;
+        private final ResourceKey<? extends Registry<T>> resourceKey;
         private final RegistryWrapper<T> wrapper;
 
-        private final Set<RegistryObject<T>> entries = new HashSet<>();
-        private final Set<RegistryObject<T>> entriesView = Collections.unmodifiableSet(this.entries);
+        private final Map<ForgeRegistryObject<T>, Supplier<? extends T>> entries = new HashMap<>();
+        private final Set<RegistryObject<T>> entriesView = Collections.unmodifiableSet(this.entries.keySet());
 
-        private Provider(String modId, DeferredRegister<T> registry) {
+        private Provider(String modId, ResourceKey<? extends Registry<T>> resourceKey, @Nullable RegistryBuilder<T> registryFactory, IEventBus bus) {
             this.modId = modId;
-            this.registry = registry;
-            this.wrapper = new RegistryWrapper<>(registry.getRegistryKey());
+            this.resourceKey = resourceKey;
+            this.wrapper = new RegistryWrapper<>(resourceKey);
+            bus.register(this);
+            if (registryFactory != null) {
+                bus.<NewRegistryEvent>addListener(event -> event.create(registryFactory));
+            }
+        }
+
+        @SubscribeEvent
+        public void register(RegisterEvent event) {
+            if (event.getRegistryKey().equals(this.resourceKey)) {
+                for (Map.Entry<ForgeRegistryObject<T>, Supplier<? extends T>> entry : this.entries.entrySet()) {
+                    ForgeRegistryObject<T> object = entry.getKey();
+                    event.register(this.resourceKey, object.getId(), () -> entry.getValue().get());
+
+                    IForgeRegistry<T> forgeRegistry = event.getForgeRegistry();
+                    if (forgeRegistry != null) {
+                        object.updateReference(forgeRegistry);
+                        continue;
+                    }
+
+                    Registry<T> vanillaRegistry = event.getVanillaRegistry();
+                    if (vanillaRegistry != null) {
+                        object.updateReference(vanillaRegistry);
+                    }
+                }
+            }
         }
 
         @Override
@@ -66,30 +91,9 @@ public class ForgeRegistrationFactory implements RegistrationProvider.Factory {
 
         @Override
         @SuppressWarnings("unchecked")
-        public <I extends T> RegistryObject<I> register(String name, Supplier<? extends I> supplier) {
-            net.minecraftforge.registries.RegistryObject<I> obj = this.registry.register(name, supplier);
-            RegistryObject<I> ro = new RegistryObject<>() {
-                @Override
-                public ResourceKey<I> getResourceKey() {
-                    return obj.getKey();
-                }
-
-                @Override
-                public ResourceLocation getId() {
-                    return obj.getId();
-                }
-
-                @Override
-                public I get() {
-                    return obj.get();
-                }
-
-                @Override
-                public Holder<I> asHolder() {
-                    return obj.getHolder().orElseThrow();
-                }
-            };
-            this.entries.add((RegistryObject<T>) ro);
+        public <I extends T> RegistryObject<I> register(ResourceLocation id, Supplier<? extends I> supplier) {
+            ForgeRegistryObject<I> ro = (ForgeRegistryObject<I>) new ForgeRegistryObject<>(ResourceKey.create(this.resourceKey, id));
+            this.entries.put((ForgeRegistryObject<T>) ro, supplier);
             return ro;
         }
 
@@ -101,6 +105,56 @@ public class ForgeRegistrationFactory implements RegistrationProvider.Factory {
         @Override
         public Registry<T> asVanillaRegistry() {
             return this.wrapper;
+        }
+    }
+
+    private static class ForgeRegistryObject<I> implements RegistryObject<I> {
+
+        private final ResourceKey<I> key;
+        private I value;
+        private Holder<I> holder;
+
+        private ForgeRegistryObject(ResourceKey<I> key) {
+            this.key = key;
+        }
+
+        private void updateReference(IForgeRegistry<I> registry) {
+            if (this.key != null && registry.containsKey(this.key.location())) {
+                this.value = registry.getValue(this.key.location());
+                this.holder = registry.getHolder(this.key).orElse(null);
+            }
+        }
+
+        private void updateReference(Registry<I> registry) {
+            if (this.key != null && registry.containsKey(this.key.location())) {
+                this.value = registry.get(this.key);
+                this.holder = registry.getHolder(this.key).orElse(null);
+            }
+        }
+
+        @Override
+        public ResourceKey<I> getResourceKey() {
+            return this.key;
+        }
+
+        @Override
+        public ResourceLocation getId() {
+            return this.key.location();
+        }
+
+        @Override
+        public boolean isPresent() {
+            return this.value != null;
+        }
+
+        @Override
+        public I get() {
+            return Objects.requireNonNull(this.value, () -> "Registry Object not present: " + this.key.location());
+        }
+
+        @Override
+        public Holder<I> asHolder() {
+            return this.holder;
         }
     }
 

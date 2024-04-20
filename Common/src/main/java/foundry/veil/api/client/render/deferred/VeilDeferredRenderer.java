@@ -80,7 +80,8 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
     @Override
     public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller prepareProfiler, ProfilerFiller applyProfiler, Executor backgroundExecutor, Executor gameExecutor) {
         return CompletableFuture.<CompletableFuture<Void>>supplyAsync(() -> {
-            boolean active = Minecraft.getInstance().getResourcePackRepository().getSelectedIds().contains(PACK_ID.toString()) && isSupported();
+            boolean selected = Minecraft.getInstance().getResourcePackRepository().getSelectedIds().contains(PACK_ID.toString()) || resourceManager.listPacks().anyMatch(pack -> pack.packId().equals(PACK_ID.toString()));
+            boolean active = selected && isSupported();
             if (this.enabled != active) {
                 this.enabled = active;
                 if (active) {

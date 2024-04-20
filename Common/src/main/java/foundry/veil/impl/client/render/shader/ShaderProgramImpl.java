@@ -320,7 +320,6 @@ public class ShaderProgramImpl implements ShaderProgram {
                     }
 
                     this.bindings.flip();
-                    Veil.LOGGER.info("Resizing multi-bind buffer to {} for shader: {}", this.bindings.limit(), this.program.getId());
                 }
                 if (this.bindings != null && this.bindings.limit() > 0) {
                     VeilRenderSystem.bindTextures(start, this.bindings);

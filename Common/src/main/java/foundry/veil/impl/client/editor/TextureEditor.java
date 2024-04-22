@@ -5,6 +5,7 @@ import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.util.TextureDownloader;
 import imgui.ImGui;
 import imgui.flag.ImGuiDir;
+import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -137,8 +138,7 @@ public class TextureEditor extends SingleWindowEditor {
                 ImGui.setNextWindowSize(800, 600);
             }
 
-
-            if (ImGui.begin("Texture " + id, open)) {
+            if (ImGui.begin("Texture " + id, open, ImGuiWindowFlags.NoSavedSettings)) {
                 ImBoolean flip = texture.flip;
                 ImGui.checkbox("Flip Y", flip);
                 addImage(id, flip.get());

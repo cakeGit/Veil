@@ -147,7 +147,7 @@ public class VeilRenderer implements NativeResource {
     /**
      * @return Whether ImGui can be used
      */
-    public boolean hasImGui() {
+    public static boolean hasImGui() {
         return VeilImGuiImpl.get() instanceof VeilImGuiImpl;
     }
 

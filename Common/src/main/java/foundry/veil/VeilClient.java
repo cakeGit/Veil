@@ -7,6 +7,7 @@ import foundry.veil.api.client.registry.PostPipelineStageRegistry;
 import foundry.veil.api.client.registry.RenderTypeLayerRegistry;
 import foundry.veil.api.client.registry.RenderTypeStageRegistry;
 import foundry.veil.api.client.render.VeilRenderSystem;
+import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
 import foundry.veil.impl.client.editor.*;
 import foundry.veil.platform.VeilClientPlatform;
@@ -27,7 +28,7 @@ public class VeilClient {
     public static void init() {
         VeilEventPlatform.INSTANCE.onFreeNativeResources(VeilRenderSystem::close);
         VeilEventPlatform.INSTANCE.onVeilRendererAvailable(renderer -> {
-            if (renderer.hasImGui()) {
+            if (VeilRenderer.hasImGui()) {
                 EditorManager editorManager = renderer.getEditorManager();
 
                 // debug editors

@@ -107,20 +107,12 @@ public class EditorFontManager implements PreparableReloadListener {
     public void rebuildFonts() {
         ImFontAtlas atlas = ImGui.getIO().getFonts();
         atlas.clear();
-        try {
-            this.defaultFont = atlas.addFontDefault();
+        this.defaultFont = atlas.addFontDefault();
 
-            this.fonts.clear();
-            for (Map.Entry<ResourceLocation, FontPackBuilder> entry : this.fontBuilders.entrySet()) {
-                this.fonts.put(entry.getKey(), entry.getValue().build(FONT_SIZE));
-            }
-            atlas.build();
-        } catch (Throwable t) {
-            Veil.LOGGER.error("Failed to rebuild fonts", t);
-            atlas.addFontDefault();
-            atlas.build();
+        this.fonts.clear();
+        for (Map.Entry<ResourceLocation, FontPackBuilder> entry : this.fontBuilders.entrySet()) {
+            this.fonts.put(entry.getKey(), entry.getValue().build(FONT_SIZE));
         }
-
         ImGui.getIO().setFontDefault(this.getFont(EditorManager.DEFAULT, false, false));
         VeilImGuiImpl.get().updateFonts();
     }

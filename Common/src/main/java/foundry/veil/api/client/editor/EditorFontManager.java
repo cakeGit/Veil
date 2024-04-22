@@ -10,6 +10,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,10 +23,11 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@ApiStatus.Internal
 public class EditorFontManager implements PreparableReloadListener {
 
-    private static final DecimalFormat FONT_FORMAT = new DecimalFormat("0.#");
     private static final FileToIdConverter FONT_LISTER = new FileToIdConverter("font", ".ttf");
+    private static final DecimalFormat FONT_FORMAT = new DecimalFormat("0.#");
     private static final float FONT_SIZE = 18.0f;
 
     private final Map<ResourceLocation, FontPackBuilder> fontBuilders;
@@ -130,7 +132,7 @@ public class EditorFontManager implements PreparableReloadListener {
             this.name = name;
         }
 
-        private ImFont loadOrDefault(byte @Nullable [] data, float sizePixels, ImFont defaultFont) {
+        private ImFont loadOrDefault(byte @Nullable [] data, String type, float sizePixels, ImFont defaultFont) {
             if (data == null) {
                 return defaultFont;
             } else {
@@ -143,7 +145,7 @@ public class EditorFontManager implements PreparableReloadListener {
 
                 ImFontConfig fontConfig = new ImFontConfig();
                 try {
-                    fontConfig.setName(this.name + ".ttf, " + FONT_FORMAT.format(sizePixels) + " px");
+                    fontConfig.setName(this.name + "-" + type + ".ttf, " + FONT_FORMAT.format(sizePixels) + " px");
                     return atlas.addFontFromMemoryTTF(data, sizePixels, fontConfig);
                 } finally {
                     fontConfig.destroy();
@@ -152,10 +154,10 @@ public class EditorFontManager implements PreparableReloadListener {
         }
 
         public FontPack build(float sizePixels) {
-            ImFont main = Objects.requireNonNull(this.loadOrDefault(this.main, sizePixels, null));
-            ImFont italic = this.loadOrDefault(this.italic, sizePixels, main);
-            ImFont bold = this.loadOrDefault(this.bold, sizePixels, main);
-            ImFont boldItalic = this.loadOrDefault(this.boldItalic, sizePixels, main);
+            ImFont main = Objects.requireNonNull(this.loadOrDefault(this.main, "regular", sizePixels, null));
+            ImFont italic = this.loadOrDefault(this.italic, "italic", sizePixels, main);
+            ImFont bold = this.loadOrDefault(this.bold, "bold", sizePixels, main);
+            ImFont boldItalic = this.loadOrDefault(this.boldItalic, "bold_italic", sizePixels, main);
             return new FontPack(main, italic, bold, boldItalic);
         }
     }

@@ -30,7 +30,7 @@ public class EditorFontManager implements PreparableReloadListener {
 
     private static final FileToIdConverter FONT_LISTER = new FileToIdConverter("font", ".ttf");
     private static final DecimalFormat FONT_FORMAT = new DecimalFormat("0.#");
-    private static final float FONT_SIZE = 18.0f;
+    private static final float FONT_SIZE = 20.0f;
 
     private final Map<ResourceLocation, FontPackBuilder> fontBuilders;
     private final Map<ResourceLocation, FontPack> fonts;

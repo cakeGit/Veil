@@ -1,6 +1,7 @@
 package foundry.veil.api.client.editor;
 
 import foundry.veil.Veil;
+import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import imgui.*;
@@ -13,6 +14,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.system.NativeResource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -117,7 +119,21 @@ public class EditorFontManager implements PreparableReloadListener {
         VeilImGuiImpl.get().updateFonts();
     }
 
-    private record FontPack(ImFont regular, ImFont italic, ImFont bold, ImFont boldItalic) {
+    private record FontPack(ImFont regular, ImFont italic, ImFont bold, ImFont boldItalic) implements NativeResource {
+
+        @Override
+        public void free() {
+            this.regular.destroy();
+            if (this.italic != this.regular) {
+                this.italic.destroy();
+            }
+            if (this.bold != this.regular) {
+                this.bold.destroy();
+            }
+            if (this.boldItalic != this.regular) {
+                this.boldItalic.destroy();
+            }
+        }
     }
 
     private static class FontPackBuilder {
@@ -137,12 +153,6 @@ public class EditorFontManager implements PreparableReloadListener {
                 return defaultFont;
             } else {
                 ImFontAtlas atlas = ImGui.getIO().getFonts();
-
-                ImFontGlyphRangesBuilder rangesBuilder = new ImFontGlyphRangesBuilder();
-                rangesBuilder.addRanges(atlas.getGlyphRangesDefault());
-                rangesBuilder.addRanges(atlas.getGlyphRangesCyrillic());
-                rangesBuilder.addRanges(atlas.getGlyphRangesJapanese());
-
                 ImFontConfig fontConfig = new ImFontConfig();
                 try {
                     fontConfig.setName(this.name + "-" + type + ".ttf, " + FONT_FORMAT.format(sizePixels) + " px");

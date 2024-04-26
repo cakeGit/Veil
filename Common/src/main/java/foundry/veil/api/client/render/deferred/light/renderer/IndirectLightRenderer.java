@@ -10,7 +10,6 @@ import foundry.veil.api.client.render.shader.VeilShaders;
 import foundry.veil.api.client.render.shader.definition.DynamicShaderBlock;
 import foundry.veil.api.client.render.shader.definition.ShaderBlock;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
-import foundry.veil.ext.VertexBufferExtension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Vector3d;
@@ -85,8 +84,7 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
         this.vbo.bind();
         this.vbo.upload(this.createMesh());
 
-        VertexBufferExtension ext = (VertexBufferExtension) this.vbo;
-        this.highResSize = ext.veil$getIndexCount() - lowResSize;
+        this.highResSize = VeilRenderSystem.getIndexCount(this.vbo) - lowResSize;
         this.lowResSize = lowResSize;
         this.positionOffset = positionOffset;
         this.rangeOffset = rangeOffset;
@@ -356,7 +354,7 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
         if (this.visibleLights > 0) {
             this.setupRenderState(lightRenderer, lights);
             lightRenderer.applyShader();
-            ((VertexBufferExtension) this.vbo).veil$drawIndirect(0L, this.visibleLights, 0);
+            VeilRenderSystem.drawIndirect(this.vbo, 0L, this.visibleLights, 0);
             this.clearRenderState(lightRenderer, lights);
         }
 

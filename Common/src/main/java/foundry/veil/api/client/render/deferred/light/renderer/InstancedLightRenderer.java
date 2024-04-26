@@ -3,9 +3,9 @@ package foundry.veil.api.client.render.deferred.light.renderer;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import foundry.veil.api.client.render.CullFrustum;
+import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.deferred.light.InstancedLight;
 import foundry.veil.api.client.render.deferred.light.Light;
-import foundry.veil.ext.VertexBufferExtension;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -167,7 +167,7 @@ public abstract class InstancedLightRenderer<T extends Light & InstancedLight> i
         this.vbo.bind();
         this.setupRenderState(lightRenderer, this.visibleLights);
         lightRenderer.applyShader();
-        ((VertexBufferExtension) this.vbo).veil$drawInstanced(this.visibleLights.size());
+        VeilRenderSystem.drawInstanced(this.vbo, this.visibleLights.size());
         this.clearRenderState(lightRenderer, this.visibleLights);
         VertexBuffer.unbind();
     }

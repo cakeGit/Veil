@@ -131,36 +131,10 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
     private void initBuffers() {
         glBufferData(GL_ARRAY_BUFFER, (long) this.maxLights * this.lightSize, GL_DYNAMIC_DRAW);
         glBufferData(GL_DRAW_INDIRECT_BUFFER, (long) this.maxLights * Integer.BYTES * 5, GL_DYNAMIC_DRAW);
-        this.instancedBlock.setSize((long) this.maxLights * this.lightSize);
-        this.indirectBlock.setSize((long) this.maxLights * Integer.BYTES * 5);
-
-//        if (this.kernel != null) {
-//            try {
-//                if (this.clInstancedBuffer != null) {
-//                    this.clInstancedBuffer.free();
-//                }
-//                if (this.clIndirectBuffer != null) {
-//                    this.clIndirectBuffer.free();
-//                }
-//                this.clInstancedBuffer = this.kernel.createBufferFromGL(CL_MEM_READ_ONLY, this.instancedVbo);
-//                this.clIndirectBuffer = this.kernel.createBufferFromGL(CL_MEM_WRITE_ONLY, this.indirectVbo);
-//                this.kernel.setPointers(3, this.clInstancedBuffer);
-//                this.kernel.setPointers(4, this.clIndirectBuffer);
-//            } catch (CLException e) {
-//                Veil.LOGGER.error("Failed to initialize indirect compute", e);
-//                this.freeCL();
-//            }
-//        } else {
-//            try (MemoryStack stack = MemoryStack.stackPush()) {
-//                ByteBuffer buffer = stack.calloc(Integer.BYTES * 5);
-//                buffer.putInt(0, ((VertexBufferExtension) this.vbo).veil$getIndexCount());
-//                buffer.putInt(4, 1);
-//
-//                for (int i = 0; i < this.maxLights; i++) {
-//                    glBufferSubData(GL_DRAW_INDIRECT_BUFFER, i * Integer.BYTES * 5L, buffer);
-//                }
-//            }
-//        }
+        if (this.sizeVbo != 0) {
+            this.instancedBlock.setSize((long) this.maxLights * this.lightSize);
+            this.indirectBlock.setSize((long) this.maxLights * Integer.BYTES * 5);
+        }
     }
 
     private boolean shouldDrawHighResolution(T light, CullFrustum frustum) {
@@ -189,42 +163,6 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
     }
 
     private int updateVisibility(List<T> lights, CullFrustum frustum) {
-//        if (this.kernel != null) {
-//            ProfilerFiller profiler = Minecraft.getInstance().getProfiler();
-//            try (MemoryStack stack = MemoryStack.stackPush()) {
-//                profiler.push("acquire");
-//                this.kernel.acquireFromGL(this.clInstancedBuffer, this.clIndirectBuffer);
-//                profiler.popPush("upload");
-//
-//                this.clCounter.writeAsync(0L, stack.ints(0), null);
-//
-//                ByteBuffer planes = stack.malloc(6 * 4 * Float.BYTES);
-//                int index = 0;
-//                for (Vector4fc plane : frustum.getPlanes()) {
-//                    plane.get(index, planes);
-//                    index += 4 * Float.BYTES;
-//                }
-//                this.clFrustumPlanes.writeAsync(0L, planes, null);
-//
-//                profiler.popPush("setup");
-//                Vector3dc pos = frustum.getPosition();
-//                this.kernel.setVector4f(0, (float) pos.x(), (float) pos.y(), (float) pos.z(), 0);
-//                this.kernel.execute(lights.size(), 1);
-//
-//                profiler.popPush("release");
-//                this.kernel.releaseToGL(this.clInstancedBuffer, this.clIndirectBuffer);
-//
-//                profiler.popPush("read");
-//                IntBuffer data = stack.mallocInt(1);
-//                this.clCounter.read(0L, data);
-//                profiler.pop();
-//                return data.get(0);
-//            } catch (CLException e) {
-//                Veil.LOGGER.error("Failed to run indirect compute", e);
-//                this.freeCL();
-//            }
-//        }
-
         if (this.sizeVbo != 0) {
             VeilRenderSystem.setShader(VeilShaders.LIGHT_INDIRECT_SPHERE);
             ShaderProgram shader = VeilRenderSystem.getShader();

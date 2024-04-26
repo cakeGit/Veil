@@ -76,9 +76,7 @@ public class VeilUniformBlockState {
             }
 
             binding = this.nextBinding;
-            impl.bind(binding);
             this.boundBlocks.put(impl, binding);
-            this.usedBindings.add(binding);
 
             // Find the next open binding
             while (this.boundBlocks.containsValue(this.nextBinding)) {
@@ -86,6 +84,8 @@ public class VeilUniformBlockState {
             }
         }
 
+        impl.bind(binding);
+        this.usedBindings.add(binding);
         return binding;
     }
 

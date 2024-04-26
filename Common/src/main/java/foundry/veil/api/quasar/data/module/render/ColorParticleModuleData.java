@@ -10,6 +10,7 @@ import foundry.veil.api.quasar.emitters.module.RenderParticleModule;
 import foundry.veil.api.quasar.particle.ParticleModuleSet;
 import foundry.veil.impl.quasar.ColorGradient;
 import gg.moonflower.molangcompiler.api.MolangExpression;
+import gg.moonflower.molangcompiler.api.exception.MolangRuntimeException;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -29,7 +30,12 @@ public record ColorParticleModuleData(ColorGradient gradient,
             builder.addModule((InitParticleModule) particle -> particle.getRenderData().setColor(this.gradient.getColor(0.0F)));
         } else {
             builder.addModule((RenderParticleModule) (particle, partialTicks) -> {
-                float percentage = particle.getEnvironment().safeResolve(this.interpolant);
+                float percentage;
+                try {
+                    percentage = particle.getEnvironment().resolve(this.interpolant);
+                } catch (MolangRuntimeException e) {
+                    percentage = 0;
+                }
                 particle.getRenderData().setColor(this.gradient.getColor(percentage));
             });
         }

@@ -1,5 +1,6 @@
 {
   "module": "color",
+  "interpolant": "q.agePercent",
   "gradient": {
     "color": [
       0.412,

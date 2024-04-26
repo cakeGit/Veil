@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import foundry.veil.Veil;
+import foundry.veil.api.client.render.VeilRenderBridge;
+import foundry.veil.api.client.render.shader.VeilShaders;
 import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import foundry.veil.mixin.client.pipeline.RenderTypeAccessor;
 import net.minecraft.Util;
@@ -20,7 +22,7 @@ import java.util.function.Function;
  */
 public final class VeilRenderType extends RenderType {
 
-    private static final ShaderStateShard QUASAR_PARTICLE_ADDITIVE_MULTIPLY = new ShaderStateShard(VeilVanillaShaders::getQuasarParticleAdditiveMultiply);
+    private static final ShaderStateShard QUASAR_PARTICLE_ADDITIVE_MULTIPLY = VeilRenderBridge.shaderState(VeilShaders.PARTICLE_ADD);
 
     private static final Function<ResourceLocation, RenderType> QUASAR_PARTICLE = Util.memoize((texture) -> {
         CompositeState state = RenderType.CompositeState.builder()

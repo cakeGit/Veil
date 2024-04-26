@@ -20,6 +20,7 @@ import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL31C.GL_INVALID_INDEX;
 import static org.lwjgl.opengl.GL31C.glUniformBlockBinding;
 import static org.lwjgl.opengl.GL41C.*;
+import static org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER;
 import static org.lwjgl.opengl.GL43C.glShaderStorageBlockBinding;
 
 /**
@@ -475,6 +476,13 @@ public interface ShaderProgram extends NativeResource, MutableUniformAccess, Tex
      * @return The shaders attached to this program
      */
     Int2ObjectMap<CompiledShader> getShaders();
+
+    /**
+     * @return Whether this program has the compute stage
+     */
+    default boolean isCompute() {
+        return this.getShaders().containsKey(GL_COMPUTE_SHADER);
+    }
 
     /**
      * @return Whether this program has the geometry stage

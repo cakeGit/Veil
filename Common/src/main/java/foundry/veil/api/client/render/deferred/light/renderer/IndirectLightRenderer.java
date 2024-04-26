@@ -228,7 +228,7 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
         if (this.sizeVbo != 0) {
             VeilRenderSystem.setShader(VeilShaders.LIGHT_INDIRECT_SPHERE);
             ShaderProgram shader = VeilRenderSystem.getShader();
-            if (shader != null) {
+            if (shader != null && shader.isCompute()) {
                 try (MemoryStack stack = MemoryStack.stackPush()) {
                     VeilRenderSystem.bind("VeilLightInstanced", this.instancedBlock);
                     VeilRenderSystem.bind("VeilLightIndirect", this.indirectBlock);

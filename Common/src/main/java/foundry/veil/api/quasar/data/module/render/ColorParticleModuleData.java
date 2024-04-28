@@ -6,11 +6,10 @@ import foundry.veil.api.molang.MolangExpressionCodec;
 import foundry.veil.api.quasar.data.module.ModuleType;
 import foundry.veil.api.quasar.data.module.ParticleModuleData;
 import foundry.veil.api.quasar.emitters.module.InitParticleModule;
-import foundry.veil.api.quasar.emitters.module.RenderParticleModule;
+import foundry.veil.api.quasar.emitters.module.render.ColorRenderModule;
 import foundry.veil.api.quasar.particle.ParticleModuleSet;
 import foundry.veil.impl.quasar.ColorGradient;
 import gg.moonflower.molangcompiler.api.MolangExpression;
-import gg.moonflower.molangcompiler.api.exception.MolangRuntimeException;
 
 public record ColorParticleModuleData(ColorGradient gradient, MolangExpression interpolant) implements ParticleModuleData {
 
@@ -25,15 +24,7 @@ public record ColorParticleModuleData(ColorGradient gradient, MolangExpression i
         if (this.gradient.isConstant() || this.interpolant.isConstant()) {
             builder.addModule((InitParticleModule) particle -> particle.getRenderData().setColor(this.gradient.getColor(particle.getEnvironment().safeResolve(this.interpolant))));
         } else {
-            builder.addModule((RenderParticleModule) (particle, partialTicks) -> {
-                float percentage;
-                try {
-                    percentage = particle.getEnvironment().resolve(this.interpolant);
-                } catch (MolangRuntimeException e) {
-                    percentage = 0;
-                }
-                particle.getRenderData().setColor(this.gradient.getColor(percentage));
-            });
+            builder.addModule(new ColorRenderModule(this.gradient, this.interpolant));
         }
     }
 

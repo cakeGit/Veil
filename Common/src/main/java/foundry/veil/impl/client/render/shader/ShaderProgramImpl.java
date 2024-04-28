@@ -50,7 +50,6 @@ import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL31C.GL_INVALID_INDEX;
 import static org.lwjgl.opengl.GL31C.glGetUniformBlockIndex;
 import static org.lwjgl.opengl.GL43C.*;
-import static org.lwjgl.opengl.GL44C.glBindTextures;
 
 /**
  * @author Ocelot

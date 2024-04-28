@@ -17,7 +17,7 @@ void main() {
     vec3 vertexPos = Position;
     float Angle = NormalizedAngle * 6.28318530718;
     vertexPos.z = clamp(vertexPos.z, min(cos(Angle), 0), 1);
-    float angleTerm = sin(Angle) * Distance;
+    float angleTerm = sin(min(Angle, 1.57079633)) * Distance;
     vertexPos *= vec3(Size.x + angleTerm, Size.y + angleTerm, Distance);
 
     // awful fix but not sure why just multiplying the matrix doesnt work? it does what it should in

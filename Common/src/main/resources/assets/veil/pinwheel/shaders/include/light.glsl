@@ -34,6 +34,6 @@ float attenuate_no_cusp(float distance, float radius) {
         return 0.0;
     }
 
-    float s2 = s * s;
-    return min(1.0, (1.0 - 2.0 * s2 + s2 * s2) / s2);
+    float oneMinusS = 1.0 - s;
+    return oneMinusS * oneMinusS * oneMinusS;
 }

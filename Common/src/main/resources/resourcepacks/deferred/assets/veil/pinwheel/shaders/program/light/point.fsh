@@ -31,8 +31,8 @@ void main() {
 
     vec3 normalVS = texture(NormalSampler, screenUv).xyz;
     vec3 lightDirection = (VeilCamera.ViewMat * vec4(normalize(offset), 0.0)).xyz;
-    float diffuse = dot(normalVS, lightDirection);
-    diffuse = max(MINECRAFT_AMBIENT_LIGHT, diffuse);
+    float diffuse = clamp(0.0, 1.0, dot(normalVS, lightDirection));
+    diffuse = (diffuse + MINECRAFT_AMBIENT_LIGHT) / (1.0 + MINECRAFT_AMBIENT_LIGHT);
     diffuse *= attenuate_no_cusp(length(offset), radius);
 
     float reflectivity = 0.1;

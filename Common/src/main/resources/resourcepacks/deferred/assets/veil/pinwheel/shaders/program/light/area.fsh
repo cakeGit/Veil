@@ -64,8 +64,7 @@ void main() {
     vec3 offset = lightPos - pos;
     vec3 lightDirection = (VeilCamera.ViewMat * vec4(normalize(offset), 0.0)).xyz;
     float diffuse = (dot(normalVS, lightDirection) + 1.0) * 0.5;
-
-    diffuse = max(MINECRAFT_AMBIENT_LIGHT, diffuse);
+    diffuse = (diffuse + MINECRAFT_AMBIENT_LIGHT) / (1.0 + MINECRAFT_AMBIENT_LIGHT);
     diffuse *= attenuate_no_cusp(length(offset), maxDistance);
     // angle falloff
     float angleFalloff = clamp(angle, 0.0, maxAngle) / maxAngle;

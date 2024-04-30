@@ -44,7 +44,7 @@ public class VertexFormatCodec {
             Map.entry("POSITION_TEX_COLOR_NORMAL", DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL));
     private static final Object2IntMap<String> DEFAULT_BUFFER_SIZES = new Object2IntArrayMap<>(Map.of(
             "BIG", RenderType.BIG_BUFFER_SIZE,
-            "MEDIUM", RenderType.MEDIUM_BUFFER_SIZE,
+            "MEDIUM", 262144, // for some reason mojang removed this in 1.20.4 b/c why wouldn't they!! so it's hardcoded now -_-
             "SMALL", RenderType.SMALL_BUFFER_SIZE,
             "TRANSIENT", RenderType.TRANSIENT_BUFFER_SIZE));
 

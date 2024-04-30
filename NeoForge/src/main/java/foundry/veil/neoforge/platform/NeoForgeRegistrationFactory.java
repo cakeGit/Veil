@@ -72,9 +72,19 @@ public class NeoForgeRegistrationFactory implements RegistrationProvider.Factory
                 public Holder<I> asHolder() {
                     return obj;
                 }
+
+                @Override
+                public boolean isPresent() {
+                    return obj.isBound();
+                }
             };
             this.entries.add((RegistryObject<T>) ro);
             return ro;
+        }
+
+        @Override
+        public <I extends T> RegistryObject<I> register(ResourceLocation id, Supplier<? extends I> supplier) {
+            return register(id.getPath(), supplier);
         }
 
         @Override

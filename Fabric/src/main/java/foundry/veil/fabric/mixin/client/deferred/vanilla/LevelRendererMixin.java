@@ -21,7 +21,6 @@ import java.util.function.Supplier;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
-
     @Unique
     private final DeferredShaderStateCache veil$cloudCache = new DeferredShaderStateCache();
 

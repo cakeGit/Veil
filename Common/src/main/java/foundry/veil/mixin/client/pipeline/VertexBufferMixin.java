@@ -105,8 +105,8 @@ public abstract class VertexBufferMixin implements VertexBufferExtension {
                 // Quads are internally switched to triangles with indices in vanilla mc, so just use draw arrays
                 // This will be wrong if custom indices are used! (transparent objects)
                 glDrawArraysInstanced(GL_PATCHES, 0, this.indexCount * 4 / 6, instances);
+                return;
             }
-            return;
         }
 
         glDrawElementsInstanced(this.veil$getDrawMode(this.mode.asGLMode), this.indexCount, this.getIndexType().asGLType, 0L, instances);

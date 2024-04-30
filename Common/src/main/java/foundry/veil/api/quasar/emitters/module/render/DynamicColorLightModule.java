@@ -36,7 +36,7 @@ public class DynamicColorLightModule implements UpdateParticleModule, RenderPart
         }
 
         this.lastColor.set(this.color);
-        this.color.set(this.data.color().getColor((float) particle.getAge() / (float) particle.getLifetime()));
+        this.data.color().getColor((float) particle.getAge() / (float) particle.getLifetime(), this.color);
         float brightness = this.data.brightness() * this.color.w;
 
         if (this.color.lengthSquared() < 0.1 && brightness < 0.1) {

@@ -63,7 +63,13 @@ public class ColorGradient {
     }
 
     public Vector4f getColor(float percentage) {
-        return MathUtil.vec4fFromVec3(this.getRGB(percentage), this.getAlpha(percentage));
+        return this.getColor(percentage, new Vector4f());
+    }
+
+    public Vector4f getColor(float percentage, Vector4f store) {
+        Vec3 rgb = this.getRGB(percentage);
+        float alpha = this.getAlpha(percentage);
+        return store.set(rgb.x, rgb.y, rgb.z, alpha);
     }
 
     private float getAlpha(float percentage) {
@@ -110,48 +116,17 @@ public class ColorGradient {
         return List.of(this.alphaPoints);
     }
 
-    public static class RGBPoint {
+    public record RGBPoint(float percent, Vec3 color) {
         public static final Codec<RGBPoint> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.FLOAT.fieldOf("percent").forGetter(RGBPoint::getPercent),
-                Vec3.CODEC.fieldOf("color").forGetter(RGBPoint::getColor)
+                Codec.FLOAT.fieldOf("percent").forGetter(RGBPoint::percent),
+                Vec3.CODEC.fieldOf("color").forGetter(RGBPoint::color)
         ).apply(instance, RGBPoint::new));
-
-        float percent;
-        Vec3 color;
-
-        RGBPoint(float percent, Vec3 color) {
-            this.percent = percent;
-            this.color = color;
-        }
-
-        float getPercent() {
-            return this.percent;
-        }
-
-        Vec3 getColor() {
-            return this.color;
-        }
     }
 
-    public static class AlphaPoint {
+    public record AlphaPoint(float percent, float alpha) {
         public static final Codec<AlphaPoint> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.FLOAT.fieldOf("percent").forGetter(AlphaPoint::getPercent),
-                Codec.FLOAT.fieldOf("alpha").forGetter(AlphaPoint::getAlpha)
+                Codec.FLOAT.fieldOf("percent").forGetter(AlphaPoint::percent),
+                Codec.FLOAT.fieldOf("alpha").forGetter(AlphaPoint::alpha)
         ).apply(instance, AlphaPoint::new));
-        float percent;
-        float alpha;
-
-        AlphaPoint(float percent, float alpha) {
-            this.percent = percent;
-            this.alpha = alpha;
-        }
-
-        float getPercent() {
-            return this.percent;
-        }
-
-        float getAlpha() {
-            return this.alpha;
-        }
     }
 }

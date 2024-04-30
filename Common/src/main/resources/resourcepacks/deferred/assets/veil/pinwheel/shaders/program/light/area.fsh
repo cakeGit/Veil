@@ -27,8 +27,7 @@ float sacos( float x )
 }
 
 struct AreaLightResult { vec3 position; float angle; };
-AreaLightResult closestPointOnPlaneAndAngle(vec3 point, mat4 planeMatrix, vec2 planeSize)
-{
+AreaLightResult closestPointOnPlaneAndAngle(vec3 point, mat4 planeMatrix, vec2 planeSize) {
     // no idea why i need to do this
     planeMatrix[3].xyz *= -1.0;
     // transform the point to the plane's local space
@@ -38,7 +37,7 @@ AreaLightResult closestPointOnPlaneAndAngle(vec3 point, mat4 planeMatrix, vec2 p
 
     // calculate the angles
     vec3 direction = normalize(localSpacePoint - localSpacePointOnPlane);
-    float angle = sacos(dot(direction, vec3(0, 0, 1)));
+    float angle = sacos(dot(direction, vec3(0.0, 0.0, 1.0)));
 
     // transform back to global space
     return AreaLightResult((inverse(planeMatrix) * vec4(localSpacePointOnPlane, 1.0)).xyz, angle);
@@ -65,15 +64,16 @@ void main() {
     vec3 offset = lightPos - pos;
     vec3 lightDirection = (VeilCamera.ViewMat * vec4(normalize(offset), 0.0)).xyz;
     float diffuse = (dot(normalVS, lightDirection) + 1.0) * 0.5;
-
-    diffuse = max(MINECRAFT_AMBIENT_LIGHT, diffuse);
+    diffuse = (diffuse + MINECRAFT_AMBIENT_LIGHT) / (1.0 + MINECRAFT_AMBIENT_LIGHT);
     diffuse *= attenuate_no_cusp(length(offset), maxDistance);
     // angle falloff
-    float angleFalloff = mapClamped(angle, 0.0, maxAngle, 1.0, 0.0);
-    diffuse *= smoothstep(0.0, 1.0, angleFalloff);
+    float angleFalloff = clamp(angle, 0.0, maxAngle) / maxAngle;
+    angleFalloff = smoothstep(1.0, 0.0, angleFalloff);
+    diffuse *= angleFalloff;
 
     float reflectivity = 0.1;
     vec3 diffuseColor = diffuse * lightColor;
+
     fragColor = vec4(albedoColor.rgb * diffuseColor * (1.0 - reflectivity) + diffuseColor * reflectivity, albedoColor.a);
 }
 

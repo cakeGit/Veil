@@ -1,7 +1,9 @@
 package foundry.veil.impl.client.imgui;
 
 import foundry.veil.api.client.imgui.VeilImGui;
+import imgui.ImFont;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public class InactiveVeilImGuiImpl implements VeilImGui {
@@ -20,6 +22,10 @@ public class InactiveVeilImGuiImpl implements VeilImGui {
 
     @Override
     public void toggle() {
+    }
+
+    @Override
+    public void updateFonts() {
     }
 
     @Override

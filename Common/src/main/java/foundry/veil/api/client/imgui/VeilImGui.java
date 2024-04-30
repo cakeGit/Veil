@@ -19,6 +19,8 @@ public interface VeilImGui extends NativeResource {
 
     void toggle();
 
+    void updateFonts();
+
     boolean mouseButtonCallback(long window, int button, int action, int mods);
 
     boolean scrollCallback(long window, double xOffset, double yOffset);

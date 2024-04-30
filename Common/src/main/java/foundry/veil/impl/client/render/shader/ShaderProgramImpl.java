@@ -50,7 +50,6 @@ import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL31C.GL_INVALID_INDEX;
 import static org.lwjgl.opengl.GL31C.glGetUniformBlockIndex;
 import static org.lwjgl.opengl.GL43C.*;
-import static org.lwjgl.opengl.GL44C.glBindTextures;
 
 /**
  * @author Ocelot
@@ -320,7 +319,6 @@ public class ShaderProgramImpl implements ShaderProgram {
                     }
 
                     this.bindings.flip();
-                    Veil.LOGGER.info("Resizing multi-bind buffer to {} for shader: {}", this.bindings.limit(), this.program.getId());
                 }
                 if (this.bindings != null && this.bindings.limit() > 0) {
                     VeilRenderSystem.bindTextures(start, this.bindings);

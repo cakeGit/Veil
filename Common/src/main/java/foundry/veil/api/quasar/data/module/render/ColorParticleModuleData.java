@@ -6,32 +6,25 @@ import foundry.veil.api.molang.MolangExpressionCodec;
 import foundry.veil.api.quasar.data.module.ModuleType;
 import foundry.veil.api.quasar.data.module.ParticleModuleData;
 import foundry.veil.api.quasar.emitters.module.InitParticleModule;
-import foundry.veil.api.quasar.emitters.module.RenderParticleModule;
+import foundry.veil.api.quasar.emitters.module.render.ColorRenderModule;
 import foundry.veil.api.quasar.particle.ParticleModuleSet;
 import foundry.veil.impl.quasar.ColorGradient;
 import gg.moonflower.molangcompiler.api.MolangExpression;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-
-public record ColorParticleModuleData(ColorGradient gradient,
-                                      @Nullable MolangExpression interpolant) implements ParticleModuleData {
+public record ColorParticleModuleData(ColorGradient gradient, MolangExpression interpolant) implements ParticleModuleData {
 
     public static final Codec<ColorParticleModuleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ColorGradient.CODEC.fieldOf("gradient").forGetter(ColorParticleModuleData::gradient),
-            MolangExpressionCodec.CODEC.optionalFieldOf("interpolant").forGetter(data -> Optional.ofNullable(data.interpolant()))
-    ).apply(instance, (gradient, interpolant) -> new ColorParticleModuleData(gradient, interpolant.orElse(null))));
+            MolangExpressionCodec.CODEC.fieldOf("interpolant").forGetter(ColorParticleModuleData::interpolant)
+    ).apply(instance, ColorParticleModuleData::new));
 
 
     @Override
     public void addModules(ParticleModuleSet.Builder builder) {
-        if (this.gradient.isConstant() || this.interpolant == null) {
-            builder.addModule((InitParticleModule) particle -> particle.getRenderData().setColor(this.gradient.getColor(0.0F)));
+        if (this.gradient.isConstant() || this.interpolant.isConstant()) {
+            builder.addModule((InitParticleModule) particle -> particle.getRenderData().setColor(this.gradient.getColor(particle.getEnvironment().safeResolve(this.interpolant))));
         } else {
-            builder.addModule((RenderParticleModule) (particle, partialTicks) -> {
-                float percentage = particle.getEnvironment().safeResolve(this.interpolant);
-                particle.getRenderData().setColor(this.gradient.getColor(percentage));
-            });
+            builder.addModule(new ColorRenderModule(this.gradient, this.interpolant));
         }
     }
 

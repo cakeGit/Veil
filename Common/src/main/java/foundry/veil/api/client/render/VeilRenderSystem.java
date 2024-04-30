@@ -4,11 +4,13 @@ import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import foundry.veil.Veil;
 import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.definition.ShaderBlock;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.api.opencl.VeilOpenCL;
+import foundry.veil.ext.VertexBufferExtension;
 import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import foundry.veil.impl.client.render.pipeline.VeilUniformBlockState;
 import foundry.veil.impl.client.render.shader.ShaderProgramImpl;
@@ -23,6 +25,7 @@ import org.joml.Vector2ic;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL40C;
 import org.lwjgl.opengl.GL44C;
 import org.lwjgl.opengl.GLCapabilities;
 
@@ -222,6 +225,7 @@ public final class VeilRenderSystem {
     /**
      * Clears all pending shader errors and re-queues uniform block ids to shaders.
      */
+    @ApiStatus.Internal
     public static void finalizeShaderCompilation() {
         ERRORED_SHADERS.clear();
         UNIFORM_BLOCK_STATE.queueUpload();
@@ -235,6 +239,37 @@ public final class VeilRenderSystem {
         if (VeilRenderSystem.shaderLocation != null && ERRORED_SHADERS.add(VeilRenderSystem.shaderLocation)) {
             Veil.LOGGER.error("Failed to apply shader: {}", VeilRenderSystem.shaderLocation);
         }
+    }
+
+    /**
+     * Draws instances of the specified vertex buffer.
+     * @param vbo The vertex buffer to draw
+     * @param instances The number of instances to draw
+     * @see <a target="_blank" href="http://docs.gl/gl4/glDrawArraysInstanced">Reference Page</a>
+     */
+    public static void drawInstanced(VertexBuffer vbo, int instances) {
+        ((VertexBufferExtension) vbo).veil$drawInstanced(instances);
+    }
+
+    /**
+     * Draws indirect instances of the specified vertex buffer.
+     * @param vbo The vertex buffer to draw
+     * @param indirect A pointer into the currently bound {@link GL40C#GL_DRAW_INDIRECT_BUFFER} or the address of a struct containing draw data
+     * @param drawCount The number of primitives to draw
+     * @param stride The offset between indirect elements
+     * @see <a target="_blank" href="http://docs.gl/gl4/glMultiDrawElementsIndirect">Reference Page</a>
+     */
+    public static void drawIndirect(VertexBuffer vbo, long indirect, int drawCount, int stride) {
+        ((VertexBufferExtension) vbo).veil$drawIndirect(indirect, drawCount, stride);
+    }
+
+    /**
+     * Retrieves the number of indices in the specified vertex buffer.
+     * @param vbo The vertex buffer to query
+     * @return The number of indices in the buffer
+     */
+    public static int getIndexCount(VertexBuffer vbo) {
+        return ((VertexBufferExtension) vbo).veil$getIndexCount();
     }
 
     /**

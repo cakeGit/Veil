@@ -2,6 +2,7 @@ package foundry.veil.api.client.render.deferred.light.renderer;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexBuffer;
+import foundry.veil.Veil;
 import foundry.veil.api.client.render.CullFrustum;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.deferred.light.IndirectLight;
@@ -10,7 +11,6 @@ import foundry.veil.api.client.render.shader.VeilShaders;
 import foundry.veil.api.client.render.shader.definition.DynamicShaderBlock;
 import foundry.veil.api.client.render.shader.definition.ShaderBlock;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
-import foundry.veil.ext.VertexBufferExtension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Vector3d;
@@ -69,6 +69,7 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
         this.indirectVbo = glGenBuffers();
 
         if (VeilRenderSystem.computeSupported() && VeilRenderSystem.atomicCounterSupported()) {
+            Veil.LOGGER.info("Using GPU Frustum Culling for {} renderer", this.getClass().getSimpleName());
             this.sizeVbo = glGenBuffers();
             this.instancedBlock = ShaderBlock.wrapper(GL_SHADER_STORAGE_BUFFER, this.instancedVbo);
             this.indirectBlock = ShaderBlock.wrapper(GL_SHADER_STORAGE_BUFFER, this.indirectVbo);
@@ -77,6 +78,7 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
             glBufferData(GL_ATOMIC_COUNTER_BUFFER, Integer.BYTES, GL_DYNAMIC_DRAW);
             glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
         } else {
+            Veil.LOGGER.info("Using CPU Frustum Culling for {} renderer", this.getClass().getSimpleName());
             this.sizeVbo = 0;
             this.instancedBlock = null;
             this.indirectBlock = null;
@@ -85,8 +87,7 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
         this.vbo.bind();
         this.vbo.upload(this.createMesh());
 
-        VertexBufferExtension ext = (VertexBufferExtension) this.vbo;
-        this.highResSize = ext.veil$getIndexCount() - lowResSize;
+        this.highResSize = VeilRenderSystem.getIndexCount(this.vbo) - lowResSize;
         this.lowResSize = lowResSize;
         this.positionOffset = positionOffset;
         this.rangeOffset = rangeOffset;
@@ -133,36 +134,10 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
     private void initBuffers() {
         glBufferData(GL_ARRAY_BUFFER, (long) this.maxLights * this.lightSize, GL_DYNAMIC_DRAW);
         glBufferData(GL_DRAW_INDIRECT_BUFFER, (long) this.maxLights * Integer.BYTES * 5, GL_DYNAMIC_DRAW);
-        this.instancedBlock.setSize((long) this.maxLights * this.lightSize);
-        this.indirectBlock.setSize((long) this.maxLights * Integer.BYTES * 5);
-
-//        if (this.kernel != null) {
-//            try {
-//                if (this.clInstancedBuffer != null) {
-//                    this.clInstancedBuffer.free();
-//                }
-//                if (this.clIndirectBuffer != null) {
-//                    this.clIndirectBuffer.free();
-//                }
-//                this.clInstancedBuffer = this.kernel.createBufferFromGL(CL_MEM_READ_ONLY, this.instancedVbo);
-//                this.clIndirectBuffer = this.kernel.createBufferFromGL(CL_MEM_WRITE_ONLY, this.indirectVbo);
-//                this.kernel.setPointers(3, this.clInstancedBuffer);
-//                this.kernel.setPointers(4, this.clIndirectBuffer);
-//            } catch (CLException e) {
-//                Veil.LOGGER.error("Failed to initialize indirect compute", e);
-//                this.freeCL();
-//            }
-//        } else {
-//            try (MemoryStack stack = MemoryStack.stackPush()) {
-//                ByteBuffer buffer = stack.calloc(Integer.BYTES * 5);
-//                buffer.putInt(0, ((VertexBufferExtension) this.vbo).veil$getIndexCount());
-//                buffer.putInt(4, 1);
-//
-//                for (int i = 0; i < this.maxLights; i++) {
-//                    glBufferSubData(GL_DRAW_INDIRECT_BUFFER, i * Integer.BYTES * 5L, buffer);
-//                }
-//            }
-//        }
+        if (this.sizeVbo != 0) {
+            this.instancedBlock.setSize((long) this.maxLights * this.lightSize);
+            this.indirectBlock.setSize((long) this.maxLights * Integer.BYTES * 5);
+        }
     }
 
     private boolean shouldDrawHighResolution(T light, CullFrustum frustum) {
@@ -191,46 +166,10 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
     }
 
     private int updateVisibility(List<T> lights, CullFrustum frustum) {
-//        if (this.kernel != null) {
-//            ProfilerFiller profiler = Minecraft.getInstance().getProfiler();
-//            try (MemoryStack stack = MemoryStack.stackPush()) {
-//                profiler.push("acquire");
-//                this.kernel.acquireFromGL(this.clInstancedBuffer, this.clIndirectBuffer);
-//                profiler.popPush("upload");
-//
-//                this.clCounter.writeAsync(0L, stack.ints(0), null);
-//
-//                ByteBuffer planes = stack.malloc(6 * 4 * Float.BYTES);
-//                int index = 0;
-//                for (Vector4fc plane : frustum.getPlanes()) {
-//                    plane.get(index, planes);
-//                    index += 4 * Float.BYTES;
-//                }
-//                this.clFrustumPlanes.writeAsync(0L, planes, null);
-//
-//                profiler.popPush("setup");
-//                Vector3dc pos = frustum.getPosition();
-//                this.kernel.setVector4f(0, (float) pos.x(), (float) pos.y(), (float) pos.z(), 0);
-//                this.kernel.execute(lights.size(), 1);
-//
-//                profiler.popPush("release");
-//                this.kernel.releaseToGL(this.clInstancedBuffer, this.clIndirectBuffer);
-//
-//                profiler.popPush("read");
-//                IntBuffer data = stack.mallocInt(1);
-//                this.clCounter.read(0L, data);
-//                profiler.pop();
-//                return data.get(0);
-//            } catch (CLException e) {
-//                Veil.LOGGER.error("Failed to run indirect compute", e);
-//                this.freeCL();
-//            }
-//        }
-
         if (this.sizeVbo != 0) {
             VeilRenderSystem.setShader(VeilShaders.LIGHT_INDIRECT_SPHERE);
             ShaderProgram shader = VeilRenderSystem.getShader();
-            if (shader != null) {
+            if (shader != null && shader.isCompute()) {
                 try (MemoryStack stack = MemoryStack.stackPush()) {
                     VeilRenderSystem.bind("VeilLightInstanced", this.instancedBlock);
                     VeilRenderSystem.bind("VeilLightIndirect", this.indirectBlock);
@@ -350,15 +289,18 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
 
     @Override
     public void renderLights(LightRenderer lightRenderer, List<T> lights) {
+        // If there are no visible lights, then don't render anything
+        if (this.visibleLights <= 0) {
+            return;
+        }
+
         this.vbo.bind();
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.indirectVbo);
 
-        if (this.visibleLights > 0) {
-            this.setupRenderState(lightRenderer, lights);
-            lightRenderer.applyShader();
-            ((VertexBufferExtension) this.vbo).veil$drawIndirect(0L, this.visibleLights, 0);
-            this.clearRenderState(lightRenderer, lights);
-        }
+        this.setupRenderState(lightRenderer, lights);
+        lightRenderer.applyShader();
+        VeilRenderSystem.drawIndirect(this.vbo, 0L, this.visibleLights, 0);
+        this.clearRenderState(lightRenderer, lights);
 
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
         VertexBuffer.unbind();

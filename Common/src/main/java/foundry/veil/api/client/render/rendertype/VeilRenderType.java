@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import foundry.veil.Veil;
+import foundry.veil.api.client.render.VeilRenderBridge;
+import foundry.veil.api.client.render.shader.VeilShaders;
 import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import foundry.veil.mixin.client.pipeline.RenderTypeAccessor;
 import net.minecraft.Util;
@@ -20,7 +22,7 @@ import java.util.function.Function;
  */
 public final class VeilRenderType extends RenderType {
 
-    private static final ShaderStateShard QUASAR_PARTICLE_ADDITIVE_MULTIPLY = new ShaderStateShard(VeilVanillaShaders::getQuasarParticleAdditiveMultiply);
+    private static final ShaderStateShard QUASAR_PARTICLE_ADDITIVE_MULTIPLY = VeilRenderBridge.shaderState(VeilShaders.PARTICLE_ADD);
 
     private static final Function<ResourceLocation, RenderType> QUASAR_PARTICLE = Util.memoize((texture) -> {
         CompositeState state = RenderType.CompositeState.builder()
@@ -29,7 +31,7 @@ public final class VeilRenderType extends RenderType {
                 .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                 .setLightmapState(LIGHTMAP)
                 .createCompositeState(false);
-        return create(Veil.MODID + ":quasar_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, SMALL_BUFFER_SIZE, false, false, state);
+        return create(Veil.MODID + ":quasar_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, SMALL_BUFFER_SIZE, false, true, state);
     });
     private static final Function<ResourceLocation, RenderType> QUASAR_TRAIL = Util.memoize((texture) -> {
         CompositeState state = CompositeState.builder()
@@ -39,7 +41,7 @@ public final class VeilRenderType extends RenderType {
                 .setWriteMaskState(COLOR_WRITE)
                 .setCullState(NO_CULL)
                 .createCompositeState(false);
-        return RenderType.create(Veil.MODID + ":quasar_trail", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.TRIANGLE_STRIP, TRANSIENT_BUFFER_SIZE, false, true, state);
+        return RenderType.create(Veil.MODID + ":quasar_trail", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.TRIANGLE_STRIP, TRANSIENT_BUFFER_SIZE, false, false, state);
     });
 
     public static RenderType quasarParticle(ResourceLocation texture) {

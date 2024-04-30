@@ -68,7 +68,7 @@ public interface VeilRenderBridge {
      * @return A new shader state shard for that shader
      */
     static RenderStateShard.ShaderStateShard shaderState(ResourceLocation shader) {
-        return new ShaderProgramState(() -> VeilRenderSystem.setShader(shader));
+        return new ShaderProgramState(() -> VeilRenderSystem.renderer().getShaderManager().getShader(shader));
     }
 
     /**
@@ -78,7 +78,7 @@ public interface VeilRenderBridge {
      * @return A new shader state shard for that shader
      */
     static RenderStateShard.ShaderStateShard shaderState(ShaderProgram shader) {
-        return new ShaderProgramState(() -> VeilRenderSystem.setShader(shader));
+        return new ShaderProgramState(() -> shader);
     }
 
     /**
@@ -88,7 +88,7 @@ public interface VeilRenderBridge {
      * @return A new shader state shard for that shader
      */
     static RenderStateShard.ShaderStateShard shaderState(Supplier<ShaderProgram> shader) {
-        return new ShaderProgramState(() -> VeilRenderSystem.setShader(shader));
+        return new ShaderProgramState(shader);
     }
 
     /**

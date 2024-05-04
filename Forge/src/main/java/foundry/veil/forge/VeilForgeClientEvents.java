@@ -16,6 +16,7 @@ import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
@@ -66,8 +67,9 @@ public class VeilForgeClientEvents {
                 return 0;
             }
 
-            WorldCoordinates pos = ctx.getArgument("position", WorldCoordinates.class);
-            instance.setPosition(pos.getPosition(source));
+            WorldCoordinates coordinates = ctx.getArgument("position", WorldCoordinates.class);
+            Vec3 pos = coordinates.getPosition(source);
+            instance.setPosition(pos.x, pos.y, pos.z);
             particleManager.addParticleSystem(instance);
             source.sendSuccess(() -> Component.literal("Spawned " + id), true);
             return 1;

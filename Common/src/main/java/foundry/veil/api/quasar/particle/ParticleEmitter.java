@@ -54,6 +54,7 @@ public class ParticleEmitter {
     private final List<Holder<ParticleModuleData>> modules;
     private final RandomSource randomSource;
     private final Vector3d position;
+    private final Vector3d offset;
     private final List<QuasarParticle> particles;
 
     @Nullable
@@ -69,6 +70,7 @@ public class ParticleEmitter {
         this.modules = createModuleSet(data.particleData());
         this.randomSource = RandomSource.create();
         this.position = new Vector3d();
+        this.offset = new Vector3d();
         this.particles = new ArrayList<>();
 
         TickTaskScheduler scheduler = particleManager.getScheduler();
@@ -155,6 +157,7 @@ public class ParticleEmitter {
      * Tick the emitter. This is run to track the basic functionality of the emitter.
      */
     public void tick() {
+        this.position.set(0);
         if (this.attachedEntity != null) {
             if (this.attachedEntity.isAlive()) {
                 Vec3 pos = this.attachedEntity.position();
@@ -165,6 +168,7 @@ public class ParticleEmitter {
             }
         }
 
+        this.position.add(this.offset);
         Iterator<QuasarParticle> iterator = this.particles.iterator();
         while (iterator.hasNext()) {
             QuasarParticle particle = iterator.next();
@@ -335,13 +339,22 @@ public class ParticleEmitter {
 
     @Deprecated
     public void setPosition(Vec3 position) {
-        this.position.set(position.x, position.y, position.z);
+        this.setPosition(position.x, position.y, position.z);
     }
 
     public void setPosition(Vector3dc position) {
-        this.position.set(position);
+        this.setPosition(position.x(), position.y(), position.z());
     }
 
+    public void setPosition(double x, double y, double z) {
+        this.offset.set(x, y, z);
+    }
+
+    /**
+     * Sets the origin of the emitter position to match the specified entity.
+     * That means the value set by {@link #setPosition(double, double, double)} will not be interpreted as an offset from the entity position.
+     * @param entity The entity to attach to
+     */
     public void setAttachedEntity(@Nullable Entity entity) {
         this.attachedEntity = entity;
         if (entity != null) {

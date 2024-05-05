@@ -277,12 +277,9 @@ public class ParticleEmitter {
      * @return The number of particles removed
      */
     public int trim(int count) {
-        int i;
         int removeCount = Math.min(count, this.particles.size());
-        for (i = 0; i < removeCount; i++) {
-            this.particles.get(i).remove();
-        }
-        return i;
+        this.particles.subList(0, removeCount).clear();
+        return removeCount;
     }
 
     /**
@@ -342,12 +339,27 @@ public class ParticleEmitter {
         this.setPosition(position.x, position.y, position.z);
     }
 
+    /**
+     * Sets the position of the emitter relative to the origin of the world or attached entity.
+     * @param position The position
+     */
     public void setPosition(Vector3dc position) {
         this.setPosition(position.x(), position.y(), position.z());
     }
 
+    /**
+     * Sets the position of the emitter relative to the origin of the world or attached entity.
+     * @param x The x position
+     * @param y The y position
+     * @param z The z position
+     */
     public void setPosition(double x, double y, double z) {
         this.offset.set(x, y, z);
+        if (this.attachedEntity != null) {
+            this.position.set(this.attachedEntity.getX(), this.attachedEntity.getY(), this.attachedEntity.getZ()).add(this.offset);
+        } else {
+            this.position.set(this.offset);
+        }
     }
 
     /**
@@ -358,7 +370,9 @@ public class ParticleEmitter {
     public void setAttachedEntity(@Nullable Entity entity) {
         this.attachedEntity = entity;
         if (entity != null) {
-            this.position.set(entity.getX(), entity.getY(), entity.getZ());
+            this.position.set(entity.getX(), entity.getY(), entity.getZ()).add(this.offset);
+        } else {
+            this.position.set(this.offset);
         }
     }
 }

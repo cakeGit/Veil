@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParticleSystemManager {
 
@@ -28,8 +29,8 @@ public class ParticleSystemManager {
 
     private final List<ParticleEmitter> particleEmitters;
     private final Set<ResourceLocation> invalidEmitters;
+    private final AtomicInteger particleCount;
 
-    private int particleCount;
     private ClientLevel level;
     private TickTaskSchedulerImpl scheduler;
 
@@ -37,7 +38,7 @@ public class ParticleSystemManager {
         this.particleEmitters = new ArrayList<>();
         this.invalidEmitters = new HashSet<>();
 
-        this.particleCount = 0;
+        this.particleCount = new AtomicInteger();
         this.level = null;
         this.scheduler = null;
     }
@@ -85,6 +86,7 @@ public class ParticleSystemManager {
         }
 
         this.scheduler.run();
+        this.particleCount.set(0);
         Iterator<ParticleEmitter> iterator = this.particleEmitters.iterator();
         while (iterator.hasNext()) {
             ParticleEmitter emitter = iterator.next();
@@ -92,10 +94,11 @@ public class ParticleSystemManager {
             if (emitter.isRemoved()) {
                 emitter.onRemoved();
                 iterator.remove();
+                continue;
             }
-        }
 
-        this.particleCount = this.particleEmitters.stream().mapToInt(ParticleEmitter::getParticleCount).sum();
+            this.particleCount.addAndGet(emitter.getParticleCount());
+        }
     }
 
     @ApiStatus.Internal
@@ -112,8 +115,7 @@ public class ParticleSystemManager {
      * @param particles The number of particles being spawned
      */
     public void reserve(int particles) {
-        int freeSpace = MAX_PARTICLES - this.particleCount;
-        this.particleCount -= particles; // This isn't correct, but it doesn't really matter
+        int freeSpace = MAX_PARTICLES - this.particleCount.getAndAdd(-particles); // This isn't correct, but it doesn't really matter
         if (particles <= freeSpace) {
             return;
         }
@@ -145,6 +147,6 @@ public class ParticleSystemManager {
     }
 
     public int getParticleCount() {
-        return this.particleCount;
+        return this.particleCount.get();
     }
 }

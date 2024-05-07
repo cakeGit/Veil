@@ -34,7 +34,7 @@ public class LightEditor extends SingleWindowEditor {
 
     @Override
     public @Nullable String getGroup() {
-        return "Renderer";
+        return "Deferred";
     }
 
     @Override

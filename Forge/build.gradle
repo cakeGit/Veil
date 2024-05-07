@@ -112,11 +112,11 @@ dependencies {
 
     // runtimeOnly fg.deobf("maven.modrinth:embeddium:0.3.4+mc1.20.1")
 
-    minecraftLibrary "gg.moonflower:molang-compiler:$molang_compiler_version"
+    library "gg.moonflower:molang-compiler:$molang_compiler_version"
     shade "gg.moonflower:molang-compiler:$molang_compiler_version"
 
-    implementation "io.github.spair:imgui-java-binding:$imgui_version"
-    implementation("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
+    library "io.github.spair:imgui-java-binding:$imgui_version"
+    library("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
         exclude group: 'org.lwjgl'
         exclude group: 'org.lwjgl.lwjgl'
     }
@@ -135,7 +135,7 @@ dependencies {
     shade "io.github.spair:imgui-java-natives-macos-ft:$imgui_version"
     shade "io.github.spair:imgui-java-natives-windows:$imgui_version"
 
-    minecraftLibrary("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
+    library("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
         transitive false
     }
     shade("org.lwjgl:lwjgl-opencl:$lwjgl_version") {

@@ -121,6 +121,9 @@ public class VeilImGuiImpl implements VeilImGui {
 
     public static void init(long window) {
         try {
+            if (System.getProperty("os.arch").equals("arm") || System.getProperty("os.arch").startsWith("aarch64"))
+                System.setProperty("imgui.library.name", "libimgui-javaarm64.dylib");
+
             instance = Veil.IMGUI ? new VeilImGuiImpl(window) : new InactiveVeilImGuiImpl();
         } catch (Throwable t) {
             Veil.LOGGER.error("Failed to load ImGui", t);

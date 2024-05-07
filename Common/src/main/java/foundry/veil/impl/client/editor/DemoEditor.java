@@ -5,6 +5,7 @@ import foundry.veil.api.client.render.VeilRenderSystem;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public class DemoEditor implements Editor {
@@ -28,5 +29,10 @@ public class DemoEditor implements Editor {
     @Override
     public String getDisplayName() {
         return "Dear ImGui Demo";
+    }
+
+    @Override
+    public @Nullable String getGroup() {
+        return "Example";
     }
 }

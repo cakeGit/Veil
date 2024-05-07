@@ -31,6 +31,11 @@ public class DeferredEditor extends SingleWindowEditor {
     }
 
     @Override
+    public @Nullable String getGroup() {
+        return "Renderer";
+    }
+
+    @Override
     protected void renderComponents() {
         VeilRenderer renderer = VeilRenderSystem.renderer();
         ShaderPreDefinitions definitions = renderer.getShaderDefinitions();

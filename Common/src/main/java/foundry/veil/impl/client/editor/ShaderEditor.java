@@ -251,6 +251,11 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     }
 
     @Override
+    public @Nullable String getGroup() {
+        return "Renderer";
+    }
+
+    @Override
     protected void renderComponents() {
         this.removedDefinitions.clear();
 

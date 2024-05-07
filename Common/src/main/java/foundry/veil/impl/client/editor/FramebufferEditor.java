@@ -38,6 +38,11 @@ public class FramebufferEditor extends SingleWindowEditor {
     }
 
     @Override
+    public @Nullable String getGroup() {
+        return "Renderer";
+    }
+
+    @Override
     protected void renderComponents() {
         VeilRenderer renderer = VeilRenderSystem.renderer();
 

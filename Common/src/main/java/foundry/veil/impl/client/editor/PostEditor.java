@@ -8,6 +8,7 @@ import imgui.flag.ImGuiDataType;
 import imgui.type.ImInt;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -74,5 +75,10 @@ public class PostEditor extends SingleWindowEditor {
     @Override
     public String getDisplayName() {
         return "Post Shaders";
+    }
+
+    @Override
+    public @Nullable String getGroup() {
+        return "Renderer";
     }
 }

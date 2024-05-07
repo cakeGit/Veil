@@ -15,6 +15,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3fc;
 
 import java.util.ArrayList;
@@ -29,6 +30,11 @@ public class LightEditor extends SingleWindowEditor {
     @Override
     public String getDisplayName() {
         return "Light Editor";
+    }
+
+    @Override
+    public @Nullable String getGroup() {
+        return "Renderer";
     }
 
     @Override

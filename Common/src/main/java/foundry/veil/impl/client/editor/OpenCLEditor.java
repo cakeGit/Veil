@@ -10,6 +10,7 @@ import imgui.flag.ImGuiDataType;
 import imgui.type.ImInt;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
@@ -229,5 +230,10 @@ public class OpenCLEditor extends SingleWindowEditor {
     @Override
     public String getDisplayName() {
         return "OpenCL Editor";
+    }
+
+    @Override
+    public @Nullable String getGroup() {
+        return "Example";
     }
 }

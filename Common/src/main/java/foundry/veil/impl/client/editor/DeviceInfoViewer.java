@@ -162,6 +162,11 @@ public class DeviceInfoViewer extends SingleWindowEditor {
     }
 
     @Override
+    public @Nullable String getGroup() {
+        return "Info";
+    }
+
+    @Override
     protected void renderComponents() {
         if (ImGui.beginTabBar("##info")) {
             if (ImGui.beginTabItem("OpenCL")) {

@@ -53,9 +53,10 @@ public class EditorManager implements PreparableReloadListener {
         }
 
         if (ImGui.beginMainMenuBar()) {
-            if (ImGui.beginMenu("Editor")) {
-                for (Map.Entry<Editor, ImBoolean> entry : this.editors.entrySet()) {
-                    Editor editor = entry.getKey();
+            for (Map.Entry<Editor, ImBoolean> entry : this.editors.entrySet()) {
+                Editor editor = entry.getKey();
+                String group = editor.getGroup() != null ? editor.getGroup() : "Editor";
+                if (ImGui.beginMenu(group)) {
                     ImBoolean enabled = entry.getValue();
 
                     ImGui.beginDisabled(!editor.isEnabled());
@@ -67,8 +68,8 @@ public class EditorManager implements PreparableReloadListener {
                         }
                     }
                     ImGui.endDisabled();
+                    ImGui.endMenu();
                 }
-                ImGui.endMenu();
             }
 
             for (Map.Entry<Editor, ImBoolean> entry : this.editors.entrySet()) {

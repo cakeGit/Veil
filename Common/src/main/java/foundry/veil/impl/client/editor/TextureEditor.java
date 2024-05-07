@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -64,6 +65,11 @@ public class TextureEditor extends SingleWindowEditor {
     @Override
     public String getDisplayName() {
         return "Textures";
+    }
+
+    @Override
+    public @Nullable String getGroup() {
+        return "Renderer";
     }
 
     @Override

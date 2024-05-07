@@ -2,6 +2,7 @@ package foundry.veil.forge.platform;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
+import foundry.veil.Veil;
 import foundry.veil.platform.registry.RegistrationProvider;
 import foundry.veil.platform.registry.RegistryObject;
 import net.minecraft.core.*;
@@ -30,10 +31,7 @@ public class ForgeRegistrationFactory implements RegistrationProvider.Factory {
 
     @Override
     public <T> RegistrationProvider<T> create(ResourceKey<? extends Registry<T>> resourceKey, String modId) {
-        ModContainer container = ModList.get().getModContainerById(modId).orElseThrow(() -> new NullPointerException("Cannot find mod container for id " + modId));
-        if (!(container instanceof FMLModContainer forgeContainer)) {
-            throw new ClassCastException("The container of the mod " + modId + " is not a FML one!");
-        }
+        IEventBus eventBus = getEventBus(modId);
 
         RegistryBuilder<T> registryFactory;
         if (RegistryManager.ACTIVE.getRegistry(resourceKey) == null && !BuiltInRegistries.REGISTRY.containsKey(resourceKey.location())) {
@@ -41,7 +39,22 @@ public class ForgeRegistrationFactory implements RegistrationProvider.Factory {
         } else {
             registryFactory = null;
         }
-        return new Provider<>(modId, resourceKey, registryFactory, forgeContainer.getEventBus());
+        return new Provider<>(modId, resourceKey, registryFactory, eventBus);
+    }
+
+    private static IEventBus getEventBus(String modId) {
+        Optional<? extends ModContainer> container = ModList.get().getModContainerById(modId);
+
+		if (container.isEmpty()) {
+			Veil.LOGGER.warn("Cannot find mod container for id {}! Falling back to 'veil'", modId);
+		} else if (container.get() instanceof FMLModContainer forgeContainer) {
+			return forgeContainer.getEventBus();
+		} else {
+			Veil.LOGGER.warn("The container of the mod {} is not a FML one! Falling back to 'veil'", modId);
+		}
+
+        ModContainer modContainer = ModList.get().getModContainerById(Veil.MODID).orElseThrow(() -> new ClassCastException("Something is very wrong because Veil has no Mod Container!"));
+        return ((FMLModContainer) modContainer).getEventBus();
     }
 
     private static class Provider<T> implements RegistrationProvider<T> {

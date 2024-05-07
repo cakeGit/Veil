@@ -79,13 +79,11 @@ sourceSets.main.resources.srcDir 'src/generated/resources'
 
 configurations {
     shade
-    library
-    implementation.extendsFrom library
 }
 
 minecraft.runs.configureEach {
     lazyToken('minecraft_classpath') {
-        configurations.library.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
+        configurations.shade.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
     }
 }
 
@@ -114,19 +112,7 @@ dependencies {
 
     // runtimeOnly fg.deobf("maven.modrinth:embeddium:0.3.4+mc1.20.1")
 
-    library "gg.moonflower:molang-compiler:$molang_compiler_version"
     shade "gg.moonflower:molang-compiler:$molang_compiler_version"
-
-    library "io.github.spair:imgui-java-binding:$imgui_version"
-    library("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
-        exclude group: 'org.lwjgl'
-        exclude group: 'org.lwjgl.lwjgl'
-    }
-
-    library "io.github.spair:imgui-java-natives-linux:$imgui_version"
-    library "io.github.spair:imgui-java-natives-macos:$imgui_version"
-    library "io.github.spair:imgui-java-natives-windows:$imgui_version"
-    library ":imgui-binding-natives-macosarm64-1.86.11"
 
     shade "io.github.spair:imgui-java-binding:$imgui_version"
     shade("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
@@ -139,9 +125,6 @@ dependencies {
     shade "io.github.spair:imgui-java-natives-windows:$imgui_version"
     shade ":imgui-binding-natives-macosarm64-1.86.11"
 
-    library("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
-        transitive false
-    }
     shade("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
         transitive false
     }
@@ -175,12 +158,12 @@ shadowJar {
 //    relocate "gg.moonflower.molangcompiler", "${project.group}.lib.molangcompiler"
 //    relocate "imgui", "${project.group}.lib.imgui"
 //    relocate "io.imgui", "${project.group}.lib.imgui-natives"
-    relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.relocated.imgui-java-binding"
-    relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.relocated.imgui-java-lwjgl3"
-    relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.relocated.imgui-java-natives-linux"
-    relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.relocated.imgui-java-natives-windows"
-    relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.relocated.imgui-java-natives-macos"
-    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.relocated.imgui-java-natives-macosarm64"
+    relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.lib.imgui-java-binding"
+    relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.lib.imgui-java-lwjgl3"
+    relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.lib.imgui-java-natives-linux"
+    relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.lib.imgui-java-natives-windows"
+    relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.lib.imgui-java-natives-macos"
+    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.lib.imgui-java-natives-macosarm64"
 
     finalizedBy 'reobfShadowJar'
 }

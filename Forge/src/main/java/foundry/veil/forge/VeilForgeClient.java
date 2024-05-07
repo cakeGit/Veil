@@ -29,6 +29,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -48,7 +49,7 @@ public class VeilForgeClient {
         modEventBus.addListener(VeilForgeClient::addPackFinders);
 
         ImmutableList.Builder<RenderType> blockLayers = ImmutableList.builder();
-        MinecraftForge.EVENT_BUS.post(new ForgeVeilRegisterBlockLayerEvent(renderType -> {
+        ModLoader.get().postEvent(new ForgeVeilRegisterBlockLayerEvent(renderType -> {
             if (Veil.platform().isDevelopmentEnvironment() && renderType.bufferSize() > RenderType.SMALL_BUFFER_SIZE) {
                 Veil.LOGGER.warn("Block render layer '{}' uses a large buffer size: {}. If this is intended you can ignore this message", ((RenderStateShardAccessor) renderType).getName(), renderType.bufferSize());
             }
@@ -60,8 +61,8 @@ public class VeilForgeClient {
     private static void registerListeners(RegisterClientReloadListenersEvent event) {
         VeilClient.initRenderer();
         VeilReloadListeners.registerListeners((type, id, listener) -> event.registerReloadListener(listener));
-        MinecraftForge.EVENT_BUS.post(new ForgeVeilRendererEvent(VeilRenderSystem.renderer()));
-        MinecraftForge.EVENT_BUS.post(new ForgeVeilRegisterFixedBuffersEvent(ForgeRenderTypeStageHandler::register));
+        ModLoader.get().postEvent(new ForgeVeilRendererEvent(VeilRenderSystem.renderer()));
+        ModLoader.get().postEvent(new ForgeVeilRegisterFixedBuffersEvent(ForgeRenderTypeStageHandler::register));
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {

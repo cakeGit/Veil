@@ -6,6 +6,7 @@ import foundry.veil.platform.VeilEventPlatform;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.event.IModBusEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiConsumer;
@@ -17,7 +18,7 @@ import java.util.function.BiConsumer;
  * @author Ocelot
  * @see VeilRegisterFixedBuffersEvent
  */
-public class ForgeVeilRegisterFixedBuffersEvent extends Event {
+public class ForgeVeilRegisterFixedBuffersEvent extends Event implements IModBusEvent {
 
     private final BiConsumer<RenderLevelStageEvent.Stage, RenderType> registry;
 

@@ -180,6 +180,7 @@ shadowJar {
     relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.relocated.imgui-java-natives-linux"
     relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.relocated.imgui-java-natives-windows"
     relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.relocated.imgui-java-natives-macos"
+    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.relocated.imgui-java-natives-macosarm64"
 
     finalizedBy 'reobfShadowJar'
 }

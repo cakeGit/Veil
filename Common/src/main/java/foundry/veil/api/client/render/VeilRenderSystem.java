@@ -24,10 +24,7 @@ import org.joml.Vector2i;
 import org.joml.Vector2ic;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL40C;
-import org.lwjgl.opengl.GL44C;
-import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.opengl.*;
 
 import java.nio.IntBuffer;
 import java.util.HashSet;
@@ -64,6 +61,7 @@ public final class VeilRenderSystem {
     private static final BooleanSupplier ATOMIC_COUNTER_SUPPORTED = glCapability(caps -> caps.OpenGL42 || caps.GL_ARB_shader_atomic_counters);
     private static final BooleanSupplier TRANSFORM_FEEDBACK_SUPPORTED = glCapability(caps -> caps.OpenGL40 || caps.GL_ARB_transform_feedback3);
     private static final BooleanSupplier TEXTURE_MULTIBIND_SUPPORTED = glCapability(caps -> caps.OpenGL44 || caps.glBindTextures != 0L);
+    private static final BooleanSupplier SPARSE_BUFFERS_SUPPORTED = glCapability(caps -> caps.OpenGL44 || caps.GL_ARB_sparse_buffer);
     private static final IntSupplier MAX_COMBINED_TEXTURE_IMAGE_UNITS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
     private static final IntSupplier MAX_COLOR_ATTACHMENTS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COLOR_ATTACHMENTS));
     private static final IntSupplier MAX_SAMPLES = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_SAMPLES));
@@ -298,6 +296,13 @@ public final class VeilRenderSystem {
      */
     public static boolean textureMultibindSupported() {
         return VeilRenderSystem.TEXTURE_MULTIBIND_SUPPORTED.getAsBoolean();
+    }
+
+    /**
+     * @return Whether {@link ARBSparseBuffer} is supported
+     */
+    public static boolean sparseBuffersSupported() {
+        return VeilRenderSystem.SPARSE_BUFFERS_SUPPORTED.getAsBoolean();
     }
 
     /**

@@ -38,6 +38,7 @@ public class DeviceInfoViewer extends SingleWindowEditor {
         supportedText("Atomic Counter?", VeilRenderSystem.atomicCounterSupported(), "Whether atomic counters can be used in shaders");
         supportedText("Transform Feedback?", VeilRenderSystem.transformFeedbackSupported(), "Whether transform feedback can be used");
         supportedText("Texture Multi-bind?", VeilRenderSystem.textureMultibindSupported(), "Whether glBindTextures can be used instead of glBindTexture");
+        supportedText("Sparse Buffers?", VeilRenderSystem.sparseBuffersSupported(), "Whether sparse buffers can be used");
         ImGui.separator();
 
         GLCapabilities caps = GL.getCapabilities();

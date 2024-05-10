@@ -100,8 +100,6 @@ repositories {
             includeGroup "maven.modrinth"
         }
     }
-
-    flatDir { dirs '../libs' }
 }
 
 dependencies {
@@ -123,7 +121,6 @@ dependencies {
     shade "io.github.spair:imgui-java-natives-linux:$imgui_version"
     shade "io.github.spair:imgui-java-natives-macos-ft:$imgui_version"
     shade "io.github.spair:imgui-java-natives-windows:$imgui_version"
-    shade ":imgui-binding-natives-macosarm64-1.86.11"
 
     shade("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
         transitive false

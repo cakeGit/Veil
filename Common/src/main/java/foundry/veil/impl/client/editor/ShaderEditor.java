@@ -9,7 +9,7 @@ import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.impl.compat.IrisShaderMap;
-import foundry.veil.mixin.client.shader.GameRendererAccessor;
+import foundry.veil.mixin.accessor.GameRendererAccessor;
 import imgui.ImGui;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImBoolean;

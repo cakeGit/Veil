@@ -1,4 +1,4 @@
-package foundry.veil.mixin.client.pipeline;
+package foundry.veil.mixin.accessor;
 
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;

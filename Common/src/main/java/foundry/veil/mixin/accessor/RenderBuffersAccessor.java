@@ -1,4 +1,4 @@
-package foundry.veil.mixin.client.deferred;
+package foundry.veil.mixin.accessor;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import net.minecraft.client.renderer.RenderBuffers;

@@ -9,7 +9,7 @@ import foundry.veil.fabric.event.FabricFreeNativeResourcesEvent;
 import foundry.veil.fabric.event.FabricVeilRegisterBlockLayerEvent;
 import foundry.veil.fabric.event.FabricVeilRegisterFixedBuffersEvent;
 import foundry.veil.fabric.event.FabricVeilRendererEvent;
-import foundry.veil.mixin.client.stage.RenderStateShardAccessor;
+import foundry.veil.mixin.accessor.RenderStateShardAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.renderer.RenderType;

@@ -1,4 +1,4 @@
-package foundry.veil.mixin.client.shader;
+package foundry.veil.mixin.accessor;
 
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;

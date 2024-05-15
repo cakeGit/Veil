@@ -2,7 +2,7 @@ package foundry.veil.api.resource;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
-import foundry.veil.mixin.client.quasar.RegistryDataAccessor;
+import foundry.veil.mixin.accessor.RegistryDataAccessor;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.WritableRegistry;

@@ -1,4 +1,4 @@
-package foundry.veil.mixin.client.pipeline;
+package foundry.veil.mixin.accessor;
 
 import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Mixin;

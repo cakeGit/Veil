@@ -12,7 +12,7 @@ import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import foundry.veil.api.quasar.particle.ParticleSystemManager;
 import foundry.veil.ext.LevelRendererExtension;
 import foundry.veil.impl.client.imgui.VeilImGuiImpl;
-import foundry.veil.mixin.client.pipeline.ReloadableResourceManagerAccessor;
+import foundry.veil.mixin.accessor.ReloadableResourceManagerAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;

@@ -1,4 +1,4 @@
-package foundry.veil.mixin.client.quasar;
+package foundry.veil.mixin.accessor;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;

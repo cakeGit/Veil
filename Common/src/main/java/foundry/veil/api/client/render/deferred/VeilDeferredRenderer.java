@@ -299,9 +299,6 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
      * Allows the renderer to run normally.
      */
     public void enable() {
-        if (this.state == RendererState.DISABLED) {
-            Minecraft.getInstance().levelRenderer.allChanged();
-        }
         this.state = RendererState.INACTIVE;
     }
 
@@ -309,9 +306,6 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
      * Forces the renderer off.
      */
     public void disable() {
-        if (this.state != RendererState.DISABLED) {
-            Minecraft.getInstance().levelRenderer.allChanged();
-        }
         this.state = RendererState.DISABLED;
     }
 

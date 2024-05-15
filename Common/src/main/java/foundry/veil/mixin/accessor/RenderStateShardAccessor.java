@@ -1,4 +1,4 @@
-package foundry.veil.mixin.client.stage;
+package foundry.veil.mixin.accessor;
 
 import net.minecraft.client.renderer.RenderStateShard;
 import org.spongepowered.asm.mixin.Mixin;

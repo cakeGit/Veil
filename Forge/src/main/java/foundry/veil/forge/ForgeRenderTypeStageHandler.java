@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import foundry.veil.Veil;
 import foundry.veil.ext.LevelRendererBlockLayerExtension;
-import foundry.veil.mixin.client.deferred.RenderBuffersAccessor;
+import foundry.veil.mixin.accessor.RenderBuffersAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;

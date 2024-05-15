@@ -10,6 +10,7 @@ import foundry.veil.api.client.render.framebuffer.*;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,6 +50,7 @@ public class DeferredEditor extends SingleWindowEditor {
             } else {
                 deferredRenderer.disable();
             }
+            Minecraft.getInstance().levelRenderer.allChanged();
         }
 
         ImGui.sameLine();

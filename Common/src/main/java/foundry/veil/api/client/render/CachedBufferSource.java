@@ -3,7 +3,7 @@ package foundry.veil.api.client.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import foundry.veil.mixin.client.pipeline.BufferBuilderAccessor;
+import foundry.veil.mixin.accessor.BufferBuilderAccessor;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;

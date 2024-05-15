@@ -1,4 +1,4 @@
-package foundry.veil.mixin.client.pipeline;
+package foundry.veil.mixin.accessor;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import org.spongepowered.asm.mixin.Mixin;

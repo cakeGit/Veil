@@ -20,12 +20,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2i;
-import org.joml.Vector2ic;
-import org.joml.Vector3i;
-import org.joml.Vector3ic;
+import org.joml.*;
 import org.lwjgl.opengl.*;
 
+import java.lang.Math;
 import java.nio.IntBuffer;
 import java.util.HashSet;
 import java.util.Locale;
@@ -102,6 +100,9 @@ public final class VeilRenderSystem {
     });
     private static final IntSupplier MAX_COMPUTE_WORK_GROUP_INVOCATIONS = VeilRenderSystem.glGetter(() -> COMPUTE_SUPPORTED.getAsBoolean() ? glGetInteger(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS) : 0);
 
+    private static final Vector3f LIGHT0_POSITION = new Vector3f();
+    private static final Vector3f LIGHT1_POSITION = new Vector3f();
+
     private static VeilRenderer renderer;
     private static ResourceLocation shaderLocation;
 
@@ -160,7 +161,8 @@ public final class VeilRenderSystem {
 
     /**
      * Binds the specified texture ids to sequential texture units and invalidates the GLStateManager.
-     * @param first The first unit to bind to
+     *
+     * @param first    The first unit to bind to
      * @param textures The textures to bind
      */
     public static void bindTextures(int first, IntBuffer textures) {
@@ -170,7 +172,8 @@ public final class VeilRenderSystem {
 
     /**
      * Binds the specified texture ids to sequential texture units and invalidates the GLStateManager.
-     * @param first The first unit to bind to
+     *
+     * @param first    The first unit to bind to
      * @param textures The textures to bind
      */
     public static void bindTextures(int first, int... textures) {
@@ -241,7 +244,8 @@ public final class VeilRenderSystem {
 
     /**
      * Draws instances of the specified vertex buffer.
-     * @param vbo The vertex buffer to draw
+     *
+     * @param vbo       The vertex buffer to draw
      * @param instances The number of instances to draw
      * @see <a target="_blank" href="http://docs.gl/gl4/glDrawArraysInstanced">Reference Page</a>
      */
@@ -251,10 +255,11 @@ public final class VeilRenderSystem {
 
     /**
      * Draws indirect instances of the specified vertex buffer.
-     * @param vbo The vertex buffer to draw
-     * @param indirect A pointer into the currently bound {@link GL40C#GL_DRAW_INDIRECT_BUFFER} or the address of a struct containing draw data
+     *
+     * @param vbo       The vertex buffer to draw
+     * @param indirect  A pointer into the currently bound {@link GL40C#GL_DRAW_INDIRECT_BUFFER} or the address of a struct containing draw data
      * @param drawCount The number of primitives to draw
-     * @param stride The offset between indirect elements
+     * @param stride    The offset between indirect elements
      * @see <a target="_blank" href="http://docs.gl/gl4/glMultiDrawElementsIndirect">Reference Page</a>
      */
     public static void drawIndirect(VertexBuffer vbo, long indirect, int drawCount, int stride) {
@@ -263,6 +268,7 @@ public final class VeilRenderSystem {
 
     /**
      * Retrieves the number of indices in the specified vertex buffer.
+     *
      * @param vbo The vertex buffer to query
      * @return The number of indices in the buffer
      */
@@ -328,6 +334,7 @@ public final class VeilRenderSystem {
 
     /**
      * Retrieves the maximum bindings for the specified buffer binding.
+     *
      * @param target The target to query the maximum bindings of
      * @return The GL maximum amount of buffer bindings available
      */
@@ -501,6 +508,21 @@ public final class VeilRenderSystem {
         return shader instanceof ShaderProgramImpl.Wrapper wrapper ? wrapper.program() : null;
     }
 
+    /**
+     * @return The position of the first light
+     */
+    public static Vector3fc getLight0Position() {
+        return LIGHT0_POSITION;
+    }
+
+    /**
+     * @return The position of the second light
+     */
+
+    public static Vector3fc getLight1Position() {
+        return LIGHT1_POSITION;
+    }
+
     // Internal
 
     @ApiStatus.Internal
@@ -539,5 +561,11 @@ public final class VeilRenderSystem {
     @ApiStatus.Internal
     public static void renderPost() {
         renderer.getPostProcessingManager().runPipeline();
+    }
+
+    @ApiStatus.Internal
+    public static void setShaderLights(Vector3fc light0, Vector3fc light1) {
+        LIGHT0_POSITION.set(light0);
+        LIGHT1_POSITION.set(light1);
     }
 }

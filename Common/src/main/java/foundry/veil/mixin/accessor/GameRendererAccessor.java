@@ -12,4 +12,7 @@ public interface GameRendererAccessor {
 
     @Accessor
     Map<String, ShaderInstance> getShaders();
+
+    @Accessor
+    void setRenderDistance(float renderDistance);
 }

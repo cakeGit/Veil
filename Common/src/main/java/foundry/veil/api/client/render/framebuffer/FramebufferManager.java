@@ -71,6 +71,9 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
             fbo.bindDraw(false);
             fbo.clear();
             this.framebuffers.put(name, fbo);
+            if (!definition.autoClear()) {
+                this.manualFramebuffers.add(name);
+            }
         } catch (Exception e) {
             Veil.LOGGER.error("Failed to initialize framebuffer: {}", name, e);
         }
@@ -85,6 +88,7 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
 
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
         for (ResourceLocation name : this.screenFramebuffers) {
+            this.manualFramebuffers.remove(name);
             AdvancedFbo fbo = this.framebuffers.remove(name);
             if (fbo != null) {
                 fbo.free();

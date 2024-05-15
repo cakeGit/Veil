@@ -24,12 +24,14 @@ import java.util.Optional;
  * @param height       The height of the framebuffer
  * @param colorBuffers The color attachments to add
  * @param depthBuffer  The depth attachment to use or <code>null</code> to not add a depth buffer
+ * @param autoClear    Whether the framebuffer should be cleared automatically at the start of the next frame
  * @author Ocelot
  */
 public record FramebufferDefinition(MolangExpression width,
                                     MolangExpression height,
                                     FramebufferAttachmentDefinition[] colorBuffers,
-                                    @Nullable FramebufferAttachmentDefinition depthBuffer) {
+                                    @Nullable FramebufferAttachmentDefinition depthBuffer,
+                                    boolean autoClear) {
 
     private static final MolangExpression DEFAULT_WIDTH;
     private static final MolangExpression DEFAULT_HEIGHT;
@@ -76,12 +78,15 @@ public record FramebufferDefinition(MolangExpression width,
                     .flatXmap(FramebufferDefinition::colorSizeCheck, FramebufferDefinition::colorSizeCheck)
                     .forGetter(definition -> Arrays.asList(definition.colorBuffers)),
             FramebufferDefinition.DEPTH_CODEC.fieldOf("depth")
-                    .forGetter(definition -> Optional.ofNullable(definition.depthBuffer))
-    ).apply(instance, (width, height, colorBuffers, depthBuffer) ->
+                    .forGetter(definition -> Optional.ofNullable(definition.depthBuffer)),
+            Codec.BOOL.optionalFieldOf("autoClear", true)
+                    .forGetter(FramebufferDefinition::autoClear)
+    ).apply(instance, (width, height, colorBuffers, depthBuffer, autoClear) ->
             new FramebufferDefinition(width,
                     height,
                     colorBuffers.toArray(FramebufferAttachmentDefinition[]::new),
-                    depthBuffer.orElse(null))));
+                    depthBuffer.orElse(null),
+                    autoClear)));
 
     private static final Codec<FramebufferDefinition> COMPACT_CODEC =
             RecordCodecBuilder.create(instance -> instance.group(
@@ -105,8 +110,10 @@ public record FramebufferDefinition(MolangExpression width,
                     Codec.STRING.optionalFieldOf("name")
                             .forGetter(definition -> Optional.ofNullable(definition.colorBuffers[0].name())),
                     FramebufferDefinition.DEPTH_CODEC.fieldOf("depth")
-                            .forGetter(definition -> Optional.ofNullable(definition.depthBuffer))
-            ).apply(instance, (width, height, type, format, dataType, linear, levels, name, depth) ->
+                            .forGetter(definition -> Optional.ofNullable(definition.depthBuffer)),
+                    Codec.BOOL.optionalFieldOf("autoClear", true)
+                            .forGetter(FramebufferDefinition::autoClear)
+            ).apply(instance, (width, height, type, format, dataType, linear, levels, name, depth, autoClear) ->
                     new FramebufferDefinition(width,
                             height,
                             new FramebufferAttachmentDefinition[]{
@@ -118,7 +125,8 @@ public record FramebufferDefinition(MolangExpression width,
                                             levels,
                                             name.orElse(null))
                             },
-                            depth.orElse(null))));
+                            depth.orElse(null),
+                            autoClear)));
 
     public static final Codec<FramebufferDefinition> CODEC = Codec.either(FramebufferDefinition.FULL_CODEC, FramebufferDefinition.COMPACT_CODEC)
             .xmap(either -> either.map(left -> left, right -> right),

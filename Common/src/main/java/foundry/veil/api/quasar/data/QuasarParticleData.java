@@ -46,6 +46,7 @@ public record QuasarParticleData(boolean shouldCollide,
                                  List<Holder<ParticleModuleData>> forceModules,
                                  List<Holder<ParticleModuleData>> renderModules,
                                  @Nullable SpriteData spriteData,
+                                 boolean additive,
                                  RenderData.RenderStyle renderStyle) {
 
     public static final Codec<QuasarParticleData> DIRECT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -58,8 +59,9 @@ public record QuasarParticleData(boolean shouldCollide,
             ParticleModuleData.UPDATE_CODEC.listOf().optionalFieldOf("forces", Collections.emptyList()).forGetter(QuasarParticleData::forceModules),
             ParticleModuleData.RENDER_CODEC.listOf().optionalFieldOf("render_modules", Collections.emptyList()).forGetter(QuasarParticleData::renderModules),
             SpriteData.CODEC.optionalFieldOf("sprite_data").forGetter(data -> Optional.ofNullable(data.spriteData())),
+            Codec.BOOL.optionalFieldOf("additive", false).forGetter(QuasarParticleData::additive),
             RenderData.RenderStyle.CODEC.optionalFieldOf("render_style", RenderData.RenderStyle.BILLBOARD).forGetter(QuasarParticleData::renderStyle)
-    ).apply(instance, (shouldCollide, faceVelocity, velocityStretchFactor, initModules, updateModules, collisionModules, forceModules, renderModules, spriteData, renderStyle) -> new QuasarParticleData(shouldCollide, faceVelocity, velocityStretchFactor, initModules, updateModules, collisionModules, forceModules, renderModules, spriteData.orElse(null), renderStyle)));
+    ).apply(instance, (shouldCollide, faceVelocity, velocityStretchFactor, initModules, updateModules, collisionModules, forceModules, renderModules, spriteData, additive, renderStyle) -> new QuasarParticleData(shouldCollide, faceVelocity, velocityStretchFactor, initModules, updateModules, collisionModules, forceModules, renderModules, spriteData.orElse(null), additive, renderStyle)));
     public static final Codec<Holder<QuasarParticleData>> CODEC = RegistryFileCodec.create(QuasarParticles.PARTICLE_DATA, DIRECT_CODEC);
 
     /**

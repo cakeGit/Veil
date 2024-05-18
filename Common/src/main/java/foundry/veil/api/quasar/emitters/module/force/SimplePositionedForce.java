@@ -23,7 +23,7 @@ public abstract class SimplePositionedForce implements ForceParticleModule, Posi
 
     protected Vector3d getDeltaPosition(QuasarParticle particle) {
         if (this.localPosition) {
-            return this.position.add(particle.getParent().getPosition(), this.tempPos).sub(particle.getPosition());
+            return this.position.add(particle.getEmitter().getPosition(), this.tempPos).sub(particle.getPosition());
         }
         return this.position.sub(particle.getPosition(), this.tempPos);
     }

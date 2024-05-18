@@ -65,6 +65,7 @@ public class RenderData {
     private float alpha;
     public float renderAge;
     public float agePercent;
+    private final boolean additive;
     private SpriteData spriteData;
     private TextureAtlasSprite atlasSprite;
     private RenderType renderType;
@@ -83,6 +84,7 @@ public class RenderData {
         this.blue = 1.0F;
         this.alpha = 1.0F;
         this.renderAge = 0.0F;
+        this.additive = data.additive();
         this.spriteData = data.spriteData();
         this.atlasSprite = null;
         this.updateRenderType();
@@ -91,11 +93,11 @@ public class RenderData {
 
     private void updateRenderType() {
         if (this.atlasSprite != null) {
-            this.renderType = VeilRenderType.quasarParticle(this.atlasSprite.atlasLocation());
+            this.renderType = VeilRenderType.quasarParticle(this.atlasSprite.atlasLocation(), this.additive);
         } else if (this.spriteData != null) {
-            this.renderType = VeilRenderType.quasarParticle(this.spriteData.sprite());
+            this.renderType = VeilRenderType.quasarParticle(this.spriteData.sprite(), this.additive);
         } else {
-            this.renderType = VeilRenderType.quasarParticle(BLANK);
+            this.renderType = VeilRenderType.quasarParticle(BLANK, this.additive);
         }
     }
 

@@ -11,6 +11,7 @@ public final class VeilShaders {
     private VeilShaders() {
     }
 
+    public static final ResourceLocation PARTICLE = quasar("particle");
     public static final ResourceLocation PARTICLE_ADD = quasar("particle_add");
 
     public static final ResourceLocation LIGHT_AMBIENT = light("ambient");

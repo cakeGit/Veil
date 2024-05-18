@@ -1,6 +1,5 @@
 package foundry.veil.api.quasar.particle;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import foundry.veil.Veil;
@@ -8,6 +7,7 @@ import foundry.veil.api.TickTaskScheduler;
 import foundry.veil.api.quasar.data.EmitterSettings;
 import foundry.veil.api.quasar.data.ParticleEmitterData;
 import foundry.veil.api.quasar.data.QuasarParticleData;
+import foundry.veil.api.quasar.data.module.CodeModule;
 import foundry.veil.api.quasar.data.module.ParticleModuleData;
 import foundry.veil.api.quasar.emitters.module.update.FaceVelocityModule;
 import net.minecraft.client.Camera;
@@ -51,7 +51,7 @@ public class ParticleEmitter {
     private final ParticleSystemManager particleManager;
     private final ClientLevel level;
     private final ParticleEmitterData emitterData;
-    private final List<Holder<ParticleModuleData>> modules;
+    private final List<ParticleModuleData> modules;
     private final RandomSource randomSource;
     private final Vector3d position;
     private final Vector3d offset;
@@ -105,8 +105,8 @@ public class ParticleEmitter {
 //        });
 
             ParticleModuleSet.Builder builder = ParticleModuleSet.builder();
-            for (Holder<ParticleModuleData> module : this.modules) {
-                module.value().addModules(builder);
+            for (ParticleModuleData module : this.modules) {
+                module.addModules(builder);
             }
             if (this.emitterData.particleData().faceVelocity()) {
                 builder.addModule(new FaceVelocityModule());
@@ -120,8 +120,8 @@ public class ParticleEmitter {
         }
     }
 
-    private static List<Holder<ParticleModuleData>> createModuleSet(QuasarParticleData data) {
-        ImmutableList.Builder<Holder<ParticleModuleData>> builder = ImmutableList.builder();
+    private static List<ParticleModuleData> createModuleSet(QuasarParticleData data) {
+        List<ParticleModuleData> list = new ArrayList<>();
         data.allModules().forEach(module -> {
             if (!module.isBound()) {
                 if (REPORTED_MODULES.add(module)) {
@@ -129,9 +129,9 @@ public class ParticleEmitter {
                 }
                 return;
             }
-            builder.add(module);
+            list.add(module.value());
         });
-        return builder.build();
+        return list;
     }
 
     private void expire() {
@@ -153,10 +153,8 @@ public class ParticleEmitter {
         }
     }
 
-    /**
-     * Tick the emitter. This is run to track the basic functionality of the emitter.
-     */
-    public void tick() {
+    @ApiStatus.Internal
+    void tick() {
         this.position.set(0);
         if (this.attachedEntity != null) {
             if (this.attachedEntity.isAlive()) {
@@ -271,6 +269,16 @@ public class ParticleEmitter {
     }
 
     /**
+     * <p>Adds a custom module with user code that is added to all particles spawned after this is called.</p>
+     * <p>The module is not able to be serialized and does not affect the state of any other emitters.</p>
+     *
+     * @param module The module to add
+     */
+    public void addCodeModule(CodeModule module) {
+        this.modules.add(module);
+    }
+
+    /**
      * Attempts to remove the oldest specified number of particles.
      *
      * @param count The number of particles to attempt to remove
@@ -341,6 +349,7 @@ public class ParticleEmitter {
 
     /**
      * Sets the position of the emitter relative to the origin of the world or attached entity.
+     *
      * @param position The position
      */
     public void setPosition(Vector3dc position) {
@@ -349,6 +358,7 @@ public class ParticleEmitter {
 
     /**
      * Sets the position of the emitter relative to the origin of the world or attached entity.
+     *
      * @param x The x position
      * @param y The y position
      * @param z The z position
@@ -365,6 +375,7 @@ public class ParticleEmitter {
     /**
      * Sets the origin of the emitter position to match the specified entity.
      * That means the value set by {@link #setPosition(double, double, double)} will not be interpreted as an offset from the entity position.
+     *
      * @param entity The entity to attach to
      */
     public void setAttachedEntity(@Nullable Entity entity) {

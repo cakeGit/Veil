@@ -31,6 +31,7 @@ public final class VeilRenderType extends RenderType {
                 .setTextureState(new TextureStateShard(texture, false, false))
                 .setTransparencyState(additive ? ADDITIVE_TRANSPARENCY : TRANSLUCENT_TRANSPARENCY)
                 .setLightmapState(LIGHTMAP)
+                .setWriteMaskState(additive ? COLOR_WRITE : COLOR_DEPTH_WRITE)
                 .createCompositeState(false);
         return create(Veil.MODID + ":quasar_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, SMALL_BUFFER_SIZE, false, !additive, state);
     });

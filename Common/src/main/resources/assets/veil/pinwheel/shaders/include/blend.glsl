@@ -10,7 +10,7 @@ vec3 blend(vec4 dst, vec4 src) {
 }
 
 vec3 blendAdditive(vec4 dst, vec4 src) {
-    return src.rgb + dst.rgb;
+    return src.rgb + dst.rgb * dst.a;
 }
 
 vec3 blendLightning(vec4 dst, vec4 src) {

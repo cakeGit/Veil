@@ -3,47 +3,20 @@ package foundry.veil.impl.client.render;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionfc;
 import org.joml.Vector3dc;
 import org.joml.Vector3f;
 
+import java.util.Objects;
+
 public class LevelPerspectiveCamera extends Camera {
 
     private static final Vector3f EULER_ANGLES = new Vector3f();
 
-    private final Entity dummyCameraEntity;
-    private ClientLevel level;
-
-    public LevelPerspectiveCamera() {
-        this.dummyCameraEntity = new Entity(EntityType.OCELOT, null) {
-            @Override
-            protected void defineSynchedData() {
-            }
-
-            @Override
-            protected void readAdditionalSaveData(CompoundTag var1) {
-            }
-
-            @Override
-            protected void addAdditionalSaveData(CompoundTag var1) {
-            }
-
-            @Override
-            public Level level() {
-                return LevelPerspectiveCamera.this.level;
-            }
-        };
-    }
-
     public void setup(Vector3dc position, @Nullable Entity cameraEntity, ClientLevel level, Quaternionfc orientation) {
-        this.level = level;
-        super.setup(level, cameraEntity != null ? cameraEntity : this.dummyCameraEntity, true, false, 1.0F);
+        super.setup(level, cameraEntity != null ? cameraEntity : Objects.requireNonNull(Minecraft.getInstance().player), true, false, 1.0F);
         this.setPosition(position.x(), position.y(), position.z());
 
         orientation.getEulerAnglesYXZ(EULER_ANGLES);

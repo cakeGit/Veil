@@ -285,6 +285,10 @@ public class ParticleEmitter {
      * @return The number of particles removed
      */
     public int trim(int count) {
+        // Don't allow high-priority particles to be trimmed
+        if (this.emitterData.emitterSettings().forceSpawn()) {
+            return 0;
+        }
         int removeCount = Math.min(count, this.particles.size());
         this.particles.subList(0, removeCount).clear();
         return removeCount;

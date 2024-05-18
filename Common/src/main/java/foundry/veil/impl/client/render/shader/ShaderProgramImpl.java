@@ -333,7 +333,11 @@ public class ShaderProgramImpl implements ShaderProgram {
             int activeTexture = GlStateManager._getActiveTexture();
             this.uploadTextures(start, (sampler, id) -> {
                 RenderSystem.activeTexture(GL_TEXTURE0 + sampler);
-                RenderSystem.bindTexture(id);
+                if (sampler >= 12) {
+                    glBindTexture(GL_TEXTURE_2D, id);
+                } else {
+                    RenderSystem.bindTexture(id);
+                }
             });
             RenderSystem.activeTexture(activeTexture);
             return start;

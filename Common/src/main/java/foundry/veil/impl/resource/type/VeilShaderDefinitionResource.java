@@ -1,6 +1,5 @@
 package foundry.veil.impl.resource.type;
 
-import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
 import net.minecraft.resources.ResourceLocation;
 
@@ -8,7 +7,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
-public record UnknownResource(ResourceLocation path, Path filePath, boolean modResource) implements VeilResource<UnknownResource> {
+public record VeilShaderDefinitionResource(ResourceLocation path, Path filePath, boolean modResource) implements VeilShaderResource {
 
     @Override
     public boolean hidden() {
@@ -16,7 +15,7 @@ public record UnknownResource(ResourceLocation path, Path filePath, boolean modR
     }
 
     @Override
-    public Collection<VeilResourceAction<UnknownResource>> getActions() {
+    public Collection<VeilResourceAction<VeilShaderResource>> getActions() {
         return List.of();
     }
 
@@ -31,6 +30,6 @@ public record UnknownResource(ResourceLocation path, Path filePath, boolean modR
 
     @Override
     public int getIconCode() {
-        return 0xED13; // Unknown file icon
+        return 0xED0F; // Text file icon
     }
 }

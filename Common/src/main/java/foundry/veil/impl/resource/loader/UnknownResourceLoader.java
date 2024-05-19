@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.nio.file.Path;
 
 public class UnknownResourceLoader implements VeilResourceLoader<UnknownResource> {
+
     public static final UnknownResourceLoader INSTANCE = new UnknownResourceLoader();
 
     @Override

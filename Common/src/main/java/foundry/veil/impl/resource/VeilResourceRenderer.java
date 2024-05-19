@@ -18,20 +18,7 @@ public class VeilResourceRenderer {
         int id = resource.hashCode();
         ImGui.pushID(id);
         ImGui.beginGroup();
-        VeilIconImGuiUtil.icon(resource.getIconCode());
-        ImGui.sameLine();
-
-        Path filePath = resource.filePath();
-        boolean staticResource = filePath == null || filePath.getFileSystem() != FileSystems.getDefault();
-
-        ImGui.pushStyleColor(ImGuiCol.Text, staticResource ? 0xFFAAAAAA : 0xFFFFFFFF);
-        if (seated) {
-            ImGui.text(resource.fileName());
-        } else {
-            VeilImGuiUtil.resourceLocation(resource.path());
-        }
-        ImGui.popStyleColor();
-
+        resource.render(seated);
         ImGui.endGroup();
         ImGui.popID();
 
@@ -46,7 +33,8 @@ public class VeilResourceRenderer {
                 ImGui.setClipboardText(resource.path().toString());
             }
 
-            ImGui.beginDisabled(staticResource);
+            Path filePath = resource.filePath();
+            ImGui.beginDisabled(filePath == null || filePath.getFileSystem() != FileSystems.getDefault());
             if (ImGui.menuItem("Open in Explorer")) {
                 Util.getPlatform().openFile(filePath.getParent().toFile());
             }

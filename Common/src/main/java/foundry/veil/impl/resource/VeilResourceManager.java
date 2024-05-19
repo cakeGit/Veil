@@ -3,6 +3,7 @@ package foundry.veil.impl.resource;
 import foundry.veil.Veil;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.ext.PackResourcesExtension;
+import foundry.veil.impl.resource.loader.ShaderResourceLoader;
 import foundry.veil.impl.resource.loader.UnknownResourceLoader;
 import foundry.veil.impl.resource.tree.VeilResourceFolder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -14,7 +15,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -27,6 +27,10 @@ public class VeilResourceManager implements PreparableReloadListener {
 
     private final List<VeilResourceLoader<?>> loaders = new ObjectArrayList<>(8);
     private final Map<String, VeilResourceFolder> modResources = new TreeMap<>();
+
+    public VeilResourceManager() {
+        this.addLoader(new ShaderResourceLoader());
+    }
 
     /**
      * Adds a resource loader to the resource manager
@@ -46,10 +50,6 @@ public class VeilResourceManager implements PreparableReloadListener {
         }
 
         for (String namespace : packResources.getNamespaces(PackType.CLIENT_RESOURCES)) {
-            if (namespace.startsWith("fabric-")) { // TODO: Evaluate a more proper solution
-                continue;
-            }
-
             packResources.listResources(PackType.CLIENT_RESOURCES, namespace, "", (loc, inputStreamIoSupplier) -> this.visitResource(modResources, loc, null, false));
         }
     }

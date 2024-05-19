@@ -4,21 +4,15 @@ import foundry.veil.VeilClient;
 import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.imgui.VeilIconImGuiUtil;
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
-import foundry.veil.api.client.render.VeilRenderSystem;
-import foundry.veil.api.client.render.post.PostProcessingManager;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.impl.resource.VeilResourceManager;
 import foundry.veil.impl.resource.VeilResourceRenderer;
 import foundry.veil.impl.resource.tree.VeilResourceFolder;
 import imgui.ImGui;
-import imgui.flag.*;
-import imgui.type.ImInt;
-import net.minecraft.resources.ResourceLocation;
+import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiTreeNodeFlags;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @ApiStatus.Internal
 public class ResourceManagerEditor extends SingleWindowEditor {
@@ -59,7 +53,7 @@ public class ResourceManagerEditor extends SingleWindowEditor {
     private void renderFolder(VeilResourceFolder folder) {
         boolean open = ImGui.treeNodeEx("##" + folder.getName(), ImGuiTreeNodeFlags.SpanAvailWidth);
         ImGui.sameLine();
-        VeilIconImGuiUtil.icon(0xF43B);
+        VeilIconImGuiUtil.icon(open ? 0xED6F : 0xF43B);
         ImGui.sameLine();
         ImGui.text(folder.getName());
 
@@ -74,11 +68,15 @@ public class ResourceManagerEditor extends SingleWindowEditor {
             this.renderFolder(subFolder);
         }
 
+        ImGui.indent();
         for (VeilResource<?> resource : folder.getResources()) {
-            ImGui.indent();
+            if (resource.hidden()) {
+                continue;
+            }
+
             VeilResourceRenderer.renderFilename(resource);
-            ImGui.unindent();
         }
+        ImGui.unindent();
     }
 
     @Override

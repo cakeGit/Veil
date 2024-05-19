@@ -22,7 +22,7 @@
     "accessor.RenderStateShardAccessor",
     "accessor.RenderTargetAccessor",
     "accessor.RenderTypeAccessor",
-    "accessor.VanillaPackResourcesAccessor",
+    "resource.VanillaPackResourcesMixin",
     "client.deferred.AmbientOcclusionFaceMixin",
     "client.deferred.DebugScreenOverlayMixin",
     "client.deferred.LevelRendererMixin",

@@ -155,8 +155,7 @@ public class QuasarParticle {
     }
 
     private int getLightColor() {
-        BlockPos pos = this.getBlockPosition();
-        return this.level.hasChunkAt(pos) ? LevelRenderer.getLightColor(this.level, pos) : 0;
+        return LevelRenderer.getLightColor(this.level, this.getBlockPosition());
     }
 
     @ApiStatus.Internal

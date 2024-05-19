@@ -4,9 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import foundry.veil.Veil;
 import foundry.veil.api.TickTaskScheduler;
-import foundry.veil.api.quasar.data.EmitterSettings;
-import foundry.veil.api.quasar.data.ParticleEmitterData;
-import foundry.veil.api.quasar.data.QuasarParticleData;
+import foundry.veil.api.quasar.data.*;
 import foundry.veil.api.quasar.data.module.CodeModule;
 import foundry.veil.api.quasar.data.module.ParticleModuleData;
 import foundry.veil.api.quasar.emitters.module.update.FaceVelocityModule;
@@ -57,6 +55,16 @@ public class ParticleEmitter {
     private final Vector3d offset;
     private final List<QuasarParticle> particles;
 
+    private int maxLifetime;
+    private boolean loop;
+    private int rate;
+    private int count;
+    private int maxParticles;
+    private EmitterShapeSettings emitterShapeSettings;
+    private ParticleSettings particleSettings;
+    private boolean forceSpawn;
+    private QuasarParticleData particleData;
+
     @Nullable
     private Entity attachedEntity;
     private CompletableFuture<?> spawnTask;
@@ -72,6 +80,17 @@ public class ParticleEmitter {
         this.position = new Vector3d();
         this.offset = new Vector3d();
         this.particles = new ArrayList<>();
+
+        this.maxLifetime = data.maxLifetime();
+        this.loop = data.loop();
+        this.rate = data.rate();
+        this.count = data.count();
+        this.maxParticles = data.maxParticles();
+        EmitterSettings emitterSettings = data.emitterSettings();
+        this.emitterShapeSettings = emitterSettings.emitterShapeSettings();
+        this.particleSettings = emitterSettings.particleSettings();
+        this.forceSpawn = emitterSettings.forceSpawn();
+        this.particleData = data.particleData();
 
         TickTaskScheduler scheduler = particleManager.getScheduler();
         this.spawnTask = scheduler.scheduleAtFixedRate(this::spawn, 0, data.rate());
@@ -339,6 +358,42 @@ public class ParticleEmitter {
         return this.particles.size();
     }
 
+    public int getMaxLifetime() {
+        return this.maxLifetime;
+    }
+
+    public boolean isLoop() {
+        return this.loop;
+    }
+
+    public int getRate() {
+        return this.rate;
+    }
+
+    public int getCount() {
+        return this.count;
+    }
+
+    public int getMaxParticles() {
+        return this.maxParticles;
+    }
+
+    public EmitterShapeSettings getEmitterShapeSettings() {
+        return this.emitterShapeSettings;
+    }
+
+    public ParticleSettings getParticleSettings() {
+        return this.particleSettings;
+    }
+
+    public boolean isForceSpawn() {
+        return this.forceSpawn;
+    }
+
+    public QuasarParticleData getParticleData() {
+        return this.particleData;
+    }
+
     /**
      * @return The entity this emitter is attached to and will apply
      */
@@ -374,6 +429,42 @@ public class ParticleEmitter {
         } else {
             this.position.set(this.offset);
         }
+    }
+
+    public void setMaxLifetime(int maxLifetime) {
+        this.maxLifetime = maxLifetime;
+    }
+
+    public void setLoop(boolean loop) {
+        this.loop = loop;
+    }
+
+    public void setRate(int rate) {
+        this.rate = rate;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public void setMaxParticles(int maxParticles) {
+        this.maxParticles = maxParticles;
+    }
+
+    public void setEmitterShapeSettings(EmitterShapeSettings emitterShapeSettings) {
+        this.emitterShapeSettings = emitterShapeSettings;
+    }
+
+    public void setParticleSettings(ParticleSettings particleSettings) {
+        this.particleSettings = particleSettings;
+    }
+
+    public void setForceSpawn(boolean forceSpawn) {
+        this.forceSpawn = forceSpawn;
+    }
+
+    public void setParticleData(QuasarParticleData particleData) {
+        this.particleData = particleData;
     }
 
     /**

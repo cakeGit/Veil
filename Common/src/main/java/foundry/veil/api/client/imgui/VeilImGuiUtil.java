@@ -12,11 +12,11 @@ public class VeilImGuiUtil {
      * @param text The tooltip text
      */
     public static void tooltip(String text) {
-        ImGui.textDisabled("(?)");
+        ImGui.textColored(0xFF555555, "(?)");
         if (ImGui.isItemHovered()) {
             ImGui.beginTooltip();
             ImGui.pushTextWrapPos(ImGui.getFontSize() * 35.0f);
-            ImGui.textUnformatted(text);
+            ImGui.textColored(0xFFFFFFFF, text);
             ImGui.popTextWrapPos();
             ImGui.endTooltip();
         }

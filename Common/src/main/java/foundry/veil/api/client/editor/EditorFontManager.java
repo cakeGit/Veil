@@ -41,7 +41,7 @@ public class EditorFontManager implements PreparableReloadListener {
         this.fonts = new HashMap<>();
     }
 
-    public ImFont getFont(ResourceLocation name, boolean italic, boolean bold) {
+    public ImFont getFont(ResourceLocation name, boolean bold, boolean italic) {
         FontPack font = this.fonts.get(name);
         if (font == null) {
             return this.defaultFont;

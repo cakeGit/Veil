@@ -1,16 +1,23 @@
 package foundry.veil.impl.resource.type;
 
+import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceMetadata;
 
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
-public record VeilShaderFileResource(ResourceLocation path, Path filePath, boolean modResource, boolean hidden) implements VeilShaderResource {
+public record McMetaResource(ResourceLocation path, Path filePath, boolean modResource, ResourceMetadata metadata) implements VeilResource<McMetaResource> {
 
     @Override
-    public Collection<VeilResourceAction<VeilShaderResource>> getActions() {
+    public boolean hidden() {
+        return true;
+    }
+
+    @Override
+    public Collection<VeilResourceAction<McMetaResource>> getActions() {
         return List.of();
     }
 
@@ -25,6 +32,6 @@ public record VeilShaderFileResource(ResourceLocation path, Path filePath, boole
 
     @Override
     public int getIconCode() {
-        return 0xECD1; // Code file icon
+        return 0xECEA; // Info file icon
     }
 }

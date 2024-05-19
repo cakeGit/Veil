@@ -6,7 +6,6 @@ import net.minecraft.server.packs.PackType;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.function.BiConsumer;
 
 public interface PackResourcesExtension {
 

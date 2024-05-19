@@ -2,10 +2,9 @@ package foundry.veil.impl.resource.tree;
 
 import foundry.veil.api.resource.VeilResource;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import java.util.Collection;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectCollection;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A resource folder for a tree-structure
@@ -13,8 +12,8 @@ import java.util.Map;
 public class VeilResourceFolder {
 
     private final String name;
-    private final Map<String, VeilResourceFolder> subFolders = new Object2ObjectArrayMap<>(8);
-    private final Map<String, VeilResource<?>> resources = new Object2ObjectArrayMap<>(8);
+    private final Object2ObjectMap<String, VeilResourceFolder> subFolders = new Object2ObjectArrayMap<>(8);
+    private final Object2ObjectMap<String, VeilResource<?>> resources = new Object2ObjectArrayMap<>(8);
 
     public VeilResourceFolder(String name) {
         this.name = name;
@@ -23,7 +22,7 @@ public class VeilResourceFolder {
     /**
      * Adds a resource to this folder, creating sub-folders if necessary
      *
-     * @param path The path of the resource
+     * @param path     The path of the resource
      * @param resource The resource to add
      */
     public void addResource(String path, VeilResource<?> resource) {
@@ -50,7 +49,7 @@ public class VeilResourceFolder {
     /**
      * @return An iterable collection of all folders contained within this folder
      */
-    public Iterable<VeilResourceFolder> getSubFolders() {
+    public ObjectCollection<VeilResourceFolder> getSubFolders() {
         return this.subFolders.values();
     }
 
@@ -63,5 +62,13 @@ public class VeilResourceFolder {
 
     public String getName() {
         return this.name;
+    }
+
+    public @Nullable VeilResourceFolder getFolder(String name) {
+        return this.subFolders.get(name);
+    }
+
+    public @Nullable VeilResource<?> getResource(String name) {
+        return this.resources.get(name);
     }
 }

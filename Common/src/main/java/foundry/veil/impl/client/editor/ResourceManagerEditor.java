@@ -18,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 public class ResourceManagerEditor extends SingleWindowEditor {
 
     public ResourceManagerEditor() {
-
     }
 
     @Override

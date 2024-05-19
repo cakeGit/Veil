@@ -1,8 +1,11 @@
 package foundry.veil.api.resource;
 
+import foundry.veil.impl.resource.VeilResourceManager;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 public interface VeilResourceLoader<T extends VeilResource<?>> {
@@ -15,6 +18,7 @@ public interface VeilResourceLoader<T extends VeilResource<?>> {
      */
     boolean canLoad(ResourceLocation path, @Nullable Path filePath, boolean modResource);
 
+
     /**
      * Loads the resource from the specified path
      *
@@ -23,6 +27,5 @@ public interface VeilResourceLoader<T extends VeilResource<?>> {
      * @param modResource Whether the file is located in the mod resources for the current dev environment
      * @return The loaded resource
      */
-    VeilResource<T> load(ResourceLocation path, @Nullable Path filePath, boolean modResource);
-
+    VeilResource<T> load(VeilResourceManager resourceManager, ResourceProvider provider, ResourceLocation path, @Nullable Path filePath, boolean modResource) throws IOException;
 }

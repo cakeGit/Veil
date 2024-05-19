@@ -156,6 +156,7 @@ public class EditorFontManager implements PreparableReloadListener {
                 ImFontConfig fontConfig = new ImFontConfig();
                 try {
                     fontConfig.setName(this.name + "-" + type + ".ttf, " + FONT_FORMAT.format(sizePixels) + " px");
+                    fontConfig.setGlyphRanges(atlas.getGlyphRangesCyrillic());
                     return atlas.addFontFromMemoryTTF(data, sizePixels, fontConfig);
                 } finally {
                     fontConfig.destroy();

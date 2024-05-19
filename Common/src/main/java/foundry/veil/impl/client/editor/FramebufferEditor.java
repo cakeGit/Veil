@@ -96,12 +96,8 @@ public class FramebufferEditor extends SingleWindowEditor {
         ImGui.beginDisabled(buffer == null);
         if (ImGui.beginTabItem(name)) {
             if (buffer != null) {
-                if (ImGui.button("Download")) {
-                    this.downloadBuffer = buffer;
-                }
-
                 int columns = (int) Math.ceil(Math.sqrt(buffer.getColorAttachments() + (buffer.isDepthTextureAttachment() ? 1 : 0)));
-                float width = ImGui.getContentRegionAvailX() / columns;
+                float width = ImGui.getContentRegionAvailX() / columns - ImGui.getStyle().getItemSpacingX() * (columns - 1);
                 float height = width * buffer.getHeight() / buffer.getWidth();
                 int i;
                 for (i = 0; i < buffer.getColorAttachments(); i++) {
@@ -115,7 +111,7 @@ public class FramebufferEditor extends SingleWindowEditor {
                     ImGui.beginGroup();
                     AdvancedFboTextureAttachment attachment = buffer.getColorTextureAttachment(i);
                     ImGui.text(this.getAttachmentName(i, attachment));
-                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F);
+                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.5F);
                     ImGui.endGroup();
                 }
 
@@ -126,8 +122,12 @@ public class FramebufferEditor extends SingleWindowEditor {
                     ImGui.beginGroup();
                     AdvancedFboTextureAttachment attachment = buffer.getDepthTextureAttachment();
                     ImGui.text(this.getAttachmentName(-1, attachment));
-                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F);
+                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.5F);
                     ImGui.endGroup();
+                }
+
+                if (ImGui.button("Save", ImGui.getContentRegionAvailX() - 4, 26)) {
+                    this.downloadBuffer = buffer;
                 }
             }
             ImGui.endTabItem();

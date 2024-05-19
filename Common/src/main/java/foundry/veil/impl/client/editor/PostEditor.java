@@ -4,7 +4,10 @@ import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.post.PostProcessingManager;
 import imgui.ImGui;
+import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiDataType;
+import imgui.flag.ImGuiDir;
+import imgui.flag.ImGuiDragDropFlags;
 import imgui.type.ImInt;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
@@ -25,50 +28,99 @@ public class PostEditor extends SingleWindowEditor {
     @Override
     public void renderComponents() {
         this.removedPipelines.clear();
-        PostProcessingManager postProcessing = VeilRenderSystem.renderer().getPostProcessingManager();
+        PostProcessingManager postProcessingManager = VeilRenderSystem.renderer().getPostProcessingManager();
         float lineHeight = ImGui.getTextLineHeightWithSpacing();
 
+        float availableWidth = ImGui.getContentRegionAvailX();
+
+        ImGui.setNextItemWidth(availableWidth / 2);
+        ImGui.beginGroup();
+        ImGui.text("Inactive Pipelines:");
+        if (ImGui.beginListBox("##available_pipelines", availableWidth / 2, 0)) {
+
+            for (ResourceLocation entry : postProcessingManager.getPipelines()) {
+                if (postProcessingManager.isActive(entry)) {
+                    continue;
+                }
+
+                ImGui.text(entry.toString());
+
+                if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
+                    ImGui.setDragDropPayload("POST_PIPELINE", entry, ImGuiCond.Once);
+                    ImGui.text(entry.toString());
+
+                    ImGui.endDragDropSource();
+                }
+            }
+
+            ImGui.endListBox();
+        }
+
+        if (ImGui.beginDragDropTarget()) {
+
+            ResourceLocation payload = ImGui.acceptDragDropPayload("POST_PIPELINE");
+
+            if (payload != null) {
+                this.removedPipelines.add(payload);
+            }
+
+            ImGui.endDragDropTarget();
+        }
+
+        ImGui.endGroup();
+
+        ImGui.sameLine();
+
+        ImGui.setNextItemWidth(availableWidth / 2);
+        ImGui.beginGroup();
         ImGui.text("Active Pipelines:");
-        if (ImGui.beginListBox("##shaders", -Float.MIN_VALUE, 0)) {
-            for (PostProcessingManager.ProfileEntry entry : postProcessing.getActivePipelines()) {
+
+        if (ImGui.beginListBox("##shaders", availableWidth / 2, 0)) {
+            for (PostProcessingManager.ProfileEntry entry : postProcessingManager.getActivePipelines()) {
                 ResourceLocation id = entry.getPipeline();
                 ImInt editPriority = new ImInt(entry.getPriority());
 
                 ImGui.pushID(id.toString());
-                ImGui.text(id.toString());
+                if (ImGui.beginChild(id.toString())) {
+                    ImGui.text(id.toString());
 
-                ImGui.sameLine(ImGui.getContentRegionAvailX() / 2);
-                ImGui.setNextItemWidth(-lineHeight - ImGui.getStyle().getCellPaddingX() * 2);
-                if (ImGui.dragScalar("##priority", ImGuiDataType.S32, editPriority, 1)) {
-                    entry.setPriority(editPriority.get());
+                    if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
+                        ImGui.setDragDropPayload("POST_PIPELINE", id, ImGuiCond.Once);
+                        ImGui.text(id.toString());
+                        ImGui.endDragDropSource();
+                    }
+
+                    float priorityWidth = ImGui.calcTextSize("999999").x;
+                    ImGui.sameLine(ImGui.getContentRegionAvailX() - priorityWidth - 2);
+                    ImGui.setNextItemWidth(priorityWidth);
+                    if (ImGui.dragScalar("##priority", ImGuiDataType.S32, editPriority, 1)) {
+                        entry.setPriority(editPriority.get());
+                    }
                 }
+                ImGui.endChild();
+                ImGui.popID();
+
 
                 ImGui.sameLine();
-                if (ImGui.button("X", lineHeight, lineHeight)) {
-                    this.removedPipelines.add(id);
-                }
-
-                ImGui.popID();
             }
 
             ImGui.endListBox();
         }
 
-        ImGui.text("Add Pipeline:");
-        if (ImGui.beginListBox("##available_pipelines", -Float.MIN_VALUE, 0)) {
-            for (ResourceLocation entry : postProcessing.getPipelines()) {
-                if (postProcessing.isActive(entry)) {
-                    continue;
-                }
-                if (ImGui.selectable(entry.toString(), false)) {
-                    postProcessing.add(entry);
-                }
+        if (ImGui.beginDragDropTarget()) {
+            ResourceLocation payload = ImGui.acceptDragDropPayload("POST_PIPELINE");
+
+            if (payload != null) {
+                postProcessingManager.add(payload);
             }
-            ImGui.endListBox();
+
+            ImGui.endDragDropTarget();
         }
+        ImGui.endGroup();
+
 
         for (ResourceLocation id : this.removedPipelines) {
-            postProcessing.remove(id);
+            postProcessingManager.remove(id);
         }
     }
 

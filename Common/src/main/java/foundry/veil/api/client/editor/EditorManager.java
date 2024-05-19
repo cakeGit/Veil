@@ -1,9 +1,12 @@
 package foundry.veil.api.client.editor;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import foundry.veil.Veil;
 import foundry.veil.api.util.CompositeReloadListener;
 import imgui.ImFont;
 import imgui.ImGui;
+import imgui.ImVec2;
+import imgui.flag.ImGuiCol;
 import imgui.type.ImBoolean;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -53,6 +56,12 @@ public class EditorManager implements PreparableReloadListener {
         }
 
         if (ImGui.beginMainMenuBar()) {
+            float dingleWidth = 60f;
+            float dingleHeight = 26f;
+            ImGui.getWindowDrawList().addRectFilled(0f, 0f, dingleWidth, dingleHeight, ImGui.getColorU32(ImGuiCol.FrameBgHovered));
+
+            ImGui.text("Veil ");
+
             for (Map.Entry<Editor, ImBoolean> entry : this.editors.entrySet()) {
                 Editor editor = entry.getKey();
                 String group = editor.getGroup() != null ? editor.getGroup() : "Editor";

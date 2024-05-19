@@ -1,9 +1,11 @@
 package foundry.veil.impl.resource.type;
 
+import foundry.veil.api.client.imgui.VeilIconImGuiUtil;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiStyleVar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 
@@ -22,7 +24,12 @@ public record TextureResource(ResourceLocation path, Path filePath, boolean modR
         if (dragging) {
             ImGui.image(texture, size * 8, size * 8);
         } else {
+            ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
+            ImGui.setItemAllowOverlap();
             ImGui.image(texture, size, size);
+            ImGui.sameLine();
+            ImGui.popStyleVar();
+
             if (ImGui.isItemHovered()) {
                 ImGui.beginTooltip();
                 ImGui.image(texture, size * 16, size * 16);
@@ -35,7 +42,7 @@ public record TextureResource(ResourceLocation path, Path filePath, boolean modR
     }
 
     @Override
-    public Collection<VeilResourceAction<TextureResource>> getActions() {
+    public List<VeilResourceAction<TextureResource>> getActions() {
         return List.of();
     }
 

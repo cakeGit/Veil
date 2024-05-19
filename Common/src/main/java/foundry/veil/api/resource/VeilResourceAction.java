@@ -1,6 +1,8 @@
 package foundry.veil.api.resource;
 
-public interface VeilResourceAction<T extends VeilResource> {
+import java.util.OptionalInt;
+
+public interface VeilResourceAction<T extends VeilResource<?>> {
 
     /**
      * @return The name of the action
@@ -15,7 +17,7 @@ public interface VeilResourceAction<T extends VeilResource> {
     /**
      * @return The icon to display for the action
      */
-    String getIcon();
+    OptionalInt getIcon();
 
     /**
      * Performs the action on the specified resource

@@ -17,7 +17,7 @@ public record McMetaResource(ResourceLocation path, Path filePath, boolean modRe
     }
 
     @Override
-    public Collection<VeilResourceAction<McMetaResource>> getActions() {
+    public List<VeilResourceAction<McMetaResource>> getActions() {
         return List.of();
     }
 

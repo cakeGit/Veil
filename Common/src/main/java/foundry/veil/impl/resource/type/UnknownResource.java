@@ -16,7 +16,7 @@ public record UnknownResource(ResourceLocation path, Path filePath, boolean modR
     }
 
     @Override
-    public Collection<VeilResourceAction<UnknownResource>> getActions() {
+    public List<VeilResourceAction<UnknownResource>> getActions() {
         return List.of();
     }
 

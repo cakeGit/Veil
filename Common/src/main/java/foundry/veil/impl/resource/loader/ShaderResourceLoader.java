@@ -1,5 +1,6 @@
 package foundry.veil.impl.resource.loader;
 
+import foundry.veil.api.client.render.shader.ShaderSourceSet;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.impl.resource.VeilResourceManager;
@@ -27,9 +28,15 @@ public class ShaderResourceLoader implements VeilResourceLoader<VeilShaderResour
             ".comp"
     );
 
+    private final ShaderSourceSet sourceSet;
+
+    public ShaderResourceLoader(ShaderSourceSet sourceSet) {
+        this.sourceSet = sourceSet;
+    }
+
     @Override
     public boolean canLoad(ResourceLocation path, Path filePath, boolean modResource) {
-        if (!path.getPath().startsWith("pinwheel/shaders")) {
+        if (!path.getPath().startsWith(this.sourceSet.getFolder())) {
             return false;
         }
 

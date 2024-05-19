@@ -15,7 +15,7 @@ public record VeilShaderDefinitionResource(ResourceLocation path, Path filePath,
     }
 
     @Override
-    public Collection<VeilResourceAction<VeilShaderResource>> getActions() {
+    public List<VeilResourceAction<VeilShaderResource>> getActions() {
         return List.of();
     }
 

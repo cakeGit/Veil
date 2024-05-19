@@ -4,12 +4,14 @@ import foundry.veil.api.client.imgui.VeilIconImGuiUtil;
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiStyleVar;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 
 public interface VeilResource<T extends VeilResource<?>> {
 
@@ -19,8 +21,11 @@ public interface VeilResource<T extends VeilResource<?>> {
      * @param dragging Whether the user is dragging the resource
      */
     default void render(boolean dragging) {
+        ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
+        ImGui.setItemAllowOverlap();
         VeilIconImGuiUtil.icon(this.getIconCode());
         ImGui.sameLine();
+        ImGui.popStyleVar();
 
         ImGui.pushStyleColor(ImGuiCol.Text, this.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
         if (dragging) {
@@ -63,7 +68,7 @@ public interface VeilResource<T extends VeilResource<?>> {
     /**
      * @return All actions that can be performed on this resource
      */
-    Collection<VeilResourceAction<T>> getActions();
+    List<VeilResourceAction<T>> getActions();
 
     /**
      * @return If this resource can be hot-reloaded

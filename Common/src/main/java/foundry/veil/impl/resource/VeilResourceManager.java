@@ -1,6 +1,7 @@
 package foundry.veil.impl.resource;
 
 import foundry.veil.Veil;
+import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.ext.PackResourcesExtension;
@@ -34,7 +35,11 @@ public class VeilResourceManager implements PreparableReloadListener {
     private final Map<String, VeilResourceFolder> modResources = new TreeMap<>();
 
     public VeilResourceManager() {
-        this.addLoader(new ShaderResourceLoader());
+    }
+
+    public void addVeilLoaders(VeilRenderer renderer) {
+        this.addLoader(new ShaderResourceLoader(renderer.getShaderManager().getSourceSet()));
+        this.addLoader(new ShaderResourceLoader(renderer.getDeferredRenderer().getDeferredShaderManager().getSourceSet()));
         this.addLoader(new TextureResourceLoader());
         this.addLoader(new McMetaResourceLoader());
     }

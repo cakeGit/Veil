@@ -3,6 +3,7 @@ package foundry.veil.impl.client.editor;
 import foundry.veil.Veil;
 import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.imgui.CodeEditor;
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.client.imgui.VeilLanguageDefinitions;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
@@ -317,9 +318,13 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                     continue;
                 }
 
-                if (ImGui.selectable(name.toString(), selected)) {
+                if (ImGui.selectable("##" + name.toString(), selected)) {
                     this.setSelectedProgram(name);
                 }
+
+                ImGui.sameLine();
+                ImGui.setItemAllowOverlap();
+                VeilImGuiUtil.resourceLocation(name);
             }
 
             ImGui.endListBox();

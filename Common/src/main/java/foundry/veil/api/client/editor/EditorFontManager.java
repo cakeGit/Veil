@@ -156,7 +156,24 @@ public class EditorFontManager implements PreparableReloadListener {
                 ImFontConfig fontConfig = new ImFontConfig();
                 try {
                     fontConfig.setName(this.name + "-" + type + ".ttf, " + FONT_FORMAT.format(sizePixels) + " px");
-                    fontConfig.setGlyphRanges(atlas.getGlyphRangesCyrillic());
+
+                    ImFontGlyphRangesBuilder builder = new ImFontGlyphRangesBuilder();
+
+                    if (this.name.getPath().contains("jetbrains")) {
+                        builder.addRanges(atlas.getGlyphRangesDefault());
+                        fontConfig.setGlyphRanges(builder.buildRanges());
+                    } else {
+                        int start = 0xea01;
+                        int end = 0xf522;
+
+                        fontConfig.setGlyphRanges(new short[]{
+                                (short) start,
+                                (short) end,
+                                0
+                        });
+
+                    }
+
                     return atlas.addFontFromMemoryTTF(data, sizePixels, fontConfig);
                 } finally {
                     fontConfig.destroy();

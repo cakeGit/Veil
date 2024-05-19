@@ -10,6 +10,7 @@
     "chargable.InstrumentItemMixin",
     "chargable.TridentItemMixin",
     "debug.SimpleReloadInstanceMixin",
+    "resource.VanillaPackResourcesMixin",
     "tooltip.BlockEntityMixin"
   ],
   "client": [
@@ -21,6 +22,7 @@
     "accessor.RenderStateShardAccessor",
     "accessor.RenderTargetAccessor",
     "accessor.RenderTypeAccessor",
+    "accessor.VanillaPackResourcesAccessor",
     "client.deferred.AmbientOcclusionFaceMixin",
     "client.deferred.DebugScreenOverlayMixin",
     "client.deferred.LevelRendererMixin",

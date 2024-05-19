@@ -1,6 +1,8 @@
 package foundry.veil.api.client.imgui;
 
+
 import foundry.veil.Veil;
+import foundry.veil.api.client.color.Color;
 import foundry.veil.api.client.editor.EditorManager;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import imgui.ImFont;
@@ -12,6 +14,7 @@ import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
 
@@ -202,5 +205,42 @@ public class VeilImGuiUtil {
                 ImGui.endTooltip();
             }
         }
+    }
+
+    /**
+     * Displays a resource location with a dimmed namespace
+     * @param loc The resource location
+     */
+    public static void resourceLocation(ResourceLocation loc) {
+        ImGui.beginGroup();
+        ImGui.textColored(colorOf(loc.getNamespace()), loc.getNamespace() + ":");
+
+        ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
+        ImGui.sameLine();
+        ImGui.text(loc.getPath());
+        ImGui.popStyleVar();
+
+        ImGui.endGroup();
+
+        if (ImGui.beginPopupContextItem(loc.toString())) {
+            if (ImGui.menuItem("Copy")) {
+                ImGui.setClipboardText(loc.toString());
+            }
+            ImGui.endPopup();
+        }
+    }
+
+    /**
+     * Obtains the color of the modid
+     * @param modid The modid to get the color of
+     * @return color The color based on the hash of the modid
+     */
+    public static int colorOf(String modid) {
+        int color = (modid.hashCode() & 11184810) + 4473924;
+
+        Color c = Color.of(0xff | (color << 8));
+        c.mix(Color.WHITE.darkenCopy(0.4f), 0.35F);
+
+        return c.getRGBA();
     }
 }

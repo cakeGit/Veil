@@ -1,6 +1,7 @@
 package foundry.veil.impl.client.editor;
 
 import foundry.veil.api.client.editor.SingleWindowEditor;
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.post.PostProcessingManager;
 import imgui.ImGui;
@@ -43,11 +44,11 @@ public class PostEditor extends SingleWindowEditor {
                     continue;
                 }
 
-                ImGui.text(entry.toString());
+                VeilImGuiUtil.resourceLocation(entry);
 
                 if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
                     ImGui.setDragDropPayload("POST_PIPELINE", entry, ImGuiCond.Once);
-                    ImGui.text(entry.toString());
+                    VeilImGuiUtil.resourceLocation(entry);
 
                     ImGui.endDragDropSource();
                 }
@@ -82,11 +83,11 @@ public class PostEditor extends SingleWindowEditor {
 
                 ImGui.pushID(id.toString());
                 if (ImGui.beginChild(id.toString())) {
-                    ImGui.text(id.toString());
+                    VeilImGuiUtil.resourceLocation(id);
 
                     if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
                         ImGui.setDragDropPayload("POST_PIPELINE", id, ImGuiCond.Once);
-                        ImGui.text(id.toString());
+                        VeilImGuiUtil.resourceLocation(id);
                         ImGui.endDragDropSource();
                     }
 

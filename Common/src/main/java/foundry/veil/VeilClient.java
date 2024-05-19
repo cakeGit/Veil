@@ -9,7 +9,9 @@ import foundry.veil.api.client.registry.RenderTypeStageRegistry;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
+import foundry.veil.impl.VeilReloadListeners;
 import foundry.veil.impl.client.editor.*;
+import foundry.veil.impl.resource.VeilResourceManager;
 import foundry.veil.platform.VeilClientPlatform;
 import foundry.veil.platform.VeilEventPlatform;
 import net.minecraft.client.KeyMapping;
@@ -22,6 +24,7 @@ import java.util.ServiceLoader;
 public class VeilClient {
 
     private static final VeilClientPlatform PLATFORM = ServiceLoader.load(VeilClientPlatform.class).findFirst().orElseThrow(() -> new RuntimeException("Veil expected client platform implementation"));
+    private static final VeilResourceManager RESOURCE_MANAGER = new VeilResourceManager();
     public static final KeyMapping EDITOR_KEY = new KeyMapping("key.veil.editor", InputConstants.Type.KEYSYM, InputConstants.KEY_F6, "key.categories.veil");
 
     @ApiStatus.Internal
@@ -41,8 +44,10 @@ public class VeilClient {
                 editorManager.add(new DeferredEditor());
                 editorManager.add(new LightEditor());
                 editorManager.add(new FramebufferEditor());
+                editorManager.add(new ResourceManagerEditor());
             }
         });
+
         // This fixes moving transparent blocks drawing too early
         VeilEventPlatform.INSTANCE.onVeilRegisterFixedBuffers(registry -> registry.registerFixedBuffer(VeilRenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS, RenderType.translucentMovingBlock()));
         RenderTypeStageRegistry.addGenericStage(renderType -> true, new RenderStateShard(Veil.MODID + ":deferred", () -> VeilRenderSystem.renderer().getDeferredRenderer().setup(), () -> VeilRenderSystem.renderer().getDeferredRenderer().clear()) {
@@ -59,13 +64,14 @@ public class VeilClient {
 
     @ApiStatus.Internal
     public static void tickClient(float partialTick) {
-//        Color.tickRainbow(ticks, partialTick);
-//        if (ticks % 200 == 0) {
-//            OptimizationUtil.calculateStableFps();
-//        }
+
     }
 
     public static VeilClientPlatform clientPlatform() {
         return PLATFORM;
+    }
+
+    public static VeilResourceManager resourceManager() {
+        return RESOURCE_MANAGER;
     }
 }

@@ -21,6 +21,10 @@ public class Color {
     public static final Color VANILLA_TOOLTIP_BORDER_BOTTOM = new Color(0x50_28007f);
     float r, g, b, a;
 
+    public static Color of(int col) {
+        return new Color(col);
+    }
+
     public Color(float r, float g, float b, float a) {
         this.r = r;
         this.g = g;
@@ -113,10 +117,6 @@ public class Color {
 
     public float getRed() {
         return r;
-    }
-
-    public static Color of(int col) {
-        return BLACK.add(col);
     }
 
     public Color add(int col) {

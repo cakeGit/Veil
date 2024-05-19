@@ -104,6 +104,8 @@ public class ParticleSystemManager {
     @ApiStatus.Internal
     public void render(PoseStack poseStack, MultiBufferSource bufferSource, Camera camera, CullFrustum frustum, float partialTicks) {
         // TODO store emitters per-chunk and fetch them from the renderer
+
+        this.particleEmitters.sort(Comparator.comparingDouble(a -> -a.getPosition().distanceSquared(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z)));
         for (ParticleEmitter emitter : this.particleEmitters) {
             emitter.render(poseStack, bufferSource, camera, partialTicks);
         }

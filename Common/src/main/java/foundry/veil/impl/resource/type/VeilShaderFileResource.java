@@ -30,8 +30,15 @@ public record VeilShaderFileResource(VeilResourceInfo resourceInfo, ShaderManage
 
     @Override
     public void hotReload() {
+        int type = ShaderSourceSet.getShaderType(this.resourceInfo().path());
+        if (type == -1) {
+            return;
+        }
+
         ShaderSourceSet sourceSet = this.shaderManager.getSourceSet();
+        ResourceLocation id = sourceSet.getTypeConverter(type).fileToId(this.resourceInfo.path());
         Set<ResourceLocation> programs = new HashSet<>();
+
         for (Map.Entry<ResourceLocation, ShaderProgram> entry : this.shaderManager.getShaders().entrySet()) {
             ProgramDefinition definition = entry.getValue().getDefinition();
             if (definition == null) {
@@ -44,7 +51,7 @@ public record VeilShaderFileResource(VeilResourceInfo resourceInfo, ShaderManage
                     continue;
                 }
 
-                if (sourceSet.getTypeConverter(shaderEntry.getIntKey()).fileToId(this.resourceInfo.path()).equals(sourceName)) {
+                if (id.equals(sourceName)) {
                     programs.add(entry.getKey());
                     break;
                 }

@@ -95,7 +95,7 @@ public class CodeEditor implements NativeResource {
      * Renders the editor in a closable window.
      */
     public void renderWindow() {
-        int flags = ImGuiWindowFlags.MenuBar;
+        int flags = ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoSavedSettings;
         if (this.hasTextChanged()) {
             flags |= ImGuiWindowFlags.UnsavedDocument;
         }
@@ -104,9 +104,10 @@ public class CodeEditor implements NativeResource {
             return;
         }
 
-        ImGui.pushID(this.hashCode());
+        int id = this.hashCode();
+        ImGui.pushID(id);
         ImGui.setNextWindowSizeConstraints(800, 600, Float.MAX_VALUE, Float.MAX_VALUE);
-        if (ImGui.begin((this.fileName != null ? "Editor: " + this.fileName : "Editor") + "###editor", this.open, flags)) {
+        if (ImGui.begin((this.fileName != null ? "Editor: " + this.fileName : "Editor") + "###editor" + id, this.open, flags)) {
             this.render();
         }
 

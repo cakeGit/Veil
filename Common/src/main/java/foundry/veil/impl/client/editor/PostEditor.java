@@ -27,10 +27,15 @@ public class PostEditor extends SingleWindowEditor {
     }
 
     @Override
+    public void render() {
+        ImGui.setNextWindowSize(200, 0);
+        super.render();
+    }
+
+    @Override
     public void renderComponents() {
         this.removedPipelines.clear();
         PostProcessingManager postProcessingManager = VeilRenderSystem.renderer().getPostProcessingManager();
-        float lineHeight = ImGui.getTextLineHeightWithSpacing();
 
         float availableWidth = ImGui.getContentRegionAvailX();
 
@@ -38,7 +43,6 @@ public class PostEditor extends SingleWindowEditor {
         ImGui.beginGroup();
         ImGui.text("Inactive Pipelines:");
         if (ImGui.beginListBox("##available_pipelines", availableWidth / 2, 0)) {
-
             for (ResourceLocation entry : postProcessingManager.getPipelines()) {
                 if (postProcessingManager.isActive(entry)) {
                     continue;

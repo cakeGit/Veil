@@ -4,6 +4,7 @@ import foundry.veil.Veil;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.ext.PackResourcesExtension;
 import foundry.veil.impl.resource.loader.ShaderResourceLoader;
+import foundry.veil.impl.resource.loader.TextureResourceLoader;
 import foundry.veil.impl.resource.loader.UnknownResourceLoader;
 import foundry.veil.impl.resource.tree.VeilResourceFolder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -30,6 +31,7 @@ public class VeilResourceManager implements PreparableReloadListener {
 
     public VeilResourceManager() {
         this.addLoader(new ShaderResourceLoader());
+        this.addLoader(new TextureResourceLoader());
     }
 
     /**

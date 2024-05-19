@@ -11,17 +11,17 @@ import java.nio.file.Path;
 
 public class VeilResourceRenderer {
 
-    public static void renderFilename(VeilResource<?> resource, boolean seated) {
+    public static void renderFilename(VeilResource<?> resource, boolean dragging) {
         int id = resource.hashCode();
         ImGui.pushID(id);
         ImGui.beginGroup();
-        resource.render(seated);
+        resource.render(dragging);
         ImGui.endGroup();
         ImGui.popID();
 
-        if (seated && ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
+        if (!dragging && ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
             ImGui.setDragDropPayload("VEIL_RESOURCE", resource, ImGuiCond.Once);
-            renderFilename(resource, false);
+            renderFilename(resource, true);
             ImGui.endDragDropSource();
         }
 
@@ -42,7 +42,7 @@ public class VeilResourceRenderer {
     }
 
     public static void renderFilename(VeilResource<?> resource) {
-        renderFilename(resource, true);
+        renderFilename(resource, false);
     }
 
 }

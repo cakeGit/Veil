@@ -24,9 +24,9 @@ public interface VeilResource<T extends VeilResource<?>> {
 
         ImGui.pushStyleColor(ImGuiCol.Text, this.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
         if (dragging) {
-            ImGui.text(this.fileName());
-        } else {
             VeilImGuiUtil.resourceLocation(this.path());
+        } else {
+            ImGui.text(this.fileName());
         }
         ImGui.popStyleColor();
     }

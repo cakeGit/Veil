@@ -11,6 +11,7 @@ import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.impl.compat.IrisShaderMap;
 import foundry.veil.mixin.accessor.GameRendererAccessor;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
@@ -331,12 +332,12 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
             if (ImGui.beginChild("Open Source", 0, ImGui.getContentRegionAvailY() / 2)) {
                 ImGui.text("Open Source");
 
+                this.openShaderButton("Fragment Shader", GL_FRAGMENT_SHADER);
                 this.openShaderButton("Vertex Shader", GL_VERTEX_SHADER);
+                this.openShaderButton("Compute Shader", GL_COMPUTE_SHADER);
+                this.openShaderButton("Geometry Shader", GL_GEOMETRY_SHADER);
                 this.openShaderButton("Tesselation Control Shader", GL_TESS_CONTROL_SHADER);
                 this.openShaderButton("Tesselation Evaluation Shader", GL_TESS_EVALUATION_SHADER);
-                this.openShaderButton("Geometry Shader", GL_GEOMETRY_SHADER);
-                this.openShaderButton("Fragment Shader", GL_FRAGMENT_SHADER);
-                this.openShaderButton("Compute Shader", GL_COMPUTE_SHADER);
             }
             ImGui.endChild();
 
@@ -388,10 +389,21 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     }
 
     private void openShaderButton(String name, int type) {
-        ImGui.beginDisabled(this.selectedProgram == null || !this.selectedProgram.shaders.containsKey(type));
+        boolean disabled = this.selectedProgram == null || !this.selectedProgram.shaders.containsKey(type);
+        ImGui.beginDisabled(disabled);
+
+        if (disabled) {
+            ImGui.pushStyleColor(ImGuiCol.Button, ImGui.getColorU32(ImGuiCol.FrameBg));
+        }
+
         if (ImGui.button(name)) {
             this.setEditShaderSource(this.selectedProgram.programId, this.selectedProgram.shaders.get(type));
         }
+
+        if (disabled) {
+            ImGui.popStyleColor();
+        }
+
         ImGui.endDisabled();
     }
 

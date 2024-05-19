@@ -3,6 +3,7 @@ package foundry.veil.impl.client.imgui;
 import foundry.veil.Veil;
 import foundry.veil.api.client.imgui.VeilImGui;
 import foundry.veil.api.client.render.VeilRenderSystem;
+import foundry.veil.impl.client.imgui.style.VeilImGuiStylesheet;
 import imgui.ImGui;
 import imgui.extension.implot.ImPlot;
 import imgui.extension.implot.ImPlotContext;
@@ -37,6 +38,8 @@ public class VeilImGuiImpl implements VeilImGui {
         this.imPlotContext = ImPlot.createContext();
         this.implGlfw.init(window, true);
         this.implGl3.init("#version 410 core");
+
+        VeilImGuiStylesheet.initStyles();
     }
 
     @Override

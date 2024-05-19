@@ -1,6 +1,7 @@
 package foundry.veil.impl.resource;
 
 import foundry.veil.Veil;
+import foundry.veil.ext.PackResourcesExtension;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.FileVisitResult;
@@ -13,13 +14,11 @@ import java.util.stream.Stream;
 
 public class VeilFileVisitor extends SimpleFileVisitor<Path> {
 
-    private final Path root;
     private final Path assets;
     private final Path build;
-    private final BiConsumer<ResourceLocation, Path> consumer;
+    private final PackResourcesExtension.PackResourceConsumer consumer;
 
-    public VeilFileVisitor(Path root, BiConsumer<ResourceLocation, Path> consumer, boolean checkBuildPath) {
-        this.root = root;
+    public VeilFileVisitor(Path root, PackResourcesExtension.PackResourceConsumer consumer, boolean checkBuildPath) {
         this.assets = root.resolve("assets");
         this.build = checkBuildPath && Veil.platform().isDevelopmentEnvironment() ? root.getParent() : null;
         this.consumer = consumer;
@@ -41,7 +40,7 @@ public class VeilFileVisitor extends SimpleFileVisitor<Path> {
                         for (Path possibleRoot : walk.toList()) {
                             Path resourcesPath = possibleRoot.resolve("src").resolve(sourceRoot).resolve("resources").resolve("assets").resolve(localPath);
                             if (Files.exists(resourcesPath)) {
-                                this.accept(localPath, resourcesPath);
+                                this.accept(localPath, resourcesPath, true);
                                 return FileVisitResult.CONTINUE;
                             }
                         }
@@ -51,17 +50,17 @@ public class VeilFileVisitor extends SimpleFileVisitor<Path> {
                 }
             }
 
-            this.accept(localPath, file);
+            this.accept(localPath, file, false);
         }
         return FileVisitResult.CONTINUE;
     }
 
-    private void accept(Path localPath, Path file) {
+    private void accept(Path localPath, Path file, boolean modResource) {
         String[] name = localPath.toString().replace(localPath.getFileSystem().getSeparator(), "/").split("/", 2);
         if (name.length == 2) {
             ResourceLocation id = ResourceLocation.tryBuild(name[0], name[1]);
             if (id != null) {
-                this.consumer.accept(id, file);
+                this.consumer.accept(id, file, modResource);
             }
         }
     }

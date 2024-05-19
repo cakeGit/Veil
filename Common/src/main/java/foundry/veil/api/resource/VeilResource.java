@@ -1,7 +1,6 @@
 package foundry.veil.api.resource;
 
 import net.minecraft.resources.ResourceLocation;
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
@@ -17,7 +16,13 @@ public interface VeilResource<T extends VeilResource<?>> {
     /**
      * @return The file path of this resource
      */
-    @Nullable Path filePath();
+    @Nullable
+    Path filePath();
+
+    /**
+     * @return Whether the file is located in the mod resources for the current dev environment
+     */
+    boolean modResource();
 
     /**
      * @return All actions that can be performed on this resource

@@ -11,12 +11,12 @@ public class UnknownResourceLoader implements VeilResourceLoader<UnknownResource
     public static final UnknownResourceLoader INSTANCE = new UnknownResourceLoader();
 
     @Override
-    public boolean canLoad(ResourceLocation path, Path filePath) {
+    public boolean canLoad(ResourceLocation path, Path filePath, boolean modResource) {
         return false;
     }
 
     @Override
-    public VeilResource<UnknownResource> load(ResourceLocation path, Path filePath) {
-        return new UnknownResource(path, filePath);
+    public VeilResource<UnknownResource> load(ResourceLocation path, Path filePath, boolean modResource) {
+        return new UnknownResource(path, filePath, modResource);
     }
 }

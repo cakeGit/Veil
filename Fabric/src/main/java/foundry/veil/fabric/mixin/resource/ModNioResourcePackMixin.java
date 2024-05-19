@@ -28,7 +28,7 @@ public class ModNioResourcePackMixin implements PackResourcesExtension {
     private ModMetadata modInfo;
 
     @Override
-    public void veil$listResources(PackType packType, BiConsumer<ResourceLocation, Path> consumer) throws IOException {
+    public void veil$listResources(PackType packType, PackResourceConsumer consumer) throws IOException {
         String id = this.modInfo.getId();
         if (!"fabric-api".equalsIgnoreCase(id) && id.startsWith("fabric") && this.modInfo.containsCustomValue("fabric-api:module-lifecycle")) {
             // Skip fabric apis

@@ -10,6 +10,12 @@ import java.util.function.BiConsumer;
 
 public interface PackResourcesExtension {
 
-    void veil$listResources(PackType packType, BiConsumer<ResourceLocation, Path> consumer) throws IOException;
+    void veil$listResources(PackType packType, PackResourceConsumer consumer) throws IOException;
+
+    @FunctionalInterface
+    interface PackResourceConsumer {
+
+        void accept(ResourceLocation path, Path filePath, boolean modResource);
+    }
 
 }

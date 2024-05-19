@@ -22,7 +22,7 @@ public class GroupResourcePackMixin implements PackResourcesExtension {
     protected List<? extends PackResources> packs;
 
     @Override
-    public void veil$listResources(PackType packType, BiConsumer<ResourceLocation, Path> consumer) throws IOException {
+    public void veil$listResources(PackType packType, PackResourceConsumer consumer) throws IOException {
         for (PackResources pack : this.packs) {
             if (pack instanceof PackResourcesExtension extension) {
                 extension.veil$listResources(packType, consumer);

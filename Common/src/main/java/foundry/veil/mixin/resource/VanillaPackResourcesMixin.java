@@ -23,7 +23,7 @@ public class VanillaPackResourcesMixin implements PackResourcesExtension {
     private List<Path> rootPaths;
 
     @Override
-    public void veil$listResources(PackType packType, BiConsumer<ResourceLocation, Path> consumer) throws IOException {
+    public void veil$listResources(PackType packType, PackResourceConsumer consumer) throws IOException {
         for (Path rootPath : this.rootPaths) {
             Files.walkFileTree(rootPath, new VeilFileVisitor(rootPath, consumer, true));
         }

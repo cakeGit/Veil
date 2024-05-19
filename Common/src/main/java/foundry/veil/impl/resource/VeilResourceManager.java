@@ -38,7 +38,7 @@ public class VeilResourceManager implements PreparableReloadListener {
     private void loadPack(Map<String, VeilResourceFolder> modResources, PackResources packResources) {
         if (packResources instanceof PackResourcesExtension ext) {
             try {
-                ext.veil$listResources(PackType.CLIENT_RESOURCES, (resourceLocation, path) -> this.visitResource(modResources, resourceLocation, path));
+                ext.veil$listResources(PackType.CLIENT_RESOURCES, (resourceLocation, path, modResource) -> this.visitResource(modResources, resourceLocation, path, modResource));
                 return;
             } catch (Exception e) {
                 Veil.LOGGER.error("Failed to load resources from {}", this.getClass().getSimpleName(), e);
@@ -50,23 +50,22 @@ public class VeilResourceManager implements PreparableReloadListener {
                 continue;
             }
 
-            packResources.listResources(PackType.CLIENT_RESOURCES, namespace, "", (loc, inputStreamIoSupplier) -> this.visitResource(modResources, loc, null));
+            packResources.listResources(PackType.CLIENT_RESOURCES, namespace, "", (loc, inputStreamIoSupplier) -> this.visitResource(modResources, loc, null, false));
         }
     }
 
-    private void visitResource(Map<String, VeilResourceFolder> modResources, ResourceLocation loc, @Nullable Path path) {
+    private void visitResource(Map<String, VeilResourceFolder> modResources, ResourceLocation loc, @Nullable Path path, boolean modResource) {
         for (VeilResourceLoader<?> loader : this.loaders) {
-            if (loader.canLoad(loc, path)) {
+            if (loader.canLoad(loc, path, modResource)) {
                 VeilResourceFolder modFolder = modResources.computeIfAbsent(loc.getNamespace(), VeilResourceFolder::new);
-                modFolder.addResource(loc.getPath(), loader.load(loc, path));
-
+                modFolder.addResource(loc.getPath(), loader.load(loc, path, modResource));
                 return;
             }
         }
 
         // If no loaders can load the resource, add it as an unknown resource
         VeilResourceFolder modFolder = modResources.computeIfAbsent(loc.getNamespace(), VeilResourceFolder::new);
-        modFolder.addResource(loc.getPath(), UnknownResourceLoader.INSTANCE.load(loc, path));
+        modFolder.addResource(loc.getPath(), UnknownResourceLoader.INSTANCE.load(loc, path, modResource));
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
-public record UnknownResource(ResourceLocation path, Path filePath) implements VeilResource<UnknownResource> {
+public record UnknownResource(ResourceLocation path, Path filePath, boolean modResource) implements VeilResource<UnknownResource> {
 
     @Override
     public Collection<VeilResourceAction<UnknownResource>> getActions() {
@@ -22,7 +22,6 @@ public record UnknownResource(ResourceLocation path, Path filePath) implements V
 
     @Override
     public void hotReload() {
-
     }
 
     @Override

@@ -22,9 +22,9 @@ import static org.lwjgl.opengl.GL20C.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL33C.glVertexAttribDivisor;
 
 @ApiStatus.Internal
-public class PointLightRenderer extends IndirectLightRenderer<PointLight> {
+public class IndirectPointLightRenderer extends IndirectLightRenderer<PointLight> {
 
-    public PointLightRenderer() {
+    public IndirectPointLightRenderer() {
         super(Float.BYTES * 7, 4, 0, 6);
     }
 

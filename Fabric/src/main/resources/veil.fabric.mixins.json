@@ -6,6 +6,8 @@
   "refmap": "veil.refmap.json",
   "plugin": "foundry.veil.fabric.VeilMixinPlugin",
   "mixins": [
+    "resource.GroupResourcePackMixin",
+    "resource.ModNioResourcePackMixin"
   ],
   "client": [
     "client.KeyboardHandlerMixin",

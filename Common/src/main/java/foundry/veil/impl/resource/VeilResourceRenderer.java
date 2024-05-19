@@ -1,6 +1,5 @@
 package foundry.veil.impl.resource;
 
-import foundry.veil.VeilClient;
 import foundry.veil.api.client.imgui.VeilIconImGuiUtil;
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.resource.VeilResource;
@@ -8,16 +7,9 @@ import imgui.ImGui;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiDragDropFlags;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public class VeilResourceRenderer {
 
@@ -47,14 +39,13 @@ public class VeilResourceRenderer {
             if (ImGui.menuItem("Copy Path")) {
                 ImGui.setClipboardText(resource.path().toString());
             }
-            if (ImGui.menuItem("Open in Explorer")) {
-                Path filePath = resource.filePath();
 
-                if (filePath != null && filePath.getFileSystem() == FileSystems.getDefault()) {
-                    Minecraft client = Minecraft.getInstance();
-                    CompletableFuture.runAsync(() -> Util.getPlatform().openFile(filePath.getParent().toFile()), client);
-                }
+            Path filePath = resource.filePath();
+            ImGui.beginDisabled(filePath == null || filePath.getFileSystem() != FileSystems.getDefault());
+            if (ImGui.menuItem("Open in Explorer")) {
+                Util.getPlatform().openFile(filePath.getParent().toFile());
             }
+            ImGui.endDisabled();
 
             ImGui.endPopup();
         }

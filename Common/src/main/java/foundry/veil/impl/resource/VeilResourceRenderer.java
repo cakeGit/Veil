@@ -1,10 +1,7 @@
 package foundry.veil.impl.resource;
 
-import foundry.veil.api.client.imgui.VeilIconImGuiUtil;
-import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.resource.VeilResource;
 import imgui.ImGui;
-import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiDragDropFlags;
 import net.minecraft.Util;

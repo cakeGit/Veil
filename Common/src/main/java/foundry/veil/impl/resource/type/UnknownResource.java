@@ -1,19 +1,12 @@
 package foundry.veil.impl.resource.type;
 
+import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
-import net.minecraft.resources.ResourceLocation;
 
-import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 
-public record UnknownResource(ResourceLocation path, Path filePath, boolean modResource) implements VeilResource<UnknownResource> {
-
-    @Override
-    public boolean hidden() {
-        return false;
-    }
+public record UnknownResource(VeilResourceInfo resourceInfo) implements VeilResource<UnknownResource> {
 
     @Override
     public List<VeilResourceAction<UnknownResource>> getActions() {

@@ -22,6 +22,6 @@ public interface VeilResourceAction<T extends VeilResource<?>> {
     /**
      * Performs the action on the specified resource
      */
-    void perform(T resource);
+    void perform(VeilEditorEnvironment environment, T resource);
 
 }

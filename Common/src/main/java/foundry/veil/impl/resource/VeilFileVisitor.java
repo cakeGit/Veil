@@ -3,6 +3,7 @@ package foundry.veil.impl.resource;
 import foundry.veil.Veil;
 import foundry.veil.ext.PackResourcesExtension;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -40,7 +41,7 @@ public class VeilFileVisitor extends SimpleFileVisitor<Path> {
                         for (Path possibleRoot : walk.toList()) {
                             Path resourcesPath = possibleRoot.resolve("src").resolve(sourceRoot).resolve("resources").resolve("assets").resolve(localPath);
                             if (Files.exists(resourcesPath)) {
-                                this.accept(localPath, resourcesPath, true);
+                                this.accept(localPath, resourcesPath, file);
                                 return FileVisitResult.CONTINUE;
                             }
                         }
@@ -50,17 +51,17 @@ public class VeilFileVisitor extends SimpleFileVisitor<Path> {
                 }
             }
 
-            this.accept(localPath, file, false);
+            this.accept(localPath, file, null);
         }
         return FileVisitResult.CONTINUE;
     }
 
-    private void accept(Path localPath, Path file, boolean modResource) {
+    private void accept(Path localPath, Path file, @Nullable Path modResourcePath) {
         String[] name = localPath.toString().replace(localPath.getFileSystem().getSeparator(), "/").split("/", 2);
         if (name.length == 2) {
             ResourceLocation id = ResourceLocation.tryBuild(name[0], name[1]);
             if (id != null) {
-                this.consumer.accept(id, file, modResource);
+                this.consumer.accept(id, file, modResourcePath);
             }
         }
     }

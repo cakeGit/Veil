@@ -148,7 +148,7 @@ public class OpenCLEditor extends SingleWindowEditor {
 
         ImGui.beginDisabled(deviceInfo == null);
         if (ImGui.button("Edit Source")) {
-            this.codeEditor.show(this.source);
+            this.codeEditor.show(null, this.source);
         }
         ImGui.endDisabled();
 

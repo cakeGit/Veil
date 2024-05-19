@@ -1,9 +1,12 @@
 package foundry.veil.impl.resource.loader;
 
+import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.ShaderSourceSet;
 import foundry.veil.api.resource.VeilResource;
+import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResourceLoader;
-import foundry.veil.impl.resource.VeilResourceManager;
+import foundry.veil.api.resource.VeilResourceManager;
+import foundry.veil.impl.resource.type.McMetaResource;
 import foundry.veil.impl.resource.type.VeilShaderDefinitionResource;
 import foundry.veil.impl.resource.type.VeilShaderFileResource;
 import foundry.veil.impl.resource.type.VeilShaderResource;
@@ -28,15 +31,15 @@ public class ShaderResourceLoader implements VeilResourceLoader<VeilShaderResour
             ".comp"
     );
 
-    private final ShaderSourceSet sourceSet;
+    private final ShaderManager shaderManager;
 
-    public ShaderResourceLoader(ShaderSourceSet sourceSet) {
-        this.sourceSet = sourceSet;
+    public ShaderResourceLoader(ShaderManager shaderManager) {
+        this.shaderManager = shaderManager;
     }
 
     @Override
-    public boolean canLoad(ResourceLocation path, Path filePath, boolean modResource) {
-        if (!path.getPath().startsWith(this.sourceSet.getFolder())) {
+    public boolean canLoad(ResourceLocation path, Path filePath, @Nullable Path modResourcePath) {
+        if (!path.getPath().startsWith(this.shaderManager.getSourceSet().getFolder())) {
             return false;
         }
 
@@ -49,7 +52,8 @@ public class ShaderResourceLoader implements VeilResourceLoader<VeilShaderResour
     }
 
     @Override
-    public VeilResource<VeilShaderResource> load(VeilResourceManager resourceManager, ResourceProvider provider, ResourceLocation path, @Nullable Path filePath, boolean modResource) throws IOException {
-        return path.getPath().endsWith(".json") ? new VeilShaderDefinitionResource(path, filePath, modResource) : new VeilShaderFileResource(path, filePath, modResource, false);
+    public VeilResource<VeilShaderResource> load(VeilResourceManager resourceManager, ResourceProvider provider, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+        VeilResourceInfo info = new VeilResourceInfo(path, filePath, modResourcePath, false);
+        return path.getPath().endsWith(".json") ? new VeilShaderDefinitionResource(info, this.shaderManager) : new VeilShaderFileResource(info, this.shaderManager);
     }
 }

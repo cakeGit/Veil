@@ -26,6 +26,7 @@ public class CodeEditor implements NativeResource {
     private final String saveText;
     private String oldSource;
     private SaveCallback saveCallback;
+    private String fileName;
 
     private final ImBoolean open;
 
@@ -65,8 +66,9 @@ public class CodeEditor implements NativeResource {
      *
      * @param source The source to display
      */
-    public void show(String source) {
+    public void show(@Nullable String fileName, String source) {
         this.editor.setText(source);
+        this.fileName = fileName;
         this.oldSource = this.editor.getText();
         this.editor.setErrorMarkers(Collections.emptyMap());
         this.open.set(true);
@@ -104,13 +106,14 @@ public class CodeEditor implements NativeResource {
 
         ImGui.pushID(this.hashCode());
         ImGui.setNextWindowSizeConstraints(800, 600, Float.MAX_VALUE, Float.MAX_VALUE);
-        ImGui.begin("Editor###editor", this.open, flags);
+        if (ImGui.begin((this.fileName != null ? "Editor: " + this.fileName : "Editor") + "###editor", this.open, flags)) {
+            this.render();
+        }
 
         if (!this.open.get()) {
             this.hide();
         }
 
-        this.render();
         ImGui.end();
         ImGui.popID();
     }

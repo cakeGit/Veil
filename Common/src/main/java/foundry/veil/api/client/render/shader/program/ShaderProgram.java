@@ -8,6 +8,7 @@ import foundry.veil.impl.client.render.shader.ShaderProgramImpl;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -471,6 +472,12 @@ public interface ShaderProgram extends NativeResource, MutableUniformAccess, Tex
             glProgramUniformMatrix4x3fv(this.getProgram(), location, false, buffer);
         }
     }
+
+    /**
+     * @return The definition used to compile the latest version of this shader
+     */
+    @Nullable
+    ProgramDefinition getDefinition();
 
     /**
      * @return The shaders attached to this program

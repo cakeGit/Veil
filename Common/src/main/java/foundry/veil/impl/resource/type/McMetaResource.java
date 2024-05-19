@@ -1,20 +1,13 @@
 package foundry.veil.impl.resource.type;
 
+import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 
-import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 
-public record McMetaResource(ResourceLocation path, Path filePath, boolean modResource, ResourceMetadata metadata) implements VeilResource<McMetaResource> {
-
-    @Override
-    public boolean hidden() {
-        return true;
-    }
+public record McMetaResource(VeilResourceInfo resourceInfo, ResourceMetadata metadata) implements VeilResource<McMetaResource> {
 
     @Override
     public List<VeilResourceAction<McMetaResource>> getActions() {

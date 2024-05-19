@@ -126,7 +126,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
         this.editSourceOpen.set(true);
         this.editProgramId = program;
         this.editShaderId = shader;
-        this.codeEditor.show(glGetShaderSource(shader));
+        this.codeEditor.show(null, glGetShaderSource(shader));
     }
 
     private static Map<Integer, String> parseErrors(String source, String log) {

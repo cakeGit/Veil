@@ -1,16 +1,10 @@
 package foundry.veil.api.resource;
 
-import foundry.veil.api.client.imgui.VeilIconImGuiUtil;
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
-import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 
 public interface VeilResource<T extends VeilResource<?>> {
@@ -23,47 +17,21 @@ public interface VeilResource<T extends VeilResource<?>> {
     default void render(boolean dragging) {
         ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
         ImGui.setItemAllowOverlap();
-        VeilIconImGuiUtil.icon(this.getIconCode());
+        VeilImGuiUtil.icon(this.getIconCode());
         ImGui.sameLine();
         ImGui.popStyleVar();
 
-        ImGui.pushStyleColor(ImGuiCol.Text, this.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
+        VeilResourceInfo resource = this.resourceInfo();
+        ImGui.pushStyleColor(ImGuiCol.Text, resource.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
         if (dragging) {
-            VeilImGuiUtil.resourceLocation(this.path());
+            VeilImGuiUtil.resourceLocation(resource.path());
         } else {
-            ImGui.text(this.fileName());
+            ImGui.text(resource.fileName());
         }
         ImGui.popStyleColor();
     }
 
-    /**
-     * @return The resource location path this resource is located at
-     */
-    ResourceLocation path();
-
-    /**
-     * @return The file path of this resource
-     */
-    @Nullable
-    Path filePath();
-
-    /**
-     * @return Whether the file is located in the mod resources for the current dev environment
-     */
-    boolean modResource();
-
-    /**
-     * @return Whether this resource should appear in the resource panel
-     */
-    boolean hidden();
-
-    /**
-     * @return If this file cannot be accessed by the native file system
-     */
-    default boolean isStatic() {
-        Path filePath = this.filePath();
-        return filePath == null || filePath.getFileSystem() != FileSystems.getDefault();
-    }
+    VeilResourceInfo resourceInfo();
 
     /**
      * @return All actions that can be performed on this resource
@@ -84,13 +52,4 @@ public interface VeilResource<T extends VeilResource<?>> {
      * Gets the icon code for this resource (ex. 0xED0F)
      */
     int getIconCode();
-
-    /**
-     * @return The file name of this resource
-     */
-    default String fileName() {
-        String path = this.path().getPath();
-        String[] split = path.split("/");
-        return split[split.length - 1];
-    }
 }

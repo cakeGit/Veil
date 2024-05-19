@@ -53,9 +53,9 @@ public class DirectShaderCompiler implements ShaderCompiler {
         }
     }
 
-    private String modifySource(ShaderCompiler.Context context, List<ShaderPreProcessor> preProcessors, Map<String, Integer> uniformBindings, Set<String> dependencies, @Nullable ResourceLocation name, String source, int type, boolean sourceFile) throws IOException {
+    private String modifySource(ShaderCompiler.Context context, List<ShaderPreProcessor> preProcessors, Map<String, Integer> uniformBindings, Set<String> dependencies, Set<ResourceLocation> includes, @Nullable ResourceLocation name, String source, int type, boolean sourceFile) throws IOException {
         for (ShaderPreProcessor preProcessor : preProcessors) {
-            source = preProcessor.modify(new PreProcessorContext(this, context, uniformBindings, dependencies, name, source, type, sourceFile));
+            source = preProcessor.modify(new PreProcessorContext(this, context, uniformBindings, dependencies, includes, name, source, type, sourceFile));
         }
         return source;
     }
@@ -83,7 +83,8 @@ public class DirectShaderCompiler implements ShaderCompiler {
 
         Map<String, Integer> uniformBindings = new HashMap<>();
         Set<String> dependencies = new HashSet<>();
-        source = this.modifySource(context, this.preProcessors, uniformBindings, dependencies, this.compilingName, source, type, true);
+        Set<ResourceLocation> includes = new HashSet<>();
+        source = this.modifySource(context, this.preProcessors, uniformBindings, dependencies, includes, this.compilingName, source, type, true);
 
         int shader = glCreateShader(type);
         glShaderSource(shader, source);
@@ -98,7 +99,7 @@ public class DirectShaderCompiler implements ShaderCompiler {
         }
 
         this.shaders.add(shader);
-        return new CompiledShader(shader, uniformBindings, dependencies);
+        return new CompiledShader(this.compilingName, shader, Collections.unmodifiableMap(uniformBindings), Collections.unmodifiableSet(dependencies), Collections.unmodifiableSet(includes));
     }
 
     @Override
@@ -132,6 +133,7 @@ public class DirectShaderCompiler implements ShaderCompiler {
                                        ShaderCompiler.Context context,
                                        Map<String, Integer> uniformBindings,
                                        Set<String> dependencies,
+                                       Set<ResourceLocation> includes,
                                        @Nullable ResourceLocation name,
                                        String input,
                                        int type,
@@ -139,7 +141,7 @@ public class DirectShaderCompiler implements ShaderCompiler {
 
         @Override
         public String modify(@Nullable ResourceLocation name, String source) throws IOException {
-            return this.compiler.modifySource(this.context, this.compiler.importProcessors, this.uniformBindings, this.dependencies, name, source, this.type, false);
+            return this.compiler.modifySource(this.context, this.compiler.importProcessors, this.uniformBindings, this.dependencies, this.includes, name, source, this.type, false);
         }
 
         @Override
@@ -150,6 +152,11 @@ public class DirectShaderCompiler implements ShaderCompiler {
         @Override
         public void addDefinitionDependency(String name) {
             this.dependencies.add(name);
+        }
+
+        @Override
+        public void addInclude(ResourceLocation name) {
+            this.includes.add(name);
         }
 
         @Override

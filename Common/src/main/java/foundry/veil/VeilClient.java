@@ -10,7 +10,7 @@ import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
 import foundry.veil.impl.client.editor.*;
-import foundry.veil.impl.resource.VeilResourceManager;
+import foundry.veil.impl.resource.VeilResourceManagerImpl;
 import foundry.veil.platform.VeilClientPlatform;
 import foundry.veil.platform.VeilEventPlatform;
 import net.minecraft.client.KeyMapping;
@@ -23,7 +23,7 @@ import java.util.ServiceLoader;
 public class VeilClient {
 
     private static final VeilClientPlatform PLATFORM = ServiceLoader.load(VeilClientPlatform.class).findFirst().orElseThrow(() -> new RuntimeException("Veil expected client platform implementation"));
-    private static final VeilResourceManager RESOURCE_MANAGER = new VeilResourceManager();
+    private static final VeilResourceManagerImpl RESOURCE_MANAGER = new VeilResourceManagerImpl();
     public static final KeyMapping EDITOR_KEY = new KeyMapping("key.veil.editor", InputConstants.Type.KEYSYM, InputConstants.KEY_F6, "key.categories.veil");
 
     @ApiStatus.Internal
@@ -71,7 +71,7 @@ public class VeilClient {
         return PLATFORM;
     }
 
-    public static VeilResourceManager resourceManager() {
+    public static VeilResourceManagerImpl resourceManager() {
         return RESOURCE_MANAGER;
     }
 }

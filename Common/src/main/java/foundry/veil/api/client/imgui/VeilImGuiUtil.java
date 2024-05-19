@@ -31,6 +31,7 @@ public class VeilImGuiUtil {
 
     private static final ImGuiCharSink IM_GUI_CHAR_SINK = new ImGuiCharSink();
     private static final StringSplitter IM_GUI_SPLITTER = new StringSplitter((charId, style) -> getStyleFont(style).getCharAdvance(charId));
+    private static final ResourceLocation ICON_FONT = Veil.veilPath("remixicon");
 
     /**
      * Displays a (?) with a hover tooltip. Useful for example information.
@@ -59,6 +60,29 @@ public class VeilImGuiUtil {
             IM_GUI_CHAR_SINK.finish();
             ImGui.newLine();
         }
+    }
+
+    /**
+     * Renders an icon with the remixicon font
+     *
+     * @param code The icon code (ex. &#xED0F;)
+     */
+    public static void icon(int code) {
+        ImGui.pushFont(VeilRenderSystem.renderer().getEditorManager().getFont(ICON_FONT, false, false));
+        ImGui.text("" + (char) code);
+        ImGui.popFont();
+    }
+
+    /**
+     * Renders an icon with the remixicon font and a color
+     *
+     * @param code  The icon code (ex. &#xED0F;)
+     * @param color The color of the icon
+     */
+    public static void icon(int code, int color) {
+        ImGui.pushFont(VeilRenderSystem.renderer().getEditorManager().getFont(ICON_FONT, false, false));
+        ImGui.textColored(color, "" + (char) code);
+        ImGui.popFont();
     }
 
     public static ImFont getStyleFont(Style style) {
@@ -209,6 +233,7 @@ public class VeilImGuiUtil {
 
     /**
      * Displays a resource location with a dimmed namespace
+     *
      * @param loc The resource location
      */
     public static void resourceLocation(ResourceLocation loc) {
@@ -232,6 +257,7 @@ public class VeilImGuiUtil {
 
     /**
      * Obtains the color of the modid
+     *
      * @param modid The modid to get the color of
      * @return color The color based on the hash of the modid
      */

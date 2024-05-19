@@ -1,34 +1,46 @@
 package foundry.veil.impl.client.editor;
 
+import foundry.veil.Veil;
 import foundry.veil.VeilClient;
 import foundry.veil.api.client.editor.SingleWindowEditor;
-import foundry.veil.api.client.imgui.VeilIconImGuiUtil;
+import foundry.veil.api.client.imgui.CodeEditor;
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
-import foundry.veil.api.resource.VeilResource;
-import foundry.veil.api.resource.VeilResourceAction;
-import foundry.veil.impl.resource.VeilResourceManager;
+import foundry.veil.api.resource.*;
+import foundry.veil.impl.resource.VeilResourceManagerImpl;
 import foundry.veil.impl.resource.VeilResourceRenderer;
 import foundry.veil.impl.resource.tree.VeilResourceFolder;
 import imgui.ImGui;
+import imgui.extension.texteditor.TextEditor;
+import imgui.extension.texteditor.TextEditorLanguageDefinition;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiTreeNodeFlags;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @ApiStatus.Internal
-public class ResourceManagerEditor extends SingleWindowEditor {
+public class ResourceManagerEditor extends SingleWindowEditor implements VeilEditorEnvironment {
 
     private VeilResource<?> contextResource;
     private List<? extends VeilResourceAction<?>> actions;
 
+    private final CodeEditor editor;
+
     public ResourceManagerEditor() {
+        this.editor = new CodeEditor("Save");
     }
 
     @Override
@@ -36,7 +48,7 @@ public class ResourceManagerEditor extends SingleWindowEditor {
         this.contextResource = null;
         this.actions = Collections.emptyList();
 
-        VeilResourceManager resourceManager = VeilClient.resourceManager();
+        VeilResourceManagerImpl resourceManager = VeilClient.resourceManager();
         if (ImGui.beginListBox("##file_tree", ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY())) {
             for (VeilResourceFolder folder : resourceManager.getAllModResources()) {
                 String modid = folder.getName();
@@ -46,7 +58,7 @@ public class ResourceManagerEditor extends SingleWindowEditor {
 
                 ImGui.pushStyleColor(ImGuiCol.Text, color);
                 ImGui.sameLine();
-                VeilIconImGuiUtil.icon(0xEA7D, color);
+                VeilImGuiUtil.icon(0xEA7D, color);
                 ImGui.sameLine();
                 ImGui.text(modid);
                 ImGui.popStyleColor();
@@ -60,12 +72,18 @@ public class ResourceManagerEditor extends SingleWindowEditor {
             }
             ImGui.endListBox();
         }
+
+        this.editor.renderWindow();
+        if (ImGui.beginPopup("open_failed")) {
+            ImGui.text("Failed to open file");
+            ImGui.endPopup();
+        }
     }
 
     private void renderFolder(VeilResourceFolder folder) {
         boolean open = ImGui.treeNodeEx("##" + folder.getName(), ImGuiTreeNodeFlags.SpanAvailWidth);
         ImGui.sameLine();
-        VeilIconImGuiUtil.icon(open ? 0xED6F : 0xF43B);
+        VeilImGuiUtil.icon(open ? 0xED6F : 0xF43B);
         ImGui.sameLine();
         ImGui.text(folder.getName());
 
@@ -83,7 +101,8 @@ public class ResourceManagerEditor extends SingleWindowEditor {
 
         ImGui.indent();
         for (VeilResource<?> resource : folder.getResources()) {
-            if (resource.hidden()) {
+            VeilResourceInfo info = resource.resourceInfo();
+            if (info.hidden()) {
                 continue;
             }
 
@@ -103,18 +122,18 @@ public class ResourceManagerEditor extends SingleWindowEditor {
                 }
 
                 if (ImGui.selectable("##copy_path")) {
-                    ImGui.setClipboardText(resource.path().toString());
+                    ImGui.setClipboardText(info.path().toString());
                 }
 
                 ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
                 ImGui.setItemAllowOverlap();
                 ImGui.sameLine();
-                VeilIconImGuiUtil.icon(0xEB91);
+                VeilImGuiUtil.icon(0xEB91);
                 ImGui.sameLine();
                 ImGui.popStyleVar();
                 ImGui.text("Copy Path");
 
-                Path filePath = resource.filePath();
+                Path filePath = info.filePath();
                 ImGui.beginDisabled(filePath == null || filePath.getFileSystem() != FileSystems.getDefault());
                 if (ImGui.selectable("##open_folder")) {
                     Util.getPlatform().openFile(filePath.getParent().toFile());
@@ -123,7 +142,7 @@ public class ResourceManagerEditor extends SingleWindowEditor {
                 ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
                 ImGui.setItemAllowOverlap();
                 ImGui.sameLine();
-                VeilIconImGuiUtil.icon(0xECAF);
+                VeilImGuiUtil.icon(0xECAF);
                 ImGui.sameLine();
                 ImGui.popStyleVar();
                 ImGui.text("Open in Explorer");
@@ -132,14 +151,14 @@ public class ResourceManagerEditor extends SingleWindowEditor {
                 for (int i = 0; i < this.actions.size(); i++) {
                     VeilResourceAction action = this.actions.get(i);
                     if (ImGui.selectable("##action" + i)) {
-                        action.perform(resource);
+                        action.perform(this, resource);
                     }
 
                     ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
                     ImGui.setItemAllowOverlap();
                     ImGui.sameLine();
                     action.getIcon().ifPresent(icon -> {
-                        VeilIconImGuiUtil.icon(icon);
+                        VeilImGuiUtil.icon(icon);
                         ImGui.sameLine();
                     });
                     ImGui.popStyleVar();
@@ -160,5 +179,72 @@ public class ResourceManagerEditor extends SingleWindowEditor {
     @Override
     public @Nullable String getGroup() {
         return "Resources";
+    }
+
+    @Override
+    public void open(VeilResource<?> resource, @Nullable TextEditorLanguageDefinition languageDefinition) {
+        VeilResourceInfo info = resource.resourceInfo();
+        this.editor.show(info.fileName(), "");
+        this.editor.setSaveCallback(null);
+        this.editor.getEditor().setReadOnly(true);
+        this.editor.getEditor().setColorizerEnable(false);
+        Minecraft.getInstance().getResourceManager().getResource(info.path()).ifPresentOrElse(data -> {
+            CompletableFuture.supplyAsync(() -> {
+                try (InputStream stream = data.open()) {
+                    return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                } catch (Exception e) {
+                    return e.getMessage();
+                }
+            }, Util.ioPool()).handleAsync((contents, error) -> {
+                if (error != null) {
+                    ImGui.openPopup("open_failed");
+                    Veil.LOGGER.error("Failed to open file", error);
+                    return null;
+                }
+
+                this.editor.show(info.fileName(), contents);
+
+                boolean readOnly = resource.resourceInfo().isStatic();
+                this.editor.setSaveCallback((source, errorConsumer) -> {
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            if (readOnly) {
+                                throw new IOException("Read-only resource");
+                            }
+
+                            Path path = resource.resourceInfo().filePath();
+                            try (OutputStream os = Files.newOutputStream(path)) {
+                                os.write(source.getBytes(StandardCharsets.UTF_8));
+                            }
+
+                            Path buildPath = resource.resourceInfo().modResourcePath();
+                            if (buildPath != null) {
+                                try (OutputStream os = Files.newOutputStream(buildPath)) {
+                                    os.write(source.getBytes(StandardCharsets.UTF_8));
+                                }
+                            }
+                        } catch (Exception e) {
+                            Veil.LOGGER.error("Failed to write resource: {}", resource.resourceInfo().path(), e);
+                        }
+                    }, Util.ioPool()).thenRunAsync(resource::hotReload, Minecraft.getInstance()).exceptionally(e -> {
+                        Veil.LOGGER.error("Failed to hot-swap resource: {}", resource.resourceInfo().path(), e);
+                        return null;
+                    });
+                });
+
+                TextEditor textEditor = this.editor.getEditor();
+                textEditor.setReadOnly(readOnly);
+                if (languageDefinition != null) {
+                    textEditor.setColorizerEnable(true);
+                    textEditor.setLanguageDefinition(languageDefinition);
+                }
+                return null;
+            }, Minecraft.getInstance());
+        }, () -> ImGui.openPopup("open_failed"));
+    }
+
+    @Override
+    public VeilResourceManager getResourceManager() {
+        return VeilClient.resourceManager();
     }
 }

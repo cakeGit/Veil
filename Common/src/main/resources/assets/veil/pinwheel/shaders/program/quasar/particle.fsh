@@ -15,4 +15,5 @@ out vec4 fragColor;
 
 void main() {
     fragColor = linear_fog(texture(Sampler0, texCoord0) * vertexColor * ColorModulator, vertexDistance, FogStart, FogEnd, FogColor);
+	fragColor.rgb = vec3(1, 0, 1);
 }

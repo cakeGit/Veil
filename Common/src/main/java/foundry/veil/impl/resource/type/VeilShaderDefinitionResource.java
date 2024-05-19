@@ -1,31 +1,27 @@
 package foundry.veil.impl.resource.type;
 
+import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.resource.VeilResourceAction;
-import net.minecraft.resources.ResourceLocation;
+import foundry.veil.api.resource.VeilResourceInfo;
+import foundry.veil.impl.resource.action.IngameEditAction;
 
-import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 
-public record VeilShaderDefinitionResource(ResourceLocation path, Path filePath, boolean modResource) implements VeilShaderResource {
-
-    @Override
-    public boolean hidden() {
-        return false;
-    }
+public record VeilShaderDefinitionResource(VeilResourceInfo resourceInfo, ShaderManager shaderManager) implements VeilShaderResource {
 
     @Override
     public List<VeilResourceAction<VeilShaderResource>> getActions() {
-        return List.of();
+        return List.of(new IngameEditAction<>(null));
     }
 
     @Override
     public boolean canHotReload() {
-        return false;
+        return true;
     }
 
     @Override
     public void hotReload() {
+        this.shaderManager.scheduleRecompile(this.shaderManager.getSourceSet().getShaderDefinitionLister().fileToId(this.resourceInfo.path()));
     }
 
     @Override

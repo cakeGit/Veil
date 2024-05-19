@@ -1,26 +1,23 @@
 package foundry.veil.impl.resource.type;
 
-import foundry.veil.api.client.imgui.VeilIconImGuiUtil;
+import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
 
-import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 
-public record TextureResource(ResourceLocation path, Path filePath, boolean modResource, boolean hidden) implements VeilResource<TextureResource> {
+public record TextureResource(VeilResourceInfo resourceInfo) implements VeilResource<TextureResource> {
 
     @Override
     public void render(boolean dragging) {
         float size = ImGui.getTextLineHeight();
-        int texture = Minecraft.getInstance().getTextureManager().getTexture(this.path).getId();
+        int texture = Minecraft.getInstance().getTextureManager().getTexture(this.resourceInfo.path()).getId();
 
-        ImGui.pushStyleColor(ImGuiCol.Text, this.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
+        ImGui.pushStyleColor(ImGuiCol.Text, this.resourceInfo.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
         if (dragging) {
             ImGui.image(texture, size * 8, size * 8);
         } else {
@@ -36,7 +33,7 @@ public record TextureResource(ResourceLocation path, Path filePath, boolean modR
                 ImGui.endTooltip();
             }
             ImGui.sameLine();
-            ImGui.text(this.fileName());
+            ImGui.text(this.resourceInfo.fileName());
         }
         ImGui.popStyleColor();
     }

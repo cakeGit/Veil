@@ -4,29 +4,20 @@ import foundry.veil.api.resource.VeilResource;
 import imgui.ImGui;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiDragDropFlags;
-import net.minecraft.Util;
-
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 
 public class VeilResourceRenderer {
 
-    public static void renderFilename(VeilResource<?> resource, boolean dragging) {
+    public static void renderFilename(VeilResource<?> resource) {
         ImGui.pushID(resource.hashCode());
         ImGui.beginGroup();
-        resource.render(dragging);
-        ImGui.endGroup();
-        ImGui.popID();
+        resource.render(false);
 
-        if (!dragging && ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
+        if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
             ImGui.setDragDropPayload("VEIL_RESOURCE", resource, ImGuiCond.Once);
-            renderFilename(resource, true);
+            resource.render(true);
             ImGui.endDragDropSource();
         }
+        ImGui.endGroup();
+        ImGui.popID();
     }
-
-    public static void renderFilename(VeilResource<?> resource) {
-        renderFilename(resource, false);
-    }
-
 }

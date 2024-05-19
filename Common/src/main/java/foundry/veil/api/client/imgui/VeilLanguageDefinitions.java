@@ -20,7 +20,7 @@ public final class VeilLanguageDefinitions {
         return GLSL;
     }
 
-    public static TextEditorLanguageDefinition createGlsl() {
+    private static TextEditorLanguageDefinition createGlsl() {
         TextEditorLanguageDefinition definition = new TextEditorLanguageDefinition();
 
         String[] keywords = {

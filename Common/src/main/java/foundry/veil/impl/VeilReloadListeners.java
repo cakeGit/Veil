@@ -10,7 +10,7 @@ import org.jetbrains.annotations.ApiStatus;
 public final class VeilReloadListeners {
     public static void registerListeners(Context context) {
         context.register(PackType.CLIENT_RESOURCES, "quasar", new QuasarParticles.Reloader());
-        context.register(PackType.CLIENT_RESOURCES, "resources", VeilClient.resourceManager());
+        context.register(PackType.CLIENT_RESOURCES, "resources", VeilClient.resourceManager().createReloadListener());
     }
 
     @FunctionalInterface

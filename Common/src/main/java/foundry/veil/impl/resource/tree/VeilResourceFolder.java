@@ -1,10 +1,11 @@
 package foundry.veil.impl.resource.tree;
 
 import foundry.veil.api.resource.VeilResource;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A resource folder for a tree-structure
@@ -12,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 public class VeilResourceFolder {
 
     private final String name;
-    private final Object2ObjectMap<String, VeilResourceFolder> subFolders = new Object2ObjectArrayMap<>(8);
-    private final Object2ObjectMap<String, VeilResource<?>> resources = new Object2ObjectArrayMap<>(8);
+    private final Map<String, VeilResourceFolder> subFolders = new TreeMap<>();
+    private final Map<String, VeilResource<?>> resources = new TreeMap<>();
 
     public VeilResourceFolder(String name) {
         this.name = name;
@@ -49,7 +50,7 @@ public class VeilResourceFolder {
     /**
      * @return An iterable collection of all folders contained within this folder
      */
-    public ObjectCollection<VeilResourceFolder> getSubFolders() {
+    public Collection<VeilResourceFolder> getSubFolders() {
         return this.subFolders.values();
     }
 

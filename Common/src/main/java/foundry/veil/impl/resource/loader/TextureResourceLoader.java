@@ -6,6 +6,7 @@ import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
 import foundry.veil.impl.resource.type.TextureResource;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,12 +33,12 @@ public class TextureResourceLoader implements VeilResourceLoader<TextureResource
     }
 
     @Override
-    public VeilResource<TextureResource> load(VeilResourceManager resourceManager, ResourceProvider provider, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+    public VeilResource<TextureResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
 //        ResourceMetadata metadata = resourceManager.getResourceMetadata(path);
 //        AnimationMetadataSection animation = null;
 //        if (metadata != null) {
 //            animation = metadata.getSection(AnimationMetadataSection.SERIALIZER).orElse(null);
 //        }
-        return new TextureResource(new VeilResourceInfo(path, filePath, modResourcePath, false));
+        return new TextureResource(new VeilResourceInfo(packType, path, filePath, modResourcePath, false));
     }
 }

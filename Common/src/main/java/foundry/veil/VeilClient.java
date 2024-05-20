@@ -28,7 +28,10 @@ public class VeilClient {
 
     @ApiStatus.Internal
     public static void init() {
-        VeilEventPlatform.INSTANCE.onFreeNativeResources(VeilRenderSystem::close);
+        VeilEventPlatform.INSTANCE.onFreeNativeResources(() -> {
+            VeilRenderSystem.close();
+            RESOURCE_MANAGER.free();
+        });
         VeilEventPlatform.INSTANCE.onVeilRendererAvailable(renderer -> {
             RESOURCE_MANAGER.addVeilLoaders(renderer);
             if (VeilRenderer.hasImGui()) {

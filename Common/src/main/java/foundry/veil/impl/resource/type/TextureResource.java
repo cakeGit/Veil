@@ -1,5 +1,6 @@
 package foundry.veil.impl.resource.type;
 
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
@@ -20,6 +21,7 @@ public record TextureResource(VeilResourceInfo resourceInfo) implements VeilReso
         ImGui.pushStyleColor(ImGuiCol.Text, this.resourceInfo.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
         if (dragging) {
             ImGui.image(texture, size * 8, size * 8);
+            VeilImGuiUtil.resourceLocation(this.resourceInfo().path());
         } else {
             ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
             ImGui.setItemAllowOverlap();

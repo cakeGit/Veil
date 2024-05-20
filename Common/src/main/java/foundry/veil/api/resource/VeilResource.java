@@ -15,18 +15,15 @@ public interface VeilResource<T extends VeilResource<?>> {
      * @param dragging Whether the user is dragging the resource
      */
     default void render(boolean dragging) {
-        ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
-        ImGui.setItemAllowOverlap();
         VeilImGuiUtil.icon(this.getIconCode());
         ImGui.sameLine();
-        ImGui.popStyleVar();
 
-        VeilResourceInfo resource = this.resourceInfo();
-        ImGui.pushStyleColor(ImGuiCol.Text, resource.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
+        VeilResourceInfo resourceInfo = this.resourceInfo();
+        ImGui.pushStyleColor(ImGuiCol.Text, resourceInfo.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
         if (dragging) {
-            VeilImGuiUtil.resourceLocation(resource.path());
+            VeilImGuiUtil.resourceLocation(resourceInfo.path());
         } else {
-            ImGui.text(resource.fileName());
+            ImGui.text(resourceInfo.fileName());
         }
         ImGui.popStyleColor();
     }

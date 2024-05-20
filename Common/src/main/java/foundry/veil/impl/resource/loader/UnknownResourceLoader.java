@@ -6,6 +6,7 @@ import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
 import foundry.veil.impl.resource.type.UnknownResource;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +23,7 @@ public class UnknownResourceLoader implements VeilResourceLoader<UnknownResource
     }
 
     @Override
-    public VeilResource<UnknownResource> load(VeilResourceManager resourceManager, ResourceProvider provider, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
-        return new UnknownResource(new VeilResourceInfo(path, filePath, modResourcePath, false));
+    public VeilResource<UnknownResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+        return new UnknownResource(new VeilResourceInfo(packType, path, filePath, modResourcePath, false));
     }
 }

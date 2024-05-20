@@ -11,6 +11,7 @@ import foundry.veil.impl.resource.type.VeilShaderDefinitionResource;
 import foundry.veil.impl.resource.type.VeilShaderFileResource;
 import foundry.veil.impl.resource.type.VeilShaderResource;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,8 +53,8 @@ public class ShaderResourceLoader implements VeilResourceLoader<VeilShaderResour
     }
 
     @Override
-    public VeilResource<VeilShaderResource> load(VeilResourceManager resourceManager, ResourceProvider provider, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
-        VeilResourceInfo info = new VeilResourceInfo(path, filePath, modResourcePath, false);
+    public VeilResource<VeilShaderResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+        VeilResourceInfo info = new VeilResourceInfo(packType, path, filePath, modResourcePath, false);
         return path.getPath().endsWith(".json") ? new VeilShaderDefinitionResource(info, this.shaderManager) : new VeilShaderFileResource(info, this.shaderManager);
     }
 }

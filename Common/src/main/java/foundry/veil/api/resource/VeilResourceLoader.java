@@ -1,6 +1,7 @@
 package foundry.veil.api.resource;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,5 +26,5 @@ public interface VeilResourceLoader<T extends VeilResource<?>> {
      * @param modResourcePath The path to this resource in the build folder if in a dev environment
      * @return The loaded resource
      */
-    VeilResource<T> load(VeilResourceManager resourceManager, ResourceProvider provider, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException;
+    VeilResource<T> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException;
 }

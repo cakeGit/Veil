@@ -6,6 +6,7 @@ import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.imgui.CodeEditor;
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.resource.*;
+import foundry.veil.impl.resource.VeilPackResources;
 import foundry.veil.impl.resource.VeilResourceManagerImpl;
 import foundry.veil.impl.resource.VeilResourceRenderer;
 import foundry.veil.impl.resource.tree.VeilResourceFolder;
@@ -17,6 +18,7 @@ import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiTreeNodeFlags;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,12 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @ApiStatus.Internal
 public class ResourceManagerEditor extends SingleWindowEditor implements VeilEditorEnvironment {
@@ -38,6 +40,8 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
     private List<? extends VeilResourceAction<?>> actions;
 
     private final CodeEditor editor;
+    private ResourceManager serverResourceManager;
+    private CompletableFuture<?> reloadFuture;
 
     public ResourceManagerEditor() {
         this.editor = new CodeEditor("Save");
@@ -48,23 +52,35 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
         this.contextResource = null;
         this.actions = Collections.emptyList();
 
+        ImGui.beginDisabled(this.reloadFuture != null && !this.reloadFuture.isDone());
+        if (ImGui.button("Reload Resources")) {
+            this.reloadFuture = Minecraft.getInstance().reloadResourcePacks();
+        }
+        ImGui.endDisabled();
+
         VeilResourceManagerImpl resourceManager = VeilClient.resourceManager();
         if (ImGui.beginListBox("##file_tree", ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY())) {
-            for (VeilResourceFolder folder : resourceManager.getAllModResources()) {
-                String modid = folder.getName();
+            for (VeilPackResources pack : resourceManager.getAllPacks()) {
+                String modid = pack.getName();
                 int color = VeilImGuiUtil.colorOf(modid);
 
                 boolean open = ImGui.treeNodeEx("##" + modid, ImGuiTreeNodeFlags.SpanAvailWidth);
 
                 ImGui.pushStyleColor(ImGuiCol.Text, color);
                 ImGui.sameLine();
-                VeilImGuiUtil.icon(0xEA7D, color);
+                int icon = pack.getTexture();
+                if (icon != 0) {
+                    float size = ImGui.getTextLineHeight();
+                    ImGui.image(icon, size, size);
+                } else {
+                    VeilImGuiUtil.icon(0xEA7D, color);
+                }
                 ImGui.sameLine();
                 ImGui.text(modid);
                 ImGui.popStyleColor();
 
                 if (open) {
-                    this.renderFolderContents(folder);
+                    this.renderFolderContents(pack.getRoot());
                     ImGui.treePop();
                 }
 
@@ -74,7 +90,7 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
         }
 
         this.editor.renderWindow();
-        if (ImGui.beginPopup("open_failed")) {
+        if (ImGui.beginPopupModal("###open_failed")) {
             ImGui.text("Failed to open file");
             ImGui.endPopup();
         }
@@ -133,10 +149,12 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
                 ImGui.popStyleVar();
                 ImGui.text("Copy Path");
 
-                Path filePath = info.filePath();
-                ImGui.beginDisabled(filePath == null || filePath.getFileSystem() != FileSystems.getDefault());
+                ImGui.beginDisabled(info.isStatic());
                 if (ImGui.selectable("##open_folder")) {
-                    Util.getPlatform().openFile(filePath.getParent().toFile());
+                    Path file = info.modResourcePath() != null ? info.modResourcePath() : info.filePath();
+                    if (file.getParent() != null) {
+                        Util.getPlatform().openFile(file.getParent().toFile());
+                    }
                 }
 
                 ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
@@ -188,59 +206,62 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
         this.editor.setSaveCallback(null);
         this.editor.getEditor().setReadOnly(true);
         this.editor.getEditor().setColorizerEnable(false);
-        Minecraft.getInstance().getResourceManager().getResource(info.path()).ifPresentOrElse(data -> {
-            CompletableFuture.supplyAsync(() -> {
-                try (InputStream stream = data.open()) {
-                    return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-                } catch (Exception e) {
-                    return e.getMessage();
-                }
-            }, Util.ioPool()).handleAsync((contents, error) -> {
-                if (error != null) {
-                    ImGui.openPopup("open_failed");
-                    Veil.LOGGER.error("Failed to open file", error);
-                    return null;
-                }
+        VeilResourceManager resourceManager = this.getResourceManager();
+        resourceManager.resources(info).getResource(info.path()).ifPresentOrElse(data -> CompletableFuture.supplyAsync(() -> {
+            try (InputStream stream = data.open()) {
+                return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                throw new CompletionException(e);
+            }
+        }, Util.ioPool()).handleAsync((contents, error) -> {
+            if (error != null) {
+                this.editor.hide();
+                ImGui.openPopup("###open_failed");
+                Veil.LOGGER.error("Failed to open file", error);
+                return null;
+            }
 
-                this.editor.show(info.fileName(), contents);
+            this.editor.show(info.fileName(), contents);
 
-                boolean readOnly = resource.resourceInfo().isStatic();
-                this.editor.setSaveCallback((source, errorConsumer) -> {
-                    CompletableFuture.runAsync(() -> {
-                        try {
-                            if (readOnly) {
-                                throw new IOException("Read-only resource");
-                            }
+            boolean readOnly = resource.resourceInfo().isStatic();
+            this.editor.setSaveCallback((source, errorConsumer) -> {
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        if (readOnly) {
+                            throw new IOException("Read-only resource");
+                        }
 
-                            Path path = resource.resourceInfo().filePath();
-                            try (OutputStream os = Files.newOutputStream(path)) {
+                        Path path = resource.resourceInfo().filePath();
+                        try (OutputStream os = Files.newOutputStream(path)) {
+                            os.write(source.getBytes(StandardCharsets.UTF_8));
+                        }
+
+                        Path buildPath = resource.resourceInfo().modResourcePath();
+                        if (buildPath != null) {
+                            try (OutputStream os = Files.newOutputStream(buildPath)) {
                                 os.write(source.getBytes(StandardCharsets.UTF_8));
                             }
-
-                            Path buildPath = resource.resourceInfo().modResourcePath();
-                            if (buildPath != null) {
-                                try (OutputStream os = Files.newOutputStream(buildPath)) {
-                                    os.write(source.getBytes(StandardCharsets.UTF_8));
-                                }
-                            }
-                        } catch (Exception e) {
-                            Veil.LOGGER.error("Failed to write resource: {}", resource.resourceInfo().path(), e);
                         }
-                    }, Util.ioPool()).thenRunAsync(resource::hotReload, Minecraft.getInstance()).exceptionally(e -> {
-                        Veil.LOGGER.error("Failed to hot-swap resource: {}", resource.resourceInfo().path(), e);
-                        return null;
-                    });
+                    } catch (Exception e) {
+                        Veil.LOGGER.error("Failed to write resource: {}", resource.resourceInfo().path(), e);
+                    }
+                }, Util.ioPool()).thenRunAsync(resource::hotReload, Minecraft.getInstance()).exceptionally(e -> {
+                    Veil.LOGGER.error("Failed to hot-swap resource: {}", resource.resourceInfo().path(), e);
+                    return null;
                 });
+            });
 
-                TextEditor textEditor = this.editor.getEditor();
-                textEditor.setReadOnly(readOnly);
-                if (languageDefinition != null) {
-                    textEditor.setColorizerEnable(true);
-                    textEditor.setLanguageDefinition(languageDefinition);
-                }
-                return null;
-            }, Minecraft.getInstance());
-        }, () -> ImGui.openPopup("open_failed"));
+            TextEditor textEditor = this.editor.getEditor();
+            textEditor.setReadOnly(readOnly);
+            if (languageDefinition != null) {
+                textEditor.setColorizerEnable(true);
+                textEditor.setLanguageDefinition(languageDefinition);
+            }
+            return null;
+        }, Minecraft.getInstance()), () -> {
+            this.editor.hide();
+            ImGui.openPopup("###open_failed");
+        });
     }
 
     @Override

@@ -2,10 +2,20 @@ package foundry.veil.api.resource;
 
 import foundry.veil.impl.resource.type.McMetaResource;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import org.jetbrains.annotations.Nullable;
 
 public interface VeilResourceManager {
+
+    default ResourceManager resources(VeilResourceInfo resourceInfo) {
+        return resourceInfo.packType() == PackType.SERVER_DATA ? this.serverResources() : this.clientResources();
+    }
+
+    ResourceManager clientResources();
+
+    ResourceManager serverResources();
 
     @Nullable
     VeilResource<?> getVeilResource(String namespace, String path);

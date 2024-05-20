@@ -1,6 +1,7 @@
 package foundry.veil.api.resource;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.FileSystems;
@@ -12,7 +13,8 @@ import java.nio.file.Path;
  * @param modResourcePath The path to this resource in the build folder if in a dev environment
  * @param hidden          Whether this resource should appear in the resource panel
  */
-public record VeilResourceInfo(ResourceLocation path,
+public record VeilResourceInfo(PackType packType,
+                               ResourceLocation path,
                                Path filePath,
                                @Nullable Path modResourcePath,
                                boolean hidden) {
@@ -31,7 +33,7 @@ public record VeilResourceInfo(ResourceLocation path,
      * @return If this file cannot be accessed by the native file system
      */
     public boolean isStatic() {
-        Path filePath = this.filePath();
+        Path filePath = this.modResourcePath != null ? this.modResourcePath : this.filePath;
         return filePath == null || filePath.getFileSystem() != FileSystems.getDefault();
     }
 }

@@ -64,6 +64,31 @@ public record QuasarParticleData(boolean shouldCollide,
     ).apply(instance, (shouldCollide, faceVelocity, velocityStretchFactor, initModules, updateModules, collisionModules, forceModules, renderModules, spriteData, additive, renderStyle) -> new QuasarParticleData(shouldCollide, faceVelocity, velocityStretchFactor, initModules, updateModules, collisionModules, forceModules, renderModules, spriteData.orElse(null), additive, renderStyle)));
     public static final Codec<Holder<QuasarParticleData>> CODEC = RegistryFileCodec.create(QuasarParticles.PARTICLE_DATA, DIRECT_CODEC);
 
+    public QuasarParticleData(boolean shouldCollide,
+                              boolean faceVelocity,
+                              float velocityStretchFactor,
+                              List<Holder<ParticleModuleData>> initModules,
+                              List<Holder<ParticleModuleData>> updateModules,
+                              List<Holder<ParticleModuleData>> collisionModules,
+                              List<Holder<ParticleModuleData>> forceModules,
+                              List<Holder<ParticleModuleData>> renderModules,
+                              @Nullable SpriteData spriteData,
+                              boolean additive,
+                              RenderData.RenderStyle renderStyle) {
+        this.shouldCollide = shouldCollide;
+        this.faceVelocity = faceVelocity;
+        this.velocityStretchFactor = velocityStretchFactor;
+        // Prevent users from modifying core particle data
+        this.initModules = Collections.unmodifiableList(initModules);
+        this.updateModules = Collections.unmodifiableList(updateModules);
+        this.collisionModules = Collections.unmodifiableList(collisionModules);
+        this.forceModules = Collections.unmodifiableList(forceModules);
+        this.renderModules = Collections.unmodifiableList(renderModules);
+        this.spriteData = spriteData;
+        this.additive = additive;
+        this.renderStyle = renderStyle;
+    }
+
     /**
      * @return A stream containing all modules in the particle.
      */

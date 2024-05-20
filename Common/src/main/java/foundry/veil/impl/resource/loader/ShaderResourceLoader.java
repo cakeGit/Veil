@@ -13,6 +13,7 @@ import foundry.veil.impl.resource.type.VeilShaderResource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import org.apache.commons.compress.archivers.sevenz.CLI;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -39,8 +40,8 @@ public class ShaderResourceLoader implements VeilResourceLoader<VeilShaderResour
     }
 
     @Override
-    public boolean canLoad(ResourceLocation path, Path filePath, @Nullable Path modResourcePath) {
-        if (!path.getPath().startsWith(this.shaderManager.getSourceSet().getFolder())) {
+    public boolean canLoad(PackType packType, ResourceLocation path, Path filePath, @Nullable Path modResourcePath) {
+        if (packType != PackType.CLIENT_RESOURCES || !path.getPath().startsWith(this.shaderManager.getSourceSet().getFolder())) {
             return false;
         }
 

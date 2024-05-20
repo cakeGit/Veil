@@ -87,7 +87,7 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
 
     private void visitResource(@Nullable PackType packType, VeilPackResources resources, ResourceProvider provider, ResourceLocation loc, @Nullable Path path, @Nullable Path modResourcePath) throws IOException {
         for (VeilResourceLoader<?> loader : this.loaders) {
-            if (loader.canLoad(loc, path, modResourcePath)) {
+            if (loader.canLoad(packType, loc, path, modResourcePath)) {
                 try {
                     resources.add(packType, loc, loader.load(this, provider, packType, loc, path, modResourcePath));
                 } catch (Exception e) {

@@ -18,8 +18,8 @@ public class UnknownResourceLoader implements VeilResourceLoader<UnknownResource
     public static final UnknownResourceLoader INSTANCE = new UnknownResourceLoader();
 
     @Override
-    public boolean canLoad(ResourceLocation path, Path filePath, @Nullable Path modResourcePath) {
-        return false;
+    public boolean canLoad(PackType packType, ResourceLocation path, Path filePath, @Nullable Path modResourcePath) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

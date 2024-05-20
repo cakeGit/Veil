@@ -23,7 +23,11 @@ public class TextureResourceLoader implements VeilResourceLoader<TextureResource
     );
 
     @Override
-    public boolean canLoad(ResourceLocation path, Path filePath, @Nullable Path modResourcePath) {
+    public boolean canLoad(PackType packType, ResourceLocation path, Path filePath, @Nullable Path modResourcePath) {
+        if (packType != PackType.CLIENT_RESOURCES) {
+            return false;
+        }
+
         for (String extension : EXTENSIONS) {
             if (path.getPath().endsWith(extension)) {
                 return true;

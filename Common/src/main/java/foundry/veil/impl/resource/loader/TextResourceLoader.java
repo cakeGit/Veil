@@ -16,7 +16,7 @@ import java.nio.file.Path;
 public class TextResourceLoader implements VeilResourceLoader<TextResource> {
 
     @Override
-    public boolean canLoad(ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) {
+    public boolean canLoad(PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) {
         return path.getPath().endsWith(".txt");
     }
 

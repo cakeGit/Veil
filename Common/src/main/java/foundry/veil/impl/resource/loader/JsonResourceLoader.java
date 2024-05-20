@@ -4,7 +4,6 @@ import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
-import foundry.veil.impl.resource.type.McMetaResource;
 import foundry.veil.impl.resource.type.TextResource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
@@ -17,7 +16,7 @@ import java.nio.file.Path;
 public class JsonResourceLoader implements VeilResourceLoader<TextResource> {
 
     @Override
-    public boolean canLoad(ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) {
+    public boolean canLoad(PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) {
         return path.getPath().endsWith(".json");
     }
 

@@ -20,7 +20,7 @@ import java.util.Optional;
 public class McMetaResourceLoader implements VeilResourceLoader<McMetaResource> {
 
     @Override
-    public boolean canLoad(ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) {
+    public boolean canLoad(PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) {
         return path.getPath().endsWith(".mcmeta");
     }
 

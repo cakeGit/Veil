@@ -9,19 +9,23 @@ import foundry.veil.api.quasar.particle.QuasarParticle;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
-public class StaticColorLightModule implements RenderParticleModule {
+public class StaticLightModule implements RenderParticleModule {
 
-    private final LightModuleData data;
     private final Vector4fc color;
     private final float brightness;
+    private final float radius;
 
     private PointLight light;
     private boolean enabled;
 
-    public StaticColorLightModule(LightModuleData data) {
-        this.data = data;
-        this.color = data.color().getColor(0.0F);
-        this.brightness = data.brightness() * this.color.w();
+    public StaticLightModule(LightModuleData data) {
+        this(data.color().getColor(0.0F), data.brightness().getConstant(), data.radius().getConstant());
+    }
+
+    public StaticLightModule(Vector4fc color, float brightness, float radius) {
+        this.color = new Vector4f(color);
+        this.brightness = brightness * this.color.w();
+        this.radius = radius;
         this.light = null;
     }
 
@@ -42,7 +46,7 @@ public class StaticColorLightModule implements RenderParticleModule {
             this.light = new PointLight()
                     .setColor(this.color.x(), this.color.y(), this.color.z())
                     .setBrightness(this.brightness)
-                    .setRadius(this.data.radius());
+                    .setRadius(this.radius);
             deferredRenderer.getLightRenderer().addLight(this.light);
         }
 

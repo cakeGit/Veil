@@ -1,4 +1,6 @@
 {
   "key.veil.editor": "Toggle Editor",
-  "key.categories.veil": "Veil"
+  "key.categories.veil": "Veil",
+  "veil.deferred.unsupported.title": "Deferred Renderer Unsupported",
+  "veil.deferred.unsupported.desc": "Deferred does not support Sodium or Fabulous"
 }

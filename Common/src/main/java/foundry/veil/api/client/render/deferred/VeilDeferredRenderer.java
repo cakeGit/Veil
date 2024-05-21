@@ -13,6 +13,9 @@ import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -57,6 +60,9 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
     public static final ResourceLocation TRANSPARENT_POST = Veil.veilPath("core/transparent");
     public static final ResourceLocation SCREEN_POST = Veil.veilPath("core/screen");
 
+    private static final MutableComponent UNSUPPORTED_TITLE = Component.translatable(Veil.MODID + ".deferred.unsupported.title");
+    private static final MutableComponent UNSUPPORTED_DESC = Component.translatable(Veil.MODID + ".deferred.unsupported.desc");
+
     private final ShaderManager deferredShaderManager;
     private final ShaderPreDefinitions shaderPreDefinitions;
     private final FramebufferManager framebufferManager;
@@ -82,6 +88,9 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
         return CompletableFuture.<CompletableFuture<Void>>supplyAsync(() -> {
             boolean selected = Minecraft.getInstance().getResourcePackRepository().getSelectedIds().contains(PACK_ID.toString()) || resourceManager.listPacks().anyMatch(pack -> pack.packId().equals(PACK_ID.toString()));
             boolean active = selected && isSupported();
+            if (selected && !active) {
+                SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastIds.PERIODIC_NOTIFICATION, UNSUPPORTED_TITLE, UNSUPPORTED_DESC);
+            }
             if (this.enabled != active) {
                 this.enabled = active;
                 if (active) {

@@ -17,11 +17,21 @@ public class TextResourceLoader implements VeilResourceLoader<TextResource> {
 
     @Override
     public boolean canLoad(PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) {
-        return path.getPath().endsWith(".txt");
+        for (TextResource.Type type : TextResource.Type.values()) {
+            if (path.getPath().endsWith(type.getExtension())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public VeilResource<TextResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
-        return new TextResource(new VeilResourceInfo(packType, path, filePath, modResourcePath, false), TextResource.Type.TEXT);
+        for (TextResource.Type type : TextResource.Type.values()) {
+            if (path.getPath().endsWith(type.getExtension())) {
+                return new TextResource(new VeilResourceInfo(packType, path, filePath, modResourcePath, false), type);
+            }
+        }
+        throw new IOException("Unknown text resource: " + path);
     }
 }

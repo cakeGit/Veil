@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 public interface PackResourcesExtension {
 
-    void veil$listResources(PackResourceConsumer consumer) throws IOException;
+    void veil$listResources(PackResourceConsumer consumer);
 
     @Nullable
     IoSupplier<InputStream> veil$getIcon();

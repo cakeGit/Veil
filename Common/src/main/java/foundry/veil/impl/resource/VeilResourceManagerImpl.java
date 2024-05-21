@@ -5,11 +5,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import foundry.veil.Veil;
 import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.resource.VeilResource;
+import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
 import foundry.veil.api.util.CompositeReloadListener;
 import foundry.veil.ext.PackResourcesExtension;
 import foundry.veil.impl.resource.loader.*;
+import foundry.veil.impl.resource.type.UnknownResource;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -46,7 +48,6 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
         this.addLoader(new TextureResourceLoader());
         this.addLoader(new McMetaResourceLoader());
         this.addLoader(new TextResourceLoader());
-        this.addLoader(new JsonResourceLoader());
     }
 
     /**
@@ -98,7 +99,7 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
         }
 
         // If no loaders can load the resource, add it as an unknown resource
-        resources.add(packType, loc, UnknownResourceLoader.INSTANCE.load(this, provider, packType, loc, path, modResourcePath));
+        resources.add(packType, loc, new UnknownResource(new VeilResourceInfo(packType, loc, path, modResourcePath, false)));
     }
 
     public PreparableReloadListener createReloadListener() {
@@ -174,7 +175,7 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
     /**
      * @return All pack folders
      */
-    public Collection<VeilPackResources> getAllPacks() {
+    public List<VeilPackResources> getAllPacks() {
         return this.packResources;
     }
 }

@@ -29,13 +29,19 @@ public record TextResource(VeilResourceInfo resourceInfo, Type type) implements 
     }
 
     public enum Type {
-        TEXT(0xED0F),
-        JSON(0xECCD);
+        TEXT(".txt",0xED0F),
+        JSON(".json",0xECCD);
 
+        private final String extension;
         private final int icon;
 
-        Type(int icon) {
+        Type(String extension, int icon) {
+            this.extension = extension;
             this.icon = icon;
+        }
+
+        public String getExtension() {
+            return this.extension;
         }
 
         public int getIcon() {

@@ -10,6 +10,7 @@
     "chargable.InstrumentItemMixin",
     "chargable.TridentItemMixin",
     "debug.SimpleReloadInstanceMixin",
+    "resource.PathPackResourcesMixin",
     "resource.VanillaPackResourcesMixin",
     "tooltip.BlockEntityMixin"
   ],
@@ -22,7 +23,6 @@
     "accessor.RenderStateShardAccessor",
     "accessor.RenderTargetAccessor",
     "accessor.RenderTypeAccessor",
-    "resource.VanillaPackResourcesMixin",
     "client.deferred.AmbientOcclusionFaceMixin",
     "client.deferred.DebugScreenOverlayMixin",
     "client.deferred.LevelRendererMixin",
@@ -56,7 +56,8 @@
     "debug.DebugKeyboardHandlerMixin",
     "debug.GlDebugMixin",
     "debug.MinecraftMixin",
-    "debug.RenderDocker"
+    "debug.RenderDocker",
+    "resource.VanillaPackResourcesMixin"
   ],
   "injectors": {
     "defaultRequire": 1

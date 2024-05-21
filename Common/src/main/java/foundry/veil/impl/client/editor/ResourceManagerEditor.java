@@ -60,7 +60,9 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
 
         VeilResourceManagerImpl resourceManager = VeilClient.resourceManager();
         if (ImGui.beginListBox("##file_tree", ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY())) {
-            for (VeilPackResources pack : resourceManager.getAllPacks()) {
+            List<VeilPackResources> packs = resourceManager.getAllPacks();
+            for (int i = packs.size() - 1; i >= 0; i--) {
+                VeilPackResources pack = packs.get(i);
                 String modid = pack.getName();
                 int color = VeilImGuiUtil.colorOf(modid);
 

@@ -5,12 +5,18 @@ import foundry.veil.api.client.imgui.VeilImGui;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.impl.client.imgui.style.VeilImGuiStylesheet;
 import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.callback.ImStrConsumer;
+import imgui.callback.ImStrSupplier;
 import imgui.extension.implot.ImPlot;
 import imgui.extension.implot.ImPlotContext;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.internal.ImGuiContext;
+import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.client.KeyboardHandler;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.ApiStatus;
 
 import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
@@ -24,14 +30,14 @@ public class VeilImGuiImpl implements VeilImGui {
 
     private static VeilImGui instance;
 
-    private final ImGuiImplGlfw implGlfw;
+    private final VeilImGuiImplGlfw implGlfw;
     private final ImGuiImplGl3 implGl3;
     private final ImGuiContext imGuiContext;
     private final ImPlotContext imPlotContext;
     private boolean active;
 
     private VeilImGuiImpl(long window) {
-        this.implGlfw = new ImGuiImplGlfw();
+        this.implGlfw = new VeilImGuiImplGlfw();
         this.implGl3 = new ImGuiImplGl3();
 
         this.imGuiContext = ImGui.createContext();
@@ -40,6 +46,22 @@ public class VeilImGuiImpl implements VeilImGui {
         this.implGl3.init("#version 410 core");
 
         VeilImGuiStylesheet.initStyles();
+
+        // Use Minecraft clipboard handling to handle errors
+        KeyboardHandler keyboardHandler = Minecraft.getInstance().keyboardHandler;
+        ImGuiIO io = ImGui.getIO();
+        io.setGetClipboardTextFn(new ImStrSupplier() {
+            @Override
+            public String get() {
+                return keyboardHandler.getClipboard();
+            }
+        });
+        io.setSetClipboardTextFn(new ImStrConsumer() {
+            @Override
+            public void accept(String str) {
+                keyboardHandler.setClipboard(str);
+            }
+        });
     }
 
     @Override
@@ -65,6 +87,7 @@ public class VeilImGuiImpl implements VeilImGui {
         VeilRenderSystem.renderer().getEditorManager().renderLast();
         ImGui.render();
         this.implGl3.renderDrawData(ImGui.getDrawData());
+        this.implGlfw.getTypedCharacters().clear();
 
         if (ImGui.getIO().hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {
             final long backupWindowPtr = glfwGetCurrentContext();
@@ -112,6 +135,11 @@ public class VeilImGuiImpl implements VeilImGui {
     @Override
     public boolean shouldHideMouse() {
         return ImGui.getIO().getWantCaptureMouse();
+    }
+
+    @Override
+    public IntList getTypedCharacters() {
+        return this.implGlfw.getTypedCharacters();
     }
 
     @Override

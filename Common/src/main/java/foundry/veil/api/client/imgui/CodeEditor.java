@@ -27,6 +27,8 @@ public class CodeEditor implements NativeResource {
     private String oldSource;
     private SaveCallback saveCallback;
 
+    private final JavaTextEditor newEditor;
+
     private final ImBoolean open;
 
     public CodeEditor(@Nullable String saveText) {
@@ -37,6 +39,7 @@ public class CodeEditor implements NativeResource {
         this.saveCallback = null;
 
         this.open = new ImBoolean();
+        this.newEditor = new JavaTextEditor();
     }
 
     /**
@@ -197,6 +200,11 @@ public class CodeEditor implements NativeResource {
 
             this.editor.render("TextEditor");
         }
+
+        if (ImGui.begin("New Editor")) {
+            this.newEditor.render();
+        }
+        ImGui.end();
 
         ImVec2 center = ImGui.getMainViewport().getCenter();
         ImGui.setNextWindowPos(center.x, center.y, ImGuiCond.Appearing, 0.5f, 0.5f);

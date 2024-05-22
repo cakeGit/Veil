@@ -1,5 +1,6 @@
 package foundry.veil.api.client.imgui;
 
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.jetbrains.annotations.ApiStatus;
 import org.lwjgl.system.NativeResource;
 
@@ -30,4 +31,6 @@ public interface VeilImGui extends NativeResource {
     boolean charCallback(long window, int codepoint);
 
     boolean shouldHideMouse();
+
+    IntList getTypedCharacters();
 }

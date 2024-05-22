@@ -3,6 +3,7 @@ package foundry.veil.api.client.imgui;
 import foundry.veil.Veil;
 import foundry.veil.api.client.editor.EditorManager;
 import foundry.veil.api.client.render.VeilRenderSystem;
+import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import imgui.ImFont;
 import imgui.ImGui;
 import imgui.flag.ImGuiStyleVar;
@@ -20,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.IntConsumer;
 
 /**
  * Extra components and helpers for ImGui.
@@ -50,12 +52,30 @@ public class VeilImGuiUtil {
     }
 
     public static void component(FormattedText text, float wrapWidth) {
+        List<FormattedCharSequence> visualOrder = Language.getInstance().getVisualOrder(IM_GUI_SPLITTER.splitLines(text, (int) wrapWidth, Style.EMPTY));
+        if (visualOrder.isEmpty()) {
+            ImGui.newLine();
+            return;
+        }
+
         IM_GUI_CHAR_SINK.reset();
-        for (FormattedCharSequence part : Language.getInstance().getVisualOrder(IM_GUI_SPLITTER.splitLines(text, (int) wrapWidth, Style.EMPTY))) {
+        for (FormattedCharSequence part : visualOrder) {
             part.accept(IM_GUI_CHAR_SINK);
             IM_GUI_CHAR_SINK.finish();
             ImGui.newLine();
         }
+    }
+
+    public static boolean hasTypedChar() {
+        return !VeilImGuiImpl.get().getTypedCharacters().isEmpty();
+    }
+
+    public static void forEachTypedChar(IntConsumer consumer) {
+        VeilImGuiImpl.get().getTypedCharacters().forEach(consumer);
+    }
+
+    public static int toImColor(int argb) {
+        return argb & 0xFF000000 | (argb & 0xFF0000) >> 16 | (argb & 0xFF00) | (argb & 0xFF) << 16;
     }
 
     public static ImFont getStyleFont(Style style) {
@@ -109,7 +129,7 @@ public class VeilImGuiUtil {
             if (!this.buffer.isEmpty()) {
                 ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
                 ImGui.pushFont(this.font);
-                ImGui.textColored(0xFF000000 | (this.textColor & 0xFF0000) >> 16 | (this.textColor & 0xFF00) | (this.textColor & 0xFF) << 16, this.buffer.toString());
+                ImGui.textColored(0xFF000000 | toImColor(this.textColor), this.buffer.toString());
 
                 if (ImGui.isItemClicked() && this.clickEvent != null) {
                     this.handleClick();

@@ -70,7 +70,7 @@ public abstract class VanillaPackResourcesMixin implements PackResourcesExtensio
                                 if (name == null) {
                                     Veil.LOGGER.error("Invalid path in mod resource-pack {}: {}:{}, ignoring", packId, namespace, filename);
                                 } else {
-                                    consumer.accept(type, name, file, null);
+                                    consumer.accept(type, name, nsPath, file, null);
                                 }
 
                                 return FileVisitResult.CONTINUE;

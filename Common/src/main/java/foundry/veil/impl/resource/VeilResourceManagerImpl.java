@@ -10,9 +10,12 @@ import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
 import foundry.veil.api.util.CompositeReloadListener;
 import foundry.veil.ext.PackResourcesExtension;
-import foundry.veil.impl.resource.loader.*;
+import foundry.veil.impl.resource.loader.McMetaResourceLoader;
+import foundry.veil.impl.resource.loader.ShaderResourceLoader;
+import foundry.veil.impl.resource.loader.TextResourceLoader;
+import foundry.veil.impl.resource.loader.TextureResourceLoader;
 import foundry.veil.impl.resource.type.UnknownResource;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -22,25 +25,36 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.NativeResource;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.Collection;
+import java.nio.file.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
+import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
  * Manages all veil resources
  */
 public class VeilResourceManagerImpl implements VeilResourceManager, NativeResource {
 
-    private final List<VeilResourceLoader<?>> loaders = new ObjectArrayList<>(8);
-    private final List<VeilPackResources> packResources = new LinkedList<>();
+    private static final AtomicInteger WATCHER_ID = new AtomicInteger(1);
+    private final ObjectList<VeilResourceLoader<?>> loaders;
+    private final List<VeilPackResources> packResources;
+    private final Object2ObjectMap<Path, PackResourceListener> watchers;
 
     private ResourceManager serverResourceManager = ResourceManager.Empty.INSTANCE;
+
+    public VeilResourceManagerImpl() {
+        this.loaders = new ObjectArrayList<>(8);
+        this.packResources = new LinkedList<>();
+        this.watchers = new Object2ObjectArrayMap<>();
+    }
 
     public void addVeilLoaders(VeilRenderer renderer) {
         this.addLoader(new ShaderResourceLoader(renderer.getShaderManager()));
@@ -57,12 +71,24 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
         this.loaders.add(loader);
     }
 
-    private void loadPack(ResourceManager resourceManager, VeilPackResources resources, PackResources packResources) {
+    private void loadPack(ResourceManager resourceManager, VeilPackResources resources, Object2ObjectMap<Path, PackResourceListener> watchers, PackResources packResources) {
         if (packResources instanceof PackResourcesExtension ext) {
             try {
-                ext.veil$listResources((packType, loc, path, modResourcePath) -> {
+                ext.veil$listResources((packType, loc, packPath, path, modResourcePath) -> {
                     try {
-                        this.visitResource(packType, resources, resourceManager, loc, path, modResourcePath);
+                        VeilResource<?> resource = this.visitResource(packType, resourceManager, loc, path, modResourcePath);
+                        resources.add(packType, loc, resource);
+
+                        if (!resource.resourceInfo().isStatic()) {
+                            Path listenPath = modResourcePath != null ? modResourcePath : path;
+                            if (listenPath != null) {
+                                try {
+                                    watchers.computeIfAbsent(packPath, PackResourceListener::new).listen(resource, listenPath);
+                                } catch (Exception e) {
+                                    Veil.LOGGER.error("Failed to listen to resource: {}", resource.resourceInfo().path(), e);
+                                }
+                            }
+                        }
                     } catch (Exception e) {
                         Veil.LOGGER.error("Error loading resource: {}", loc, e);
                     }
@@ -77,7 +103,7 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
             for (String namespace : packResources.getNamespaces(PackType.CLIENT_RESOURCES)) {
                 packResources.listResources(packType, namespace, "", (loc, inputStreamIoSupplier) -> {
                     try {
-                        this.visitResource(packType, resources, resourceManager, loc, null, null);
+                        resources.add(packType, loc, this.visitResource(packType, resourceManager, loc, null, null));
                     } catch (Exception e) {
                         Veil.LOGGER.error("Error loading resource: {}", loc, e);
                     }
@@ -86,20 +112,15 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
         }
     }
 
-    private void visitResource(@Nullable PackType packType, VeilPackResources resources, ResourceProvider provider, ResourceLocation loc, @Nullable Path path, @Nullable Path modResourcePath) throws IOException {
+    private VeilResource<?> visitResource(@Nullable PackType packType, ResourceProvider provider, ResourceLocation loc, @Nullable Path path, @Nullable Path modResourcePath) throws IOException {
         for (VeilResourceLoader<?> loader : this.loaders) {
             if (loader.canLoad(packType, loc, path, modResourcePath)) {
-                try {
-                    resources.add(packType, loc, loader.load(this, provider, packType, loc, path, modResourcePath));
-                } catch (Exception e) {
-                    Veil.LOGGER.error("Error loading resource: {}", loc, e);
-                }
-                return;
+                return loader.load(this, provider, packType, loc, path, modResourcePath);
             }
         }
 
         // If no loaders can load the resource, add it as an unknown resource
-        resources.add(packType, loc, new UnknownResource(new VeilResourceInfo(packType, loc, path, modResourcePath, false)));
+        return new UnknownResource(new VeilResourceInfo(packType, loc, path, modResourcePath, false));
     }
 
     public PreparableReloadListener createReloadListener() {
@@ -109,9 +130,10 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
     private CompletableFuture<Void> reloadClient(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {
         return CompletableFuture.supplyAsync(() -> {
             List<VeilPackResources> packs = new LinkedList<>();
+            Object2ObjectMap<Path, PackResourceListener> watchers = new Object2ObjectArrayMap<>();
             resourceManager.listPacks().flatMap(pack -> pack instanceof PackResourcesExtension extension ? extension.veil$listPacks() : Stream.of(pack)).forEach(pack -> {
                 VeilPackResources resources = new VeilPackResources(pack.packId());
-                this.loadPack(resourceManager, resources, pack);
+                this.loadPack(resourceManager, resources, watchers, pack);
                 packs.add(resources);
 
                 if (pack instanceof PackResourcesExtension extension) {
@@ -130,10 +152,11 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
                     }
                 }
             });
-            return packs;
-        }, backgroundExecutor).thenCompose(preparationBarrier::wait).thenAcceptAsync(list -> {
+            return new Preparations(packs, watchers);
+        }, backgroundExecutor).thenCompose(preparationBarrier::wait).thenAcceptAsync(preparations -> {
             this.free();
-            this.packResources.addAll(list);
+            this.packResources.addAll(preparations.packs());
+            this.watchers.putAll(preparations.watchers());
         }, gameExecutor);
     }
 
@@ -166,10 +189,19 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
 
     @Override
     public void free() {
+        for (PackResourceListener listener : this.watchers.values()) {
+            try {
+                listener.close();
+            } catch (IOException e) {
+                Veil.LOGGER.error("Error closing watch service: {}", listener.getPath(), e);
+            }
+        }
+        this.watchers.clear();
         for (VeilPackResources resources : this.packResources) {
             resources.free();
         }
         this.packResources.clear();
+        WATCHER_ID.set(1);
     }
 
     /**
@@ -177,5 +209,101 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
      */
     public List<VeilPackResources> getAllPacks() {
         return this.packResources;
+    }
+
+    private record Preparations(List<VeilPackResources> packs, Object2ObjectMap<Path, PackResourceListener> watchers) {
+    }
+
+    private static class PackResourceListener implements Closeable {
+
+        private final Path path;
+        private final WatchService watchService;
+        private final ObjectSet<Path> watchedDirectories;
+        private final ObjectSet<Path> ignoredPaths;
+        private final Object2ObjectMap<Path, VeilResource<?>> resources;
+        private final Thread watchThread;
+
+        public PackResourceListener(Path path) {
+            WatchService watchService;
+            try {
+                watchService = path.getFileSystem().newWatchService();
+            } catch (Exception ignored) {
+                watchService = null;
+            }
+
+            this.path = path;
+            this.watchService = watchService;
+            this.watchedDirectories = ObjectSets.synchronize(new ObjectArraySet<>());
+            this.ignoredPaths = ObjectSets.synchronize(new ObjectArraySet<>());
+            this.resources = new Object2ObjectOpenHashMap<>();
+
+            if (this.watchService != null) {
+                this.watchThread = new Thread(this::run, "Veil File Watcher Thread " + WATCHER_ID.getAndIncrement());
+                this.watchThread.start();
+            } else {
+                this.watchThread = null;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private void run() {
+            while (true) {
+                WatchKey key;
+                try {
+                    key = this.watchService.take();
+                } catch (ClosedWatchServiceException e) {
+                    return;
+                } catch (Throwable t) {
+                    Veil.LOGGER.error("Error waiting for file", t);
+                    return;
+                }
+
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    WatchEvent.Kind<?> kind = event.kind();
+
+                    if (kind == StandardWatchEventKinds.OVERFLOW) {
+                        continue;
+                    }
+
+                    WatchEvent<Path> pathWatchEvent = (WatchEvent<Path>) event;
+                    Path path = ((Path) key.watchable()).resolve(pathWatchEvent.context());
+                    if (this.ignoredPaths.add(path)) {
+                        VeilResource<?> resource = this.resources.get(path);
+                        if (resource != null) {
+                            resource.onFileSystemChange(pathWatchEvent).thenRun(() -> this.ignoredPaths.remove(path));
+                        }
+                    }
+                }
+
+                key.reset();
+            }
+        }
+
+        public void listen(VeilResource<?> resource, Path listenPath) throws IOException {
+            Path folder = listenPath.getParent();
+            if (folder == null) {
+                return;
+            }
+
+            this.resources.put(listenPath, resource);
+            if (this.watchedDirectories.add(folder)) {
+                folder.register(this.watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            this.watchService.close();
+
+            try {
+                this.watchThread.join();
+            } catch (InterruptedException e) {
+                throw new IOException("Failed to stop watcher thread", e);
+            }
+        }
+
+        public Path getPath() {
+            return this.path;
+        }
     }
 }

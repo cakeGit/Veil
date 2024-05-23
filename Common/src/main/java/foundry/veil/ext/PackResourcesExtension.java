@@ -85,6 +85,6 @@ public interface PackResourcesExtension {
     @FunctionalInterface
     interface PackResourceConsumer {
 
-        void accept(@Nullable PackType packType, ResourceLocation name, Path filePath, @Nullable Path modResourcePath);
+        void accept(@Nullable PackType packType, ResourceLocation name, Path packPath, Path filePath, @Nullable Path modResourcePath);
     }
 }

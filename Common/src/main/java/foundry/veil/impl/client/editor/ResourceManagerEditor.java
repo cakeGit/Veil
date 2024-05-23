@@ -226,32 +226,25 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
             this.editor.show(info.fileName(), contents);
 
             boolean readOnly = resource.resourceInfo().isStatic();
-            this.editor.setSaveCallback((source, errorConsumer) -> {
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        if (readOnly) {
-                            throw new IOException("Read-only resource");
-                        }
-
-                        Path path = resource.resourceInfo().filePath();
-                        try (OutputStream os = Files.newOutputStream(path)) {
-                            os.write(source.getBytes(StandardCharsets.UTF_8));
-                        }
-
-                        Path buildPath = resource.resourceInfo().modResourcePath();
-                        if (buildPath != null) {
-                            try (OutputStream os = Files.newOutputStream(buildPath)) {
-                                os.write(source.getBytes(StandardCharsets.UTF_8));
-                            }
-                        }
-                    } catch (Exception e) {
-                        Veil.LOGGER.error("Failed to write resource: {}", resource.resourceInfo().path(), e);
+            this.editor.setSaveCallback((source, errorConsumer) -> CompletableFuture.runAsync(() -> {
+                try {
+                    if (readOnly) {
+                        throw new IOException("Read-only resource");
                     }
-                }, Util.ioPool()).thenRunAsync(resource::hotReload, Minecraft.getInstance()).exceptionally(e -> {
-                    Veil.LOGGER.error("Failed to hot-swap resource: {}", resource.resourceInfo().path(), e);
-                    return null;
-                });
-            });
+
+                    Path path = resource.resourceInfo().filePath();
+                    try (OutputStream os = Files.newOutputStream(path)) {
+                        os.write(source.getBytes(StandardCharsets.UTF_8));
+                    }
+
+                    resource.copyToBuild();
+                } catch (Exception e) {
+                    Veil.LOGGER.error("Failed to write resource: {}", resource.resourceInfo().path(), e);
+                }
+            }, Util.ioPool()).thenRunAsync(resource::hotReload, Minecraft.getInstance()).exceptionally(e -> {
+                Veil.LOGGER.error("Failed to hot-swap resource: {}", resource.resourceInfo().path(), e);
+                return null;
+            }));
 
             TextEditor textEditor = this.editor.getEditor();
             textEditor.setReadOnly(readOnly);

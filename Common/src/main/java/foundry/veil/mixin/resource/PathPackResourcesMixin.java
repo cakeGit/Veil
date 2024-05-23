@@ -55,7 +55,7 @@ public abstract class PathPackResourcesMixin implements PackResources, PackResou
                         if (name == null) {
                             Veil.LOGGER.error("Invalid path in mod resource-pack {}: {}:{}, ignoring", packId, namespace, path);
                         } else {
-                            consumer.accept(type, name, file, null);
+                            consumer.accept(type, name, assetPath, file, null);
                         }
 
                         return FileVisitResult.CONTINUE;

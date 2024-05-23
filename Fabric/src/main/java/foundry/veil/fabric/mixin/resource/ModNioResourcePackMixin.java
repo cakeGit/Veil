@@ -66,7 +66,7 @@ public abstract class ModNioResourcePackMixin implements ModResourcePack, PackRe
                                 if (name == null) {
                                     Veil.LOGGER.error("Invalid path in mod resource-pack {}: {}:{}, ignoring", packId, namespace, filename);
                                 } else {
-                                    consumer.accept(type, name, file, PackResourcesExtension.findDevPath(basePath, file));
+                                    consumer.accept(type, name, nsPath, file, PackResourcesExtension.findDevPath(basePath, file));
                                 }
 
                                 return FileVisitResult.CONTINUE;

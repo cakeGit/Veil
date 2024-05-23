@@ -1,7 +1,10 @@
 package foundry.veil.api.client.imgui;
 
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 import org.lwjgl.system.NativeResource;
+
+import java.util.function.ObjIntConsumer;
 
 /**
  * Manages the internal ImGui state.
@@ -20,6 +23,8 @@ public interface VeilImGui extends NativeResource {
     void toggle();
 
     void updateFonts();
+
+    void addImguiShaders(ObjIntConsumer<ResourceLocation> registry);
 
     boolean mouseButtonCallback(long window, int button, int action, int mods);
 

@@ -15,6 +15,8 @@
   "client": [
     "accessor.BufferBuilderAccessor",
     "accessor.GameRendererAccessor",
+    "accessor.LevelRendererAccessor",
+    "accessor.PostChainAccessor",
     "accessor.RegistryDataAccessor",
     "accessor.ReloadableResourceManagerAccessor",
     "accessor.RenderBuffersAccessor",
@@ -28,6 +30,7 @@
     "client.deferred.ShaderStateMixin",
     "client.deferred.VertexBufferMixin",
     "client.deferred.WindowMixin",
+    "client.imgui.ImGuiImplGl3Mixin",
     "client.imgui.ImGuiImplGlfwMixin",
     "client.imgui.KeyboardHandlerMixin",
     "client.imgui.MouseHandlerMixin",

@@ -388,6 +388,11 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
                         .thenAcceptAsync(this::apply, gameExecutor));
     }
 
+    @Override
+    public String getName() {
+        return this.getClass().getSimpleName() + " " + this.getSourceSet().getFolder();
+    }
+
     /**
      * Recompiles all shaders in the background.
      *
@@ -447,7 +452,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
         this.shaders.clear();
     }
 
-    record ReloadState(Map<ResourceLocation, ProgramDefinition> definitions,
-                       Map<ResourceLocation, Resource> shaderSources) {
+    private record ReloadState(Map<ResourceLocation, ProgramDefinition> definitions,
+                               Map<ResourceLocation, Resource> shaderSources) {
     }
 }

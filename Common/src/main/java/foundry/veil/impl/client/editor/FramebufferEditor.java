@@ -97,7 +97,7 @@ public class FramebufferEditor extends SingleWindowEditor {
         if (ImGui.beginTabItem(name)) {
             if (buffer != null) {
                 int columns = (int) Math.ceil(Math.sqrt(buffer.getColorAttachments() + (buffer.isDepthTextureAttachment() ? 1 : 0)));
-                float width = ImGui.getContentRegionAvailX() / columns - ImGui.getStyle().getItemSpacingX() * (columns - 1);
+                float width = ImGui.getContentRegionAvailX() / columns - ImGui.getStyle().getItemSpacingX();
                 float height = width * buffer.getHeight() / buffer.getWidth();
                 int i;
                 for (i = 0; i < buffer.getColorAttachments(); i++) {

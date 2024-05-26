@@ -30,15 +30,11 @@ public abstract class VanillaPackResourcesMixin implements PackResourcesExtensio
     private Map<PackType, List<Path>> pathsForType;
 
     @Shadow
-    public abstract String packId();
-
-    @Shadow
     @Final
     private Set<String> namespaces;
 
     @Override
     public void veil$listResources(PackResourceConsumer consumer) {
-        String packId = this.packId();
         for (Map.Entry<PackType, List<Path>> entry : this.pathsForType.entrySet()) {
             PackType type = entry.getKey();
 
@@ -67,13 +63,19 @@ public abstract class VanillaPackResourcesMixin implements PackResourcesExtensio
                                 String filename = nsPath.relativize(file).toString().replace(separator, "/");
                                 ResourceLocation name = ResourceLocation.tryBuild(namespace, filename);
 
-                                if (name == null) {
-                                    Veil.LOGGER.error("Invalid path in mod resource-pack {}: {}:{}, ignoring", packId, namespace, filename);
-                                } else {
+                                if (name != null) {
                                     consumer.accept(type, name, nsPath, file, null);
                                 }
 
                                 return FileVisitResult.CONTINUE;
+                            }
+
+                            @Override
+                            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                                if (file.endsWith("/data/realms")) { // This always fails, so just ignore it
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                return super.visitFileFailed(file, exc);
                             }
                         });
                     } catch (IOException e) {

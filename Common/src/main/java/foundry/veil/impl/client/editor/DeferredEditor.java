@@ -109,7 +109,7 @@ public class DeferredEditor extends SingleWindowEditor {
         if (ImGui.beginTabItem(name)) {
             if (buffer != null) {
                 int columns = (int) Math.ceil(Math.sqrt(buffer.getColorAttachments() + (buffer.isDepthTextureAttachment() ? 1 : 0)));
-                float width = ImGui.getContentRegionAvailX() / columns;
+                float width = ImGui.getContentRegionAvailX() / columns - ImGui.getStyle().getItemSpacingX();
                 float height = width * buffer.getHeight() / buffer.getWidth();
                 int i;
                 for (i = 0; i < buffer.getColorAttachments(); i++) {
@@ -123,7 +123,7 @@ public class DeferredEditor extends SingleWindowEditor {
                     ImGui.beginGroup();
                     AdvancedFboTextureAttachment attachment = buffer.getColorTextureAttachment(i);
                     ImGui.text(this.getAttachmentName(i, attachment));
-                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F);
+                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.5F);
                     ImGui.endGroup();
                 }
 
@@ -134,7 +134,7 @@ public class DeferredEditor extends SingleWindowEditor {
                     ImGui.beginGroup();
                     AdvancedFboTextureAttachment attachment = buffer.getDepthTextureAttachment();
                     ImGui.text(this.getAttachmentName(-1, attachment));
-                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F);
+                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.5F);
                     ImGui.endGroup();
                 }
             }

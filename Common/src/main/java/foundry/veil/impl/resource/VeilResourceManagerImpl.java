@@ -124,7 +124,27 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
     }
 
     public PreparableReloadListener createReloadListener() {
-        return CompositeReloadListener.of(this::reloadClient, this::reloadServer);
+        return CompositeReloadListener.of(new PreparableReloadListener() {
+            @Override
+            public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller prepareProfiler, ProfilerFiller applyProfiler, Executor backgroundExecutor, Executor gameExecutor) {
+                return VeilResourceManagerImpl.this.reloadClient(preparationBarrier, resourceManager, prepareProfiler, applyProfiler, backgroundExecutor, gameExecutor);
+            }
+
+            @Override
+            public String getName() {
+                return VeilResourceManager.class.getSimpleName() + " Client";
+            }
+        }, new PreparableReloadListener() {
+            @Override
+            public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller prepareProfiler, ProfilerFiller applyProfiler, Executor backgroundExecutor, Executor gameExecutor) {
+                return VeilResourceManagerImpl.this.reloadServer(preparationBarrier, resourceManager, prepareProfiler, applyProfiler, backgroundExecutor, gameExecutor);
+            }
+
+            @Override
+            public String getName() {
+                return VeilResourceManager.class.getSimpleName() + " Server";
+            }
+        });
     }
 
     private CompletableFuture<Void> reloadClient(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {

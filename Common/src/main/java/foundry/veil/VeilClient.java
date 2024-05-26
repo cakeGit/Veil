@@ -20,6 +20,9 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ServiceLoader;
 
+import static org.lwjgl.opengl.GL11C.glEnable;
+import static org.lwjgl.opengl.GL32C.GL_DEPTH_CLAMP;
+
 public class VeilClient {
 
     private static final VeilClientPlatform PLATFORM = ServiceLoader.load(VeilClientPlatform.class).findFirst().orElseThrow(() -> new RuntimeException("Veil expected client platform implementation"));
@@ -49,6 +52,7 @@ public class VeilClient {
                 editorManager.add(new FramebufferEditor());
                 editorManager.add(new ResourceManagerEditor());
             }
+            glEnable(GL_DEPTH_CLAMP); // TODO add config option
         });
 
         // This fixes moving transparent blocks drawing too early

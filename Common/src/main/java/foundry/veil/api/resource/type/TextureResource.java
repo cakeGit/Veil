@@ -1,4 +1,4 @@
-package foundry.veil.impl.resource.type;
+package foundry.veil.api.resource.type;
 
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.resource.VeilResourceInfo;
@@ -16,12 +16,12 @@ public record TextureResource(VeilResourceInfo resourceInfo) implements VeilReso
     @Override
     public void render(boolean dragging) {
         float size = ImGui.getTextLineHeight();
-        int texture = Minecraft.getInstance().getTextureManager().getTexture(this.resourceInfo.path()).getId();
+        int texture = Minecraft.getInstance().getTextureManager().getTexture(this.resourceInfo.location()).getId();
 
         ImGui.pushStyleColor(ImGuiCol.Text, this.resourceInfo.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
         if (dragging) {
             ImGui.image(texture, size * 8, size * 8);
-            VeilImGuiUtil.resourceLocation(this.resourceInfo().path());
+            VeilImGuiUtil.resourceLocation(this.resourceInfo().location());
         } else {
             ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
             ImGui.setItemAllowOverlap();

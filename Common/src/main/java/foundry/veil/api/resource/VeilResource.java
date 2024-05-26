@@ -36,7 +36,7 @@ public interface VeilResource<T extends VeilResource<?>> {
         VeilResourceInfo resourceInfo = this.resourceInfo();
         ImGui.pushStyleColor(ImGuiCol.Text, resourceInfo.isStatic() ? 0xFFAAAAAA : 0xFFFFFFFF);
         if (dragging) {
-            VeilImGuiUtil.resourceLocation(resourceInfo.path());
+            VeilImGuiUtil.resourceLocation(resourceInfo.location());
         } else {
             ImGui.text(resourceInfo.fileName());
         }
@@ -51,7 +51,7 @@ public interface VeilResource<T extends VeilResource<?>> {
      */
     default CompletableFuture<?> onFileSystemChange(WatchEvent<Path> event) {
         if (this.canHotReload() && (event.kind() == ENTRY_CREATE || event.kind() == ENTRY_MODIFY)) {
-            Veil.LOGGER.info("Hot swapping {} after file system change", this.resourceInfo().path());
+            Veil.LOGGER.info("Hot swapping {} after file system change", this.resourceInfo().location());
 
             Minecraft client = Minecraft.getInstance();
             return CompletableFuture.runAsync(() -> {

@@ -4,7 +4,7 @@ import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
-import foundry.veil.impl.resource.type.McMetaResource;
+import foundry.veil.api.resource.type.McMetaResource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public class McMetaResourceLoader implements VeilResourceLoader<McMetaResource> {
+public class McMetaResourceLoader implements VeilResourceLoader {
 
     @Override
     public boolean canLoad(PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) {
@@ -25,7 +25,7 @@ public class McMetaResourceLoader implements VeilResourceLoader<McMetaResource> 
     }
 
     @Override
-    public VeilResource<McMetaResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+    public VeilResource<?> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
         Optional<Resource> optional = provider.getResource(location.withPath(s -> s.substring(0, s.length() - 7)));
         if (optional.isPresent()) {
             return new McMetaResource(new VeilResourceInfo(packType, location, filePath, modResourcePath, true), optional.get().metadata());

@@ -11,7 +11,7 @@ import foundry.veil.api.resource.VeilResourceManager;
 import foundry.veil.api.util.CompositeReloadListener;
 import foundry.veil.ext.PackResourcesExtension;
 import foundry.veil.impl.resource.loader.*;
-import foundry.veil.impl.resource.type.UnknownResource;
+import foundry.veil.api.resource.type.UnknownResource;
 import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -41,7 +41,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class VeilResourceManagerImpl implements VeilResourceManager, NativeResource {
 
     private static final AtomicInteger WATCHER_ID = new AtomicInteger(1);
-    private final ObjectList<VeilResourceLoader<?>> loaders;
+    private final ObjectList<VeilResourceLoader> loaders;
     private final List<VeilPackResources> packResources;
     private final Object2ObjectMap<Path, PackResourceListener> watchers;
 
@@ -65,7 +65,7 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
     /**
      * Adds a resource loader to the resource manager
      */
-    public void addLoader(VeilResourceLoader<?> loader) {
+    public void addLoader(VeilResourceLoader loader) {
         this.loaders.add(loader);
     }
 
@@ -83,7 +83,7 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
                                 try {
                                     watchers.computeIfAbsent(packPath, PackResourceListener::new).listen(resource, listenPath);
                                 } catch (Exception e) {
-                                    Veil.LOGGER.error("Failed to listen to resource: {}", resource.resourceInfo().path(), e);
+                                    Veil.LOGGER.error("Failed to listen to resource: {}", resource.resourceInfo().location(), e);
                                 }
                             }
                         }
@@ -111,7 +111,7 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
     }
 
     private VeilResource<?> visitResource(@Nullable PackType packType, ResourceProvider provider, ResourceLocation loc, @Nullable Path path, @Nullable Path modResourcePath) throws IOException {
-        for (VeilResourceLoader<?> loader : this.loaders) {
+        for (VeilResourceLoader loader : this.loaders) {
             if (loader.canLoad(packType, loc, path, modResourcePath)) {
                 return loader.load(this, provider, packType, loc, path, modResourcePath);
             }

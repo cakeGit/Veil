@@ -1,11 +1,11 @@
 package foundry.veil.api.client.editor;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import foundry.veil.Veil;
+import foundry.veil.api.client.registry.VeilResourceEditorRegistry;
+import foundry.veil.api.resource.editor.ResourceFileEditor;
 import foundry.veil.api.util.CompositeReloadListener;
 import imgui.ImFont;
 import imgui.ImGui;
-import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.type.ImBoolean;
 import net.minecraft.resources.ResourceLocation;
@@ -36,9 +36,10 @@ public class EditorManager implements PreparableReloadListener {
     @ApiStatus.Internal
     public EditorManager(ReloadableResourceManager resourceManager) {
         this.editors = new TreeMap<>(Comparator.comparing(Editor::getDisplayName));
-        resourceManager.registerReloadListener(this);
         this.fonts = new EditorFontManager();
         this.enabled = false;
+
+        resourceManager.registerReloadListener(this);
     }
 
     public ImFont getFont(ResourceLocation name, boolean bold, boolean italic) {
@@ -104,6 +105,10 @@ public class EditorManager implements PreparableReloadListener {
                 continue;
             }
 
+            editor.render();
+        }
+
+        for (ResourceFileEditor<?> editor : VeilResourceEditorRegistry.REGISTRY) {
             editor.render();
         }
     }
@@ -185,10 +190,12 @@ public class EditorManager implements PreparableReloadListener {
                 listeners.add(listener);
             }
         }
+        for (ResourceFileEditor<?> editor : VeilResourceEditorRegistry.REGISTRY) {
+            if (editor instanceof PreparableReloadListener listener) {
+                listeners.add(listener);
+            }
+        }
         PreparableReloadListener listener = CompositeReloadListener.of(listeners.toArray(PreparableReloadListener[]::new));
         return listener.reload(preparationBarrier, resourceManager, prepareProfiler, applyProfiler, backgroundExecutor, gameExecutor);
-    }
-
-    private record Preparations(Map<String, byte[]> fontData) {
     }
 }

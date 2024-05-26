@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public interface VeilResourceLoader<T extends VeilResource<?>> {
+public interface VeilResourceLoader {
 
     /**
      * Checks if the specified resource can load.
@@ -32,5 +32,5 @@ public interface VeilResourceLoader<T extends VeilResource<?>> {
      * @param modResourcePath The path to this resource in the build folder if in a dev environment
      * @return The loaded resource
      */
-    VeilResource<T> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException;
+    VeilResource<?> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException;
 }

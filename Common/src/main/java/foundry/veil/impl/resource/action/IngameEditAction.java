@@ -3,12 +3,11 @@ package foundry.veil.impl.resource.action;
 import foundry.veil.api.resource.VeilEditorEnvironment;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
-import imgui.extension.texteditor.TextEditorLanguageDefinition;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.OptionalInt;
 
-public record IngameEditAction<T extends VeilResource<?>>(@Nullable TextEditorLanguageDefinition languageDefinition) implements VeilResourceAction<T> {
+public record IngameEditAction<T extends VeilResource<?>>(ResourceLocation editor) implements VeilResourceAction<T> {
 
     @Override
     public String getName() {
@@ -17,7 +16,7 @@ public record IngameEditAction<T extends VeilResource<?>>(@Nullable TextEditorLa
 
     @Override
     public String getDescription() {
-        return "Opens the resource in the in-game text editor";
+        return "Opens the in-game editor";
     }
 
     @Override
@@ -27,6 +26,6 @@ public record IngameEditAction<T extends VeilResource<?>>(@Nullable TextEditorLa
 
     @Override
     public void perform(VeilEditorEnvironment environment, T resource) {
-        environment.open(resource, this.languageDefinition);
+        environment.open(resource, this.editor);
     }
 }

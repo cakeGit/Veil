@@ -1,6 +1,6 @@
 package foundry.veil.api.resource;
 
-import foundry.veil.impl.resource.type.McMetaResource;
+import foundry.veil.api.resource.type.McMetaResource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;

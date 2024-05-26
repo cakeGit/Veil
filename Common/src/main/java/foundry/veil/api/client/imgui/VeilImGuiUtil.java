@@ -247,10 +247,18 @@ public class VeilImGuiUtil {
 
         ImGui.endGroup();
 
-        if (ImGui.beginPopupContextItem(loc.toString())) {
-            if (ImGui.menuItem("Copy")) {
+        if (ImGui.beginPopupContextItem("" + loc)) {
+            if (ImGui.selectable("##copy_location")) {
                 ImGui.setClipboardText(loc.toString());
             }
+
+            ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
+            ImGui.setItemAllowOverlap();
+            ImGui.sameLine();
+            VeilImGuiUtil.icon(0xEB91);
+            ImGui.sameLine();
+            ImGui.popStyleVar();
+            ImGui.text("Copy Location");
             ImGui.endPopup();
         }
     }

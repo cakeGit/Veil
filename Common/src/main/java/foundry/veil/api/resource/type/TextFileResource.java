@@ -1,17 +1,17 @@
-package foundry.veil.impl.resource.type;
+package foundry.veil.api.resource.type;
 
-import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
 import foundry.veil.api.resource.VeilResourceInfo;
-import foundry.veil.impl.resource.action.IngameEditAction;
+import imgui.extension.texteditor.TextEditorLanguageDefinition;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public record TextResource(VeilResourceInfo resourceInfo, Type type) implements VeilResource<TextResource> {
+public record TextFileResource(VeilResourceInfo resourceInfo, Type type) implements VeilTextResource<TextFileResource> {
 
     @Override
-    public List<VeilResourceAction<TextResource>> getActions() {
-        return List.of(new IngameEditAction<>(null));
+    public List<VeilResourceAction<TextFileResource>> getActions() {
+        return List.of(this.createTextEditAction());
     }
 
     @Override
@@ -28,9 +28,14 @@ public record TextResource(VeilResourceInfo resourceInfo, Type type) implements 
         return this.type.getIcon();
     }
 
+    @Override
+    public @Nullable TextEditorLanguageDefinition languageDefinition() {
+        return null;
+    }
+
     public enum Type {
-        TEXT(".txt",0xED0F),
-        JSON(".json",0xECCD);
+        TEXT(".txt", 0xED0F),
+        JSON(".json", 0xECCD);
 
         private final String extension;
         private final int icon;

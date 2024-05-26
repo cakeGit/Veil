@@ -1,13 +1,11 @@
-package foundry.veil.impl.resource.type;
+package foundry.veil.api.resource.type;
 
-import foundry.veil.api.client.imgui.VeilLanguageDefinitions;
 import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.ShaderSourceSet;
 import foundry.veil.api.client.render.shader.program.ProgramDefinition;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.api.resource.VeilResourceAction;
 import foundry.veil.api.resource.VeilResourceInfo;
-import foundry.veil.impl.resource.action.IngameEditAction;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.resources.ResourceLocation;
 
@@ -16,11 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public record VeilShaderFileResource(VeilResourceInfo resourceInfo, ShaderManager shaderManager) implements VeilShaderResource {
+public record VeilShaderFileResource(VeilResourceInfo resourceInfo, ShaderManager shaderManager) implements VeilShaderResource<VeilShaderFileResource> {
 
     @Override
-    public List<VeilResourceAction<VeilShaderResource>> getActions() {
-        return List.of(new IngameEditAction<>(VeilLanguageDefinitions.glsl()));
+    public List<VeilResourceAction<VeilShaderFileResource>> getActions() {
+        return List.of(this.createTextEditAction());
     }
 
     @Override
@@ -30,13 +28,13 @@ public record VeilShaderFileResource(VeilResourceInfo resourceInfo, ShaderManage
 
     @Override
     public void hotReload() {
-        int type = ShaderSourceSet.getShaderType(this.resourceInfo().path());
+        int type = ShaderSourceSet.getShaderType(this.resourceInfo().location());
         if (type == -1) {
             return;
         }
 
         ShaderSourceSet sourceSet = this.shaderManager.getSourceSet();
-        ResourceLocation id = sourceSet.getTypeConverter(type).fileToId(this.resourceInfo.path());
+        ResourceLocation id = sourceSet.getTypeConverter(type).fileToId(this.resourceInfo.location());
         Set<ResourceLocation> programs = new HashSet<>();
 
         for (Map.Entry<ResourceLocation, ShaderProgram> entry : this.shaderManager.getShaders().entrySet()) {
@@ -62,10 +60,5 @@ public record VeilShaderFileResource(VeilResourceInfo resourceInfo, ShaderManage
         for (ResourceLocation program : programs) {
             this.shaderManager.scheduleRecompile(program);
         }
-    }
-
-    @Override
-    public int getIconCode() {
-        return 0xECD1; // Code file icon
     }
 }

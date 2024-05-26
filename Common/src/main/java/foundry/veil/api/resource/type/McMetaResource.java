@@ -1,4 +1,4 @@
-package foundry.veil.impl.resource.type;
+package foundry.veil.api.resource.type;
 
 import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResource;

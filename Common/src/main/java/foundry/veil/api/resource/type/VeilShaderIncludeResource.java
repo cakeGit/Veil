@@ -1,13 +1,11 @@
-package foundry.veil.impl.resource.type;
+package foundry.veil.api.resource.type;
 
-import foundry.veil.api.client.imgui.VeilLanguageDefinitions;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.shader.CompiledShader;
 import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.api.resource.VeilResourceAction;
 import foundry.veil.api.resource.VeilResourceInfo;
-import foundry.veil.impl.resource.action.IngameEditAction;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashSet;
@@ -15,11 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public record VeilShaderIncludeResource(VeilResourceInfo resourceInfo) implements VeilShaderResource {
+public record VeilShaderIncludeResource(VeilResourceInfo resourceInfo) implements VeilShaderResource<VeilShaderIncludeResource> {
 
     @Override
-    public List<VeilResourceAction<VeilShaderResource>> getActions() {
-        return List.of(new IngameEditAction<>(VeilLanguageDefinitions.glsl()));
+    public List<VeilResourceAction<VeilShaderIncludeResource>> getActions() {
+        return List.of(this.createTextEditAction());
     }
 
     @Override
@@ -29,7 +27,7 @@ public record VeilShaderIncludeResource(VeilResourceInfo resourceInfo) implement
 
     @Override
     public void hotReload() {
-        ResourceLocation id = ShaderManager.INCLUDE_LISTER.fileToId(this.resourceInfo.path());
+        ResourceLocation id = ShaderManager.INCLUDE_LISTER.fileToId(this.resourceInfo.location());
 
         ShaderManager shaderManager = VeilRenderSystem.renderer().getShaderManager();
         ShaderManager deferredShaderManager = VeilRenderSystem.renderer().getDeferredRenderer().getDeferredShaderManager();
@@ -57,10 +55,5 @@ public record VeilShaderIncludeResource(VeilResourceInfo resourceInfo) implement
             }
         }
         return programs;
-    }
-
-    @Override
-    public int getIconCode() {
-        return 0xECD1; // Code file icon
     }
 }

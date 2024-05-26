@@ -3,34 +3,28 @@ package foundry.veil.impl.client.editor;
 import foundry.veil.Veil;
 import foundry.veil.VeilClient;
 import foundry.veil.api.client.editor.SingleWindowEditor;
-import foundry.veil.api.client.imgui.CodeEditor;
 import foundry.veil.api.client.imgui.VeilImGuiUtil;
+import foundry.veil.api.client.registry.VeilResourceEditorRegistry;
 import foundry.veil.api.resource.*;
+import foundry.veil.api.resource.editor.ResourceFileEditor;
 import foundry.veil.impl.resource.VeilPackResources;
 import foundry.veil.impl.resource.VeilResourceManagerImpl;
 import foundry.veil.impl.resource.VeilResourceRenderer;
 import foundry.veil.impl.resource.tree.VeilResourceFolder;
 import imgui.ImGui;
-import imgui.extension.texteditor.TextEditor;
-import imgui.extension.texteditor.TextEditorLanguageDefinition;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiTreeNodeFlags;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 @ApiStatus.Internal
 public class ResourceManagerEditor extends SingleWindowEditor implements VeilEditorEnvironment {
@@ -38,23 +32,7 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
     private VeilResource<?> contextResource;
     private List<? extends VeilResourceAction<?>> actions;
 
-    private final CodeEditor editor;
     private CompletableFuture<?> reloadFuture;
-
-    public ResourceManagerEditor() {
-        this.editor = new CodeEditor("Save");
-    }
-
-    @Override
-    public void render() {
-        super.render();
-
-        this.editor.renderWindow();
-        if (ImGui.beginPopupModal("###open_failed")) {
-            ImGui.text("Failed to open file");
-            ImGui.endPopup();
-        }
-    }
 
     @Override
     public void renderComponents() {
@@ -127,20 +105,20 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
                 continue;
             }
 
-            ImGui.selectable("##" + resource.resourceInfo().path());
+            ImGui.selectable("##" + resource.resourceInfo().location());
 
             ImGui.setItemAllowOverlap();
             ImGui.sameLine();
             VeilResourceRenderer.renderFilename(resource);
 
-            if (ImGui.beginPopupContextItem("" + resource.hashCode())) {
+            if (ImGui.beginPopupContextItem("" + resource.resourceInfo().location())) {
                 if (resource != this.contextResource) {
                     this.contextResource = resource;
                     this.actions = resource.getActions();
                 }
 
                 if (ImGui.selectable("##copy_path")) {
-                    ImGui.setClipboardText(info.path().toString());
+                    ImGui.setClipboardText(info.location().toString());
                 }
 
                 ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
@@ -202,61 +180,23 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
     }
 
     @Override
-    public void open(VeilResource<?> resource, @Nullable TextEditorLanguageDefinition languageDefinition) {
-        VeilResourceInfo info = resource.resourceInfo();
-        this.editor.show(info.fileName(), "");
-        this.editor.setSaveCallback(null);
-        this.editor.getEditor().setReadOnly(true);
-        this.editor.getEditor().setColorizerEnable(false);
-        VeilResourceManager resourceManager = this.getResourceManager();
-        resourceManager.resources(info).getResource(info.path()).ifPresentOrElse(data -> CompletableFuture.supplyAsync(() -> {
-            try (InputStream stream = data.open()) {
-                return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                throw new CompletionException(e);
-            }
-        }, Util.ioPool()).handleAsync((contents, error) -> {
-            if (error != null) {
-                this.editor.hide();
-                ImGui.openPopup("###open_failed");
-                Veil.LOGGER.error("Failed to open file", error);
-                return null;
-            }
+    public void open(VeilResource<?> resource, ResourceLocation editorName) {
+        ResourceFileEditor<?> editor = VeilResourceEditorRegistry.REGISTRY.get(editorName);
+        if (editor == null) {
+            Veil.LOGGER.error("Failed to find editor for resource: {}", resource.resourceInfo().location());
+            return;
+        }
 
-            this.editor.show(info.fileName(), contents);
+        try {
+            this.open(editor, resource);
+        } catch (Throwable t) {
+            Veil.LOGGER.error("Failed to open editor for resource: {}", resource.resourceInfo().location(), t);
+        }
+    }
 
-            boolean readOnly = resource.resourceInfo().isStatic();
-            this.editor.setSaveCallback((source, errorConsumer) -> CompletableFuture.runAsync(() -> {
-                try {
-                    if (readOnly) {
-                        throw new IOException("Read-only resource");
-                    }
-
-                    Path path = resource.resourceInfo().filePath();
-                    try (OutputStream os = Files.newOutputStream(path)) {
-                        os.write(source.getBytes(StandardCharsets.UTF_8));
-                    }
-
-                    resource.copyToResources();
-                } catch (Exception e) {
-                    Veil.LOGGER.error("Failed to write resource: {}", resource.resourceInfo().path(), e);
-                }
-            }, Util.ioPool()).thenRunAsync(resource::hotReload, Minecraft.getInstance()).exceptionally(e -> {
-                Veil.LOGGER.error("Failed to hot-swap resource: {}", resource.resourceInfo().path(), e);
-                return null;
-            }));
-
-            TextEditor textEditor = this.editor.getEditor();
-            textEditor.setReadOnly(readOnly);
-            if (languageDefinition != null) {
-                textEditor.setColorizerEnable(true);
-                textEditor.setLanguageDefinition(languageDefinition);
-            }
-            return null;
-        }, Minecraft.getInstance()), () -> {
-            this.editor.hide();
-            ImGui.openPopup("###open_failed");
-        });
+    @SuppressWarnings("unchecked")
+    private <T extends VeilResource<?>> void open(ResourceFileEditor<T> editor, VeilResource<?> resource) {
+        editor.open(this, (T) resource);
     }
 
     @Override

@@ -4,7 +4,7 @@ import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
-import foundry.veil.impl.resource.type.TextureResource;
+import foundry.veil.api.resource.type.TextureResource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 
-public class TextureResourceLoader implements VeilResourceLoader<TextureResource> {
+public class TextureResourceLoader implements VeilResourceLoader {
 
     private static final Set<String> EXTENSIONS = Set.of(
             ".png",
@@ -37,7 +37,7 @@ public class TextureResourceLoader implements VeilResourceLoader<TextureResource
     }
 
     @Override
-    public VeilResource<TextureResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+    public VeilResource<?> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
 //        ResourceMetadata metadata = resourceManager.getResourceMetadata(path);
 //        AnimationMetadataSection animation = null;
 //        if (metadata != null) {

@@ -5,9 +5,9 @@ import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceInfo;
 import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
-import foundry.veil.impl.resource.type.VeilShaderDefinitionResource;
-import foundry.veil.impl.resource.type.VeilShaderFileResource;
-import foundry.veil.impl.resource.type.VeilShaderResource;
+import foundry.veil.api.resource.type.VeilShaderDefinitionResource;
+import foundry.veil.api.resource.type.VeilShaderFileResource;
+import foundry.veil.api.resource.type.VeilShaderResource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 
-public class ShaderResourceLoader implements VeilResourceLoader<VeilShaderResource> {
+public class ShaderResourceLoader implements VeilResourceLoader {
 
     private static final Set<String> EXTENSIONS = Set.of(
             ".json",
@@ -54,7 +54,7 @@ public class ShaderResourceLoader implements VeilResourceLoader<VeilShaderResour
     }
 
     @Override
-    public VeilResource<VeilShaderResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+    public VeilResource<?> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
         VeilResourceInfo info = new VeilResourceInfo(packType, location, filePath, modResourcePath, false);
         return location.getPath().endsWith(".json") ? new VeilShaderDefinitionResource(info, this.shaderManager) : new VeilShaderFileResource(info, this.shaderManager);
     }

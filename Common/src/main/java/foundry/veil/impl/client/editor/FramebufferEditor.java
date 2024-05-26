@@ -84,6 +84,12 @@ public class FramebufferEditor extends SingleWindowEditor {
                     }
                 }
 
+                if (this.downloadBuffer.isDepthTextureAttachment()) {
+                    AdvancedFboTextureAttachment attachment = this.downloadBuffer.getDepthTextureAttachment();
+                    String name = attachment.getName() != null ? attachment.getName() : "Depth Attachment";
+                    result.add(TextureDownloader.save(name, outputFolder, attachment.getId(), true));
+                }
+
                 CompletableFuture.allOf(result.toArray(new CompletableFuture[0])).thenRunAsync(() -> Util.getPlatform().openFile(outputFolder.toFile()), client);
             } catch (Exception e) {
                 e.printStackTrace();

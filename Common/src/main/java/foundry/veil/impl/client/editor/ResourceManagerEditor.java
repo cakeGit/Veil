@@ -124,13 +124,10 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
                 continue;
             }
 
-            if (ImGui.selectable("##" + resource.hashCode())) {
-            }
+            ImGui.selectable("##" + resource.resourceInfo().path());
 
-            ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
             ImGui.setItemAllowOverlap();
             ImGui.sameLine();
-            ImGui.popStyleVar();
             VeilResourceRenderer.renderFilename(resource);
 
             if (ImGui.beginPopupContextItem("" + resource.hashCode())) {

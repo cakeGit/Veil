@@ -7,7 +7,6 @@ import foundry.veil.api.client.render.post.PostProcessingManager;
 import imgui.ImGui;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiDataType;
-import imgui.flag.ImGuiDir;
 import imgui.flag.ImGuiDragDropFlags;
 import imgui.type.ImInt;
 import net.minecraft.resources.ResourceLocation;
@@ -83,30 +82,24 @@ public class PostEditor extends SingleWindowEditor {
         if (ImGui.beginListBox("##shaders", availableWidth / 2, 0)) {
             for (PostProcessingManager.ProfileEntry entry : postProcessingManager.getActivePipelines()) {
                 ResourceLocation id = entry.getPipeline();
-                ImInt editPriority = new ImInt(entry.getPriority());
 
                 ImGui.pushID(id.toString());
-                if (ImGui.beginChild(id.toString())) {
+                VeilImGuiUtil.resourceLocation(id);
+                if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
+                    ImGui.setDragDropPayload("POST_PIPELINE", id, ImGuiCond.Once);
                     VeilImGuiUtil.resourceLocation(id);
-
-                    if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
-                        ImGui.setDragDropPayload("POST_PIPELINE", id, ImGuiCond.Once);
-                        VeilImGuiUtil.resourceLocation(id);
-                        ImGui.endDragDropSource();
-                    }
-
-                    float priorityWidth = ImGui.calcTextSize("999999").x;
-                    ImGui.sameLine(ImGui.getContentRegionAvailX() - priorityWidth - 2);
-                    ImGui.setNextItemWidth(priorityWidth);
-                    if (ImGui.dragScalar("##priority", ImGuiDataType.S32, editPriority, 1)) {
-                        entry.setPriority(editPriority.get());
-                    }
+                    ImGui.endDragDropSource();
                 }
-                ImGui.endChild();
+
+                float priorityWidth = ImGui.calcTextSize("999999").x;
+                ImGui.setItemAllowOverlap();
+                ImGui.sameLine(ImGui.getContentRegionAvailX() - priorityWidth - 2);
+                ImGui.setNextItemWidth(priorityWidth);
+                ImInt editPriority = new ImInt(entry.getPriority());
+                if (ImGui.dragScalar("##priority", ImGuiDataType.S32, editPriority, 1)) {
+                    entry.setPriority(editPriority.get());
+                }
                 ImGui.popID();
-
-
-                ImGui.sameLine();
             }
 
             ImGui.endListBox();

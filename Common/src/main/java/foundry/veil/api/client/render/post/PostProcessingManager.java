@@ -98,7 +98,6 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
         }
         this.activePipelines.removeIf(entry -> entry.pipeline.equals(pipeline));
         this.activePipelines.add(new ProfileEntry(pipeline, priority));
-        this.activePipelines.sort(PIPELINE_SORTER);
         return true;
     }
 
@@ -109,11 +108,7 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
      * @return If the pipeline was previously active
      */
     public boolean remove(ResourceLocation pipeline) {
-        if (this.activePipelines.removeIf(entry -> entry.pipeline.equals(pipeline))) {
-            this.activePipelines.sort(PIPELINE_SORTER);
-            return true;
-        }
-        return false;
+        return this.activePipelines.removeIf(entry -> entry.pipeline.equals(pipeline));
     }
 
     /**
@@ -162,6 +157,7 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
         this.setup();
         int activeTexture = GlStateManager._getActiveTexture();
 
+        this.activePipelines.sort(PIPELINE_SORTER);
         for (ProfileEntry entry : this.activePipelines) {
             ResourceLocation id = entry.getPipeline();
             PostPipeline pipeline = this.pipelines.get(id);
@@ -198,7 +194,7 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
     /**
      * Applies only the specified pipeline.
      *
-     * @param pipeline The pipeline to run
+     * @param pipeline    The pipeline to run
      * @param resolvePost Whether to copy the main buffer into the post framebuffer before running the pipeline
      */
     public void runPipeline(PostPipeline pipeline, boolean resolvePost) {

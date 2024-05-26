@@ -52,7 +52,7 @@ public abstract class ForgePathPackResourcesMixin implements PackResources, Pack
                         if (name == null) {
                             Veil.LOGGER.error("Invalid path in mod resource-pack {}: {}:{}, ignoring", packId, namespace, path);
                         } else {
-                            consumer.accept(type, name, assetPath, file, null);
+                            consumer.accept(type, name, assetPath, file, PackResourcesExtension.findDevPath(root, file));
                         }
 
                         return FileVisitResult.CONTINUE;

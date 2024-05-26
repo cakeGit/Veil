@@ -1,13 +1,13 @@
 package foundry.veil.ext;
 
 import foundry.veil.Veil;
+import foundry.veil.platform.VeilPlatform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -15,6 +15,8 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public interface PackResourcesExtension {
+
+    String BUILD_RESOURCES_NAME = Veil.platform().getPlatformType() == VeilPlatform.PlatformType.FORGE ? "sourcesSets" : "resources";
 
     void veil$listResources(PackResourceConsumer consumer);
 
@@ -39,7 +41,7 @@ public interface PackResourcesExtension {
                 Path localPath = null;
                 while (buildRoot != null && buildRoot.getFileName() != null && !"build".equals(buildRoot.getFileName().toString())) {
                     Path parent = buildRoot.getParent();
-                    if (parent != null && parent.getFileName() != null && parent.getFileName().toString().equals("resources")) {
+                    if (parent != null && parent.getFileName() != null && parent.getFileName().toString().equals(BUILD_RESOURCES_NAME)) {
                         sourceRoot = buildRoot.getFileName().toString();
                         localPath = buildRoot.relativize(file);
                     }

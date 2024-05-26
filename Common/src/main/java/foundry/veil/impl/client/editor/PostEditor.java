@@ -28,7 +28,7 @@ public class PostEditor extends SingleWindowEditor {
 
     @Override
     public void render() {
-        ImGui.setNextWindowSize(200, 0);
+        ImGui.setNextWindowSize(600, 0);
         super.render();
     }
 

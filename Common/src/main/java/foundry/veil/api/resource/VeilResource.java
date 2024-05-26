@@ -53,7 +53,7 @@ public interface VeilResource<T extends VeilResource<?>> {
             Veil.LOGGER.info("Hot swapping {} after file system change", this.resourceInfo().fileName());
             return CompletableFuture.runAsync(() -> {
                 try {
-                    this.copyToBuild();
+                    this.copyToResources();
                 } catch (IOException e) {
                     throw new CompletionException(e);
                 }
@@ -82,7 +82,7 @@ public interface VeilResource<T extends VeilResource<?>> {
      */
     void hotReload();
 
-    default void copyToBuild() throws IOException {
+    default void copyToResources() throws IOException {
         VeilResourceInfo info = this.resourceInfo();
         Path filePath = info.filePath();
         if (filePath == null) {

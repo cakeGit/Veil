@@ -237,7 +237,7 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
                         os.write(source.getBytes(StandardCharsets.UTF_8));
                     }
 
-                    resource.copyToBuild();
+                    resource.copyToResources();
                 } catch (Exception e) {
                     Veil.LOGGER.error("Failed to write resource: {}", resource.resourceInfo().path(), e);
                 }

@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.WatchEvent;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -51,13 +52,15 @@ public interface VeilResource<T extends VeilResource<?>> {
     default CompletableFuture<?> onFileSystemChange(WatchEvent<Path> event) {
         if (this.canHotReload() && (event.kind() == ENTRY_CREATE || event.kind() == ENTRY_MODIFY)) {
             Veil.LOGGER.info("Hot swapping {} after file system change", this.resourceInfo().fileName());
+
+            Minecraft client = Minecraft.getInstance();
             return CompletableFuture.runAsync(() -> {
                 try {
                     this.copyToResources();
                 } catch (IOException e) {
                     throw new CompletionException(e);
                 }
-            }, Util.ioPool()).thenRunAsync(this::hotReload, Minecraft.getInstance()).exceptionally(e -> {
+            }, task -> client.tell(() -> Util.ioPool().execute(task))).thenRunAsync(this::hotReload, client).exceptionally(e -> {
                 Veil.LOGGER.error("Failed to hot swap file system change", e);
                 return null;
             });
@@ -94,8 +97,8 @@ public interface VeilResource<T extends VeilResource<?>> {
             return;
         }
 
-        try (InputStream is = Files.newInputStream(modPath); OutputStream os = Files.newOutputStream(filePath)) {
-            IOUtils.copy(is, os);
+        try (InputStream is = Files.newInputStream(modPath); OutputStream os = Files.newOutputStream(filePath, StandardOpenOption.TRUNCATE_EXISTING)) {
+            IOUtils.copyLarge(is, os);
         }
     }
 

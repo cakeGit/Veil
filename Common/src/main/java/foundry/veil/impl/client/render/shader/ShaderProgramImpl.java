@@ -145,7 +145,7 @@ public class ShaderProgramImpl implements ShaderProgram {
             });
             ShaderProgram.unbind();
         } catch (Exception e) {
-            this.free(); // F
+            this.clearShader(); // F
             throw e;
         }
     }

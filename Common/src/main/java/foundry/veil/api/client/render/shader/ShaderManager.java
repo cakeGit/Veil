@@ -343,7 +343,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
                         }
 
                         if (attempt >= 3) {
-                            Veil.LOGGER.error("Failed to recompile shaders after " + attempt + " attempts");
+                            Veil.LOGGER.error("Failed to recompile shaders after {} attempts", attempt);
                             return value;
                         }
 

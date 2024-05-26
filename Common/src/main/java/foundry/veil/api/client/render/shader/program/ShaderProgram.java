@@ -36,6 +36,7 @@ public interface ShaderProgram extends NativeResource, MutableUniformAccess, Tex
      */
     default void setup() {
         this.bind();
+        this.applyRenderSystem();
         this.addRenderSystemTextures();
         this.applyShaderSamplers(0);
     }

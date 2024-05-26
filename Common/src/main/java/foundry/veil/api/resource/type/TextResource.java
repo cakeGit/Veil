@@ -7,10 +7,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public record TextFileResource(VeilResourceInfo resourceInfo, Type type) implements VeilTextResource<TextFileResource> {
+public record TextResource(VeilResourceInfo resourceInfo, Type type) implements VeilTextResource<TextResource> {
 
     @Override
-    public List<VeilResourceAction<TextFileResource>> getActions() {
+    public List<VeilResourceAction<TextResource>> getActions() {
         return List.of(this.createTextEditAction());
     }
 

@@ -20,19 +20,19 @@ import java.util.Optional;
 public class McMetaResourceLoader implements VeilResourceLoader<McMetaResource> {
 
     @Override
-    public boolean canLoad(PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) {
-        return path.getPath().endsWith(".mcmeta");
+    public boolean canLoad(PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) {
+        return location.getPath().endsWith(".mcmeta");
     }
 
     @Override
-    public VeilResource<McMetaResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
-        Optional<Resource> optional = provider.getResource(path.withPath(s -> s.substring(0, s.length() - 7)));
+    public VeilResource<McMetaResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+        Optional<Resource> optional = provider.getResource(location.withPath(s -> s.substring(0, s.length() - 7)));
         if (optional.isPresent()) {
-            return new McMetaResource(new VeilResourceInfo(packType, path, filePath, modResourcePath, true), optional.get().metadata());
+            return new McMetaResource(new VeilResourceInfo(packType, location, filePath, modResourcePath, true), optional.get().metadata());
         }
 
-        try (InputStream stream = provider.open(path)) {
-            return new McMetaResource(new VeilResourceInfo(packType, path, filePath, modResourcePath, false), ResourceMetadata.fromJsonStream(stream));
+        try (InputStream stream = provider.open(location)) {
+            return new McMetaResource(new VeilResourceInfo(packType, location, filePath, modResourcePath, false), ResourceMetadata.fromJsonStream(stream));
         }
     }
 }

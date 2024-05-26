@@ -10,10 +10,7 @@ import foundry.veil.api.resource.VeilResourceLoader;
 import foundry.veil.api.resource.VeilResourceManager;
 import foundry.veil.api.util.CompositeReloadListener;
 import foundry.veil.ext.PackResourcesExtension;
-import foundry.veil.impl.resource.loader.McMetaResourceLoader;
-import foundry.veil.impl.resource.loader.ShaderResourceLoader;
-import foundry.veil.impl.resource.loader.TextResourceLoader;
-import foundry.veil.impl.resource.loader.TextureResourceLoader;
+import foundry.veil.impl.resource.loader.*;
 import foundry.veil.impl.resource.type.UnknownResource;
 import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
@@ -59,6 +56,7 @@ public class VeilResourceManagerImpl implements VeilResourceManager, NativeResou
     public void addVeilLoaders(VeilRenderer renderer) {
         this.addLoader(new ShaderResourceLoader(renderer.getShaderManager()));
         this.addLoader(new ShaderResourceLoader(renderer.getDeferredRenderer().getDeferredShaderManager()));
+        this.addLoader(new ShaderIncludeLoader());
         this.addLoader(new TextureResourceLoader());
         this.addLoader(new McMetaResourceLoader());
         this.addLoader(new TextResourceLoader());

@@ -23,13 +23,13 @@ public class TextureResourceLoader implements VeilResourceLoader<TextureResource
     );
 
     @Override
-    public boolean canLoad(PackType packType, ResourceLocation path, Path filePath, @Nullable Path modResourcePath) {
+    public boolean canLoad(PackType packType, ResourceLocation location, Path filePath, @Nullable Path modResourcePath) {
         if (packType != PackType.CLIENT_RESOURCES) {
             return false;
         }
 
         for (String extension : EXTENSIONS) {
-            if (path.getPath().endsWith(extension)) {
+            if (location.getPath().endsWith(extension)) {
                 return true;
             }
         }
@@ -37,12 +37,12 @@ public class TextureResourceLoader implements VeilResourceLoader<TextureResource
     }
 
     @Override
-    public VeilResource<TextureResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation path, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
+    public VeilResource<TextureResource> load(VeilResourceManager resourceManager, ResourceProvider provider, PackType packType, ResourceLocation location, @Nullable Path filePath, @Nullable Path modResourcePath) throws IOException {
 //        ResourceMetadata metadata = resourceManager.getResourceMetadata(path);
 //        AnimationMetadataSection animation = null;
 //        if (metadata != null) {
 //            animation = metadata.getSection(AnimationMetadataSection.SERIALIZER).orElse(null);
 //        }
-        return new TextureResource(new VeilResourceInfo(packType, path, filePath, modResourcePath, false));
+        return new TextureResource(new VeilResourceInfo(packType, location, filePath, modResourcePath, false));
     }
 }

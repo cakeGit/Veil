@@ -18,7 +18,6 @@ import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiTreeNodeFlags;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,11 +39,21 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
     private List<? extends VeilResourceAction<?>> actions;
 
     private final CodeEditor editor;
-    private ResourceManager serverResourceManager;
     private CompletableFuture<?> reloadFuture;
 
     public ResourceManagerEditor() {
         this.editor = new CodeEditor("Save");
+    }
+
+    @Override
+    public void render() {
+        super.render();
+
+        this.editor.renderWindow();
+        if (ImGui.beginPopupModal("###open_failed")) {
+            ImGui.text("Failed to open file");
+            ImGui.endPopup();
+        }
     }
 
     @Override
@@ -89,12 +98,6 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
                 ImGui.separator();
             }
             ImGui.endListBox();
-        }
-
-        this.editor.renderWindow();
-        if (ImGui.beginPopupModal("###open_failed")) {
-            ImGui.text("Failed to open file");
-            ImGui.endPopup();
         }
     }
 

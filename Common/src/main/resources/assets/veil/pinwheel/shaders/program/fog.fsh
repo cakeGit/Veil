@@ -9,13 +9,6 @@ const float FogEnd = 60;
 uniform vec4 FogColor;
 uniform int FogShape;
 
-const mat4 ModelViewMat = mat4(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0.0, 0.0, 0.0, 1.0
-);
-
 in vec2 texCoord;
 
 out vec4 fragColor;
@@ -25,7 +18,7 @@ void main() {
     float depthSample = texture(DiffuseDepthSampler, texCoord).r;
     vec3 pos = viewPosFromDepthSample(depthSample, texCoord);
 
-    float vertexDistance = fog_distance(ModelViewMat, pos, FogShape);
+    float vertexDistance = fog_distance(pos, FogShape);
     fragColor = linear_fog(baseColor, vertexDistance, FogStart, FogEnd, FogColor);
 }
 

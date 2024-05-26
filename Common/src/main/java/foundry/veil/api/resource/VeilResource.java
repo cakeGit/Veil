@@ -51,7 +51,7 @@ public interface VeilResource<T extends VeilResource<?>> {
      */
     default CompletableFuture<?> onFileSystemChange(WatchEvent<Path> event) {
         if (this.canHotReload() && (event.kind() == ENTRY_CREATE || event.kind() == ENTRY_MODIFY)) {
-            Veil.LOGGER.info("Hot swapping {} after file system change", this.resourceInfo().fileName());
+            Veil.LOGGER.info("Hot swapping {} after file system change", this.resourceInfo().path());
 
             Minecraft client = Minecraft.getInstance();
             return CompletableFuture.runAsync(() -> {

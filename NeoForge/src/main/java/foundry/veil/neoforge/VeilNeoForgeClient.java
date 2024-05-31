@@ -60,8 +60,9 @@ public class VeilNeoForgeClient {
     private static void registerListeners(RegisterClientReloadListenersEvent event) {
         VeilClient.initRenderer();
         VeilReloadListeners.registerListeners((type, id, listener) -> event.registerReloadListener(listener));
-        ModLoader.get().postEvent(new NeoForgeVeilRendererEvent(VeilRenderSystem.renderer()));
-        ModLoader.get().postEvent(new NeoForgeVeilRegisterFixedBuffersEvent(NeoForgeRenderTypeStageHandler::register));
+        ModLoader loader = ModLoader.get();
+        loader.postEvent(new NeoForgeVeilRendererEvent(VeilRenderSystem.renderer()));
+        loader.postEvent(new NeoForgeVeilRegisterFixedBuffersEvent(NeoForgeRenderTypeStageHandler::register));
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {

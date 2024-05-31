@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 public interface PackResourcesExtension {
 
-    String BUILD_RESOURCES_NAME = Veil.platform().getPlatformType() == VeilPlatform.PlatformType.FORGE ? "sourcesSets" : "resources";
+    String BUILD_RESOURCES_NAME = Veil.platform().getPlatformType() == VeilPlatform.PlatformType.FABRIC ? "resources" : "sourcesSets";
 
     void veil$listResources(PackResourceConsumer consumer);
 

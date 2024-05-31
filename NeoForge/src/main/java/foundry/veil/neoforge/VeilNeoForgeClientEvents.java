@@ -7,6 +7,7 @@ import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.quasar.data.QuasarParticles;
 import foundry.veil.api.quasar.particle.ParticleEmitter;
 import foundry.veil.api.quasar.particle.ParticleSystemManager;
+import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -15,6 +16,7 @@ import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -47,7 +49,7 @@ public class VeilNeoForgeClientEvents {
     @SubscribeEvent
     public static void keyPressed(InputEvent.Key event) {
         if (event.getAction() == GLFW_PRESS && VeilClient.EDITOR_KEY.matches(event.getKey(), event.getScanCode())) {
-            VeilRenderSystem.renderer().getEditorManager().toggle();
+            VeilImGuiImpl.get().toggle();
         }
     }
 
@@ -65,8 +67,9 @@ public class VeilNeoForgeClientEvents {
                 return 0;
             }
 
-            WorldCoordinates pos = ctx.getArgument("position", WorldCoordinates.class);
-            instance.setPosition(pos.getPosition(source));
+            WorldCoordinates coordinates = ctx.getArgument("position", WorldCoordinates.class);
+            Vec3 pos = coordinates.getPosition(source);
+            instance.setPosition(pos.x, pos.y, pos.z);
             particleManager.addParticleSystem(instance);
             source.sendSuccess(() -> Component.literal("Spawned " + id), true);
             return 1;
@@ -77,7 +80,7 @@ public class VeilNeoForgeClientEvents {
     @SubscribeEvent
     public static void mousePressed(InputEvent.MouseButton.Pre event) {
         if (event.getAction() == GLFW_PRESS && VeilClient.EDITOR_KEY.matchesMouse(event.getButton())) {
-            VeilRenderSystem.renderer().getEditorManager().toggle();
+            VeilImGuiImpl.get().toggle();
         }
     }
 

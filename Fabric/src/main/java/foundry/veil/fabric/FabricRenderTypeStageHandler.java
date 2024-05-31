@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
 import foundry.veil.ext.LevelRendererBlockLayerExtension;
 import foundry.veil.fabric.event.FabricVeilRenderLevelStageEvent;
-import foundry.veil.mixin.client.deferred.BufferSourceAccessor;
+import foundry.veil.mixin.accessor.BufferSourceAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;

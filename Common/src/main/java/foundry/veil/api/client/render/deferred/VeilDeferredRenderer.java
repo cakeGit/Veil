@@ -89,7 +89,7 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
             boolean selected = Minecraft.getInstance().getResourcePackRepository().getSelectedIds().contains(PACK_ID.toString()) || resourceManager.listPacks().anyMatch(pack -> pack.packId().equals(PACK_ID.toString()));
             boolean active = selected && isSupported();
             if (selected && !active) {
-                SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastIds.PERIODIC_NOTIFICATION, UNSUPPORTED_TITLE, UNSUPPORTED_DESC);
+                SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION, UNSUPPORTED_TITLE, UNSUPPORTED_DESC);
             }
             if (this.enabled != active) {
                 this.enabled = active;

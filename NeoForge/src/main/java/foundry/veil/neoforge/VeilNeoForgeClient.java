@@ -8,7 +8,7 @@ import foundry.veil.impl.VeilBuiltinPacks;
 import foundry.veil.impl.VeilReloadListeners;
 import foundry.veil.impl.client.render.VeilUITooltipRenderer;
 import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
-import foundry.veil.mixin.client.stage.RenderStateShardAccessor;
+import foundry.veil.mixin.accessor.RenderStateShardAccessor;
 import foundry.veil.neoforge.event.NeoForgeVeilRegisterBlockLayerEvent;
 import foundry.veil.neoforge.event.NeoForgeVeilRegisterFixedBuffersEvent;
 import foundry.veil.neoforge.event.NeoForgeVeilRendererEvent;
@@ -23,6 +23,7 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoader;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiOverlaysEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
@@ -59,8 +60,8 @@ public class VeilNeoForgeClient {
     private static void registerListeners(RegisterClientReloadListenersEvent event) {
         VeilClient.initRenderer();
         VeilReloadListeners.registerListeners((type, id, listener) -> event.registerReloadListener(listener));
-        NeoForge.EVENT_BUS.post(new NeoForgeVeilRendererEvent(VeilRenderSystem.renderer()));
-        NeoForge.EVENT_BUS.post(new NeoForgeVeilRegisterFixedBuffersEvent(NeoForgeRenderTypeStageHandler::register));
+        ModLoader.get().postEvent(new NeoForgeVeilRendererEvent(VeilRenderSystem.renderer()));
+        ModLoader.get().postEvent(new NeoForgeVeilRegisterFixedBuffersEvent(NeoForgeRenderTypeStageHandler::register));
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {

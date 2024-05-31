@@ -35,6 +35,7 @@ public interface VeilPlatform {
 
     enum PlatformType {
         FORGE("Forge"),
+        NEOFORGE("NeoForge"),
         FABRIC("Fabric");
 
         private final String platformName;

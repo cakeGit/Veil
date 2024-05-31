@@ -3,6 +3,7 @@ package foundry.veil.api.resource.type;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.resource.VeilResourceAction;
 import foundry.veil.api.resource.VeilResourceInfo;
+import foundry.veil.impl.resource.action.TextEditAction;
 import imgui.extension.texteditor.TextEditorLanguageDefinition;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -16,7 +17,7 @@ public record PostPipelineResource(VeilResourceInfo resourceInfo) implements Vei
 
     @Override
     public List<VeilResourceAction<PostPipelineResource>> getActions() {
-        return List.of(this.createTextEditAction());
+        return List.of(new TextEditAction<>());
     }
 
     @Override

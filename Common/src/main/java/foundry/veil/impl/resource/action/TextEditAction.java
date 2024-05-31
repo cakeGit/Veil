@@ -1,22 +1,22 @@
 package foundry.veil.impl.resource.action;
 
+import foundry.veil.api.client.registry.VeilResourceEditorRegistry;
 import foundry.veil.api.resource.VeilEditorEnvironment;
 import foundry.veil.api.resource.VeilResource;
 import foundry.veil.api.resource.VeilResourceAction;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.OptionalInt;
 
-public record IngameEditAction<T extends VeilResource<?>>(ResourceLocation editor) implements VeilResourceAction<T> {
+public record TextEditAction<T extends VeilResource<?>>() implements VeilResourceAction<T> {
 
     @Override
     public String getName() {
-        return "Open in Veil Editor";
+        return "Open in Veil Text Editor";
     }
 
     @Override
     public String getDescription() {
-        return "Opens the in-game editor";
+        return "Opens the in-game text editor";
     }
 
     @Override
@@ -26,6 +26,6 @@ public record IngameEditAction<T extends VeilResource<?>>(ResourceLocation edito
 
     @Override
     public void perform(VeilEditorEnvironment environment, T resource) {
-        environment.open(resource, this.editor);
+        environment.open(resource, VeilResourceEditorRegistry.TEXT.getId());
     }
 }

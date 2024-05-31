@@ -6,6 +6,7 @@ import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.api.resource.VeilResourceAction;
 import foundry.veil.api.resource.VeilResourceInfo;
+import foundry.veil.impl.resource.action.TextEditAction;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashSet;
@@ -17,7 +18,7 @@ public record VeilShaderIncludeResource(VeilResourceInfo resourceInfo) implement
 
     @Override
     public List<VeilResourceAction<VeilShaderIncludeResource>> getActions() {
-        return List.of(this.createTextEditAction());
+        return List.of(new TextEditAction<>());
     }
 
     @Override

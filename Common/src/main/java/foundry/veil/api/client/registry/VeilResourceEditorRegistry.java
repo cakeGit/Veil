@@ -1,6 +1,7 @@
 package foundry.veil.api.client.registry;
 
 import foundry.veil.Veil;
+import foundry.veil.api.resource.editor.FramebufferFileEditor;
 import foundry.veil.api.resource.editor.ResourceFileEditor;
 import foundry.veil.api.resource.editor.TextFileEditor;
 import foundry.veil.platform.registry.RegistrationProvider;
@@ -16,6 +17,7 @@ public final class VeilResourceEditorRegistry {
     public static final Registry<ResourceFileEditor<?>> REGISTRY = VANILLA_PROVIDER.asVanillaRegistry();
 
     public static final RegistryObject<TextFileEditor> TEXT = VANILLA_PROVIDER.register("text", TextFileEditor::new);
+    public static final RegistryObject<FramebufferFileEditor> FRAMEBUFFER = VANILLA_PROVIDER.register("framebuffer", FramebufferFileEditor::new);
 
     private VeilResourceEditorRegistry() {
     }

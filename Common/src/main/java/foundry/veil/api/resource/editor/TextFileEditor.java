@@ -11,15 +11,10 @@ import imgui.extension.texteditor.TextEditor;
 import imgui.extension.texteditor.TextEditorLanguageDefinition;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -66,39 +61,10 @@ public class TextFileEditor implements ResourceFileEditor<VeilTextResource<?>> {
             }
 
             this.editor.show(info.fileName(), contents);
-
-            VeilResourceInfo resourceInfo = resource.resourceInfo();
-            boolean readOnly = resourceInfo.isStatic();
-            this.editor.setSaveCallback((source, errorConsumer) -> CompletableFuture.runAsync(() -> {
-                try {
-                    if (readOnly) {
-                        throw new IOException("Read-only resource");
-                    }
-
-                    Path path = resourceInfo.filePath();
-                    try (OutputStream os = Files.newOutputStream(path)) {
-                        os.write(source.getBytes(StandardCharsets.UTF_8));
-                    }
-
-                    Path modPath = info.modResourcePath();
-                    if (modPath == null) {
-                        return;
-                    }
-
-                    // Copy from build to resources
-                    try (InputStream is = Files.newInputStream(path); OutputStream os = Files.newOutputStream(modPath, StandardOpenOption.TRUNCATE_EXISTING)) {
-                        IOUtils.copyLarge(is, os);
-                    }
-                } catch (Exception e) {
-                    Veil.LOGGER.error("Failed to write resource: {}", resourceInfo.location(), e);
-                }
-            }, Util.ioPool()).thenRunAsync(resource::hotReload, Minecraft.getInstance()).exceptionally(e -> {
-                Veil.LOGGER.error("Failed to hot-swap resource: {}", resourceInfo.location(), e);
-                return null;
-            }));
+            this.editor.setSaveCallback((source, errorConsumer) -> this.save(source.getBytes(StandardCharsets.UTF_8), resource));
 
             TextEditor textEditor = this.editor.getEditor();
-            textEditor.setReadOnly(readOnly);
+            textEditor.setReadOnly(resource.resourceInfo().isStatic());
             if (languageDefinition != null) {
                 textEditor.setColorizerEnable(true);
                 textEditor.setLanguageDefinition(languageDefinition);

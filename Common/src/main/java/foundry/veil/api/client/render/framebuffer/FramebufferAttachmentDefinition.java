@@ -84,7 +84,8 @@ public record FramebufferAttachmentDefinition(FramebufferAttachmentDefinition.Ty
      */
     public enum Type {
 
-        TEXTURE, RENDER_BUFFER;
+        TEXTURE("Texture"),
+        RENDER_BUFFER("Render Buffer");
 
         public static final Codec<Type> CODEC = Codec.STRING.flatXmap(name -> {
             for (Type type : Type.values()) {
@@ -94,6 +95,16 @@ public record FramebufferAttachmentDefinition(FramebufferAttachmentDefinition.Ty
             }
             return DataResult.error(() -> "Unknown attachment type: " + name);
         }, type -> DataResult.success(type.name()));
+
+        private final String dislpayName;
+
+        Type(String dislpayName) {
+            this.dislpayName = dislpayName;
+        }
+
+        public String getDisplayName() {
+            return dislpayName;
+        }
     }
 
     /**

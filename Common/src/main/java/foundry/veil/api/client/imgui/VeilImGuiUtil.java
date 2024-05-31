@@ -17,6 +17,7 @@ import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.File;
 import java.net.URI;
@@ -49,10 +50,21 @@ public class VeilImGuiUtil {
         }
     }
 
+    /**
+     * Fully renders Minecraft text into ImGui.
+     *
+     * @param text The text to render
+     */
     public static void component(FormattedText text) {
         component(text, Float.POSITIVE_INFINITY);
     }
 
+    /**
+     * Fully renders wrapped Minecraft text into ImGui.
+     *
+     * @param text      The text to render
+     * @param wrapWidth The width to wrap to
+     */
     public static void component(FormattedText text, float wrapWidth) {
         IM_GUI_CHAR_SINK.reset();
         for (FormattedCharSequence part : Language.getInstance().getVisualOrder(IM_GUI_SPLITTER.splitLines(text, (int) wrapWidth, Style.EMPTY))) {
@@ -85,14 +97,82 @@ public class VeilImGuiUtil {
         ImGui.popFont();
     }
 
+    /**
+     * Helper to draw centered text.
+     *
+     * @param text  The text to render
+     * @param width The width of the area to center on
+     */
+    public static void textCentered(String text, float width) {
+        ImGui.setCursorPosX(ImGui.getCursorPosX() + (width - ImGui.getFont().calcTextSizeAX(ImGui.getFontSize(), Float.MAX_VALUE, 0, text)) / 2);
+        ImGui.text(text);
+    }
+
+    /**
+     * Displays a resource location with a dimmed namespace
+     *
+     * @param loc The resource location
+     */
+    public static void resourceLocation(ResourceLocation loc) {
+        ImGui.beginGroup();
+        ImGui.textColored(colorOf(loc.getNamespace()), loc.getNamespace() + ":");
+
+        ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
+        ImGui.sameLine();
+        ImGui.text(loc.getPath());
+        ImGui.popStyleVar();
+
+        ImGui.endGroup();
+
+        if (ImGui.beginPopupContextItem("" + loc)) {
+            if (ImGui.selectable("##copy_location")) {
+                ImGui.setClipboardText(loc.toString());
+            }
+
+            ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
+            ImGui.setItemAllowOverlap();
+            ImGui.sameLine();
+            VeilImGuiUtil.icon(0xEB91);
+            ImGui.sameLine();
+            ImGui.popStyleVar();
+            ImGui.text("Copy Location");
+            ImGui.endPopup();
+        }
+    }
+
+    /**
+     * Obtains the color of the modid
+     *
+     * @param modid The modid to get the color of
+     * @return color The color based on the hash of the modid
+     */
+    public static int colorOf(String modid) {
+        int color = (modid.hashCode() & 11184810) + 4473924;
+
+        Color c = Color.of(0xff | (color << 8));
+        c.mix(Color.WHITE.darkenCopy(0.4f), 0.35F);
+
+        return c.getRGBA();
+    }
+
+    /**
+     * Retrieves the ImGui font to use for the specified Minecraft style.
+     *
+     * @param style The style to get the font for
+     * @return The ImFont to use
+     */
     public static ImFont getStyleFont(Style style) {
         return VeilRenderSystem.renderer().getEditorManager().getFont(Style.DEFAULT_FONT.equals(style.getFont()) ? EditorManager.DEFAULT : style.getFont(), style.isBold(), style.isItalic());
     }
 
+    /**
+     * @return A string splitter for ImGui fonts
+     */
     public static StringSplitter getStringSplitter() {
         return IM_GUI_SPLITTER;
     }
 
+    @ApiStatus.Internal
     private static class ImGuiCharSink implements FormattedCharSink {
 
         private ImFont font;
@@ -229,52 +309,5 @@ public class VeilImGuiUtil {
                 ImGui.endTooltip();
             }
         }
-    }
-
-    /**
-     * Displays a resource location with a dimmed namespace
-     *
-     * @param loc The resource location
-     */
-    public static void resourceLocation(ResourceLocation loc) {
-        ImGui.beginGroup();
-        ImGui.textColored(colorOf(loc.getNamespace()), loc.getNamespace() + ":");
-
-        ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
-        ImGui.sameLine();
-        ImGui.text(loc.getPath());
-        ImGui.popStyleVar();
-
-        ImGui.endGroup();
-
-        if (ImGui.beginPopupContextItem("" + loc)) {
-            if (ImGui.selectable("##copy_location")) {
-                ImGui.setClipboardText(loc.toString());
-            }
-
-            ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
-            ImGui.setItemAllowOverlap();
-            ImGui.sameLine();
-            VeilImGuiUtil.icon(0xEB91);
-            ImGui.sameLine();
-            ImGui.popStyleVar();
-            ImGui.text("Copy Location");
-            ImGui.endPopup();
-        }
-    }
-
-    /**
-     * Obtains the color of the modid
-     *
-     * @param modid The modid to get the color of
-     * @return color The color based on the hash of the modid
-     */
-    public static int colorOf(String modid) {
-        int color = (modid.hashCode() & 11184810) + 4473924;
-
-        Color c = Color.of(0xff | (color << 8));
-        c.mix(Color.WHITE.darkenCopy(0.4f), 0.35F);
-
-        return c.getRGBA();
     }
 }

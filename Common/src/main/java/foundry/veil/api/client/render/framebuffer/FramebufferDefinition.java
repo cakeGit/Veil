@@ -33,8 +33,8 @@ public record FramebufferDefinition(MolangExpression width,
                                     @Nullable FramebufferAttachmentDefinition depthBuffer,
                                     boolean autoClear) {
 
-    private static final MolangExpression DEFAULT_WIDTH;
-    private static final MolangExpression DEFAULT_HEIGHT;
+    public static final MolangExpression DEFAULT_WIDTH;
+    public static final MolangExpression DEFAULT_HEIGHT;
 
     static {
         try {

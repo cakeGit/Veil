@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Matrix4f;
 
@@ -42,7 +43,7 @@ public class ForgeVeilEventPlatform implements VeilEventPlatform {
 
     @Override
     public void onVeilRendererAvailable(VeilRendererEvent event) {
-        MinecraftForge.EVENT_BUS.<ForgeVeilRendererEvent>addListener(forgeEvent -> event.onVeilRendererAvailable(forgeEvent.getRenderer()));
+        FMLJavaModLoadingContext.get().getModEventBus().<ForgeVeilRendererEvent>addListener(forgeEvent -> event.onVeilRendererAvailable(forgeEvent.getRenderer()));
     }
 
     @Override
@@ -57,7 +58,7 @@ public class ForgeVeilEventPlatform implements VeilEventPlatform {
 
     @Override
     public void onVeilRegisterFixedBuffers(VeilRegisterFixedBuffersEvent event) {
-        MinecraftForge.EVENT_BUS.<ForgeVeilRegisterFixedBuffersEvent>addListener(forgeEvent -> event.onRegisterFixedBuffers((stage, renderType) -> {
+        FMLJavaModLoadingContext.get().getModEventBus().<ForgeVeilRegisterFixedBuffersEvent>addListener(forgeEvent -> event.onRegisterFixedBuffers((stage, renderType) -> {
             if (stage == null) {
                 forgeEvent.register(null, renderType);
                 return;
@@ -72,7 +73,7 @@ public class ForgeVeilEventPlatform implements VeilEventPlatform {
 
     @Override
     public void onVeilRegisterBlockLayers(VeilRegisterBlockLayerEvent event) {
-        MinecraftForge.EVENT_BUS.<ForgeVeilRegisterBlockLayerEvent>addListener(event::onRegisterBlockLayers);
+        FMLJavaModLoadingContext.get().getModEventBus().<ForgeVeilRegisterBlockLayerEvent>addListener(event::onRegisterBlockLayers);
     }
 
     @Override

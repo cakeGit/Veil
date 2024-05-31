@@ -66,6 +66,11 @@ public interface ShaderPreProcessor {
         void addDefinitionDependency(String name);
 
         /**
+         * @param name The name of the definition to depend on
+         */
+        void addInclude(ResourceLocation name);
+
+        /**
          * @return The id of the shader being compiled or <code>null</code> if the shader is compiled from a raw string
          */
         @Nullable ResourceLocation getName();

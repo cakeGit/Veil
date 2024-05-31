@@ -1,9 +1,12 @@
 package foundry.veil.api.client.editor;
 
 import foundry.veil.Veil;
+import foundry.veil.api.client.registry.VeilResourceEditorRegistry;
+import foundry.veil.api.resource.editor.ResourceFileEditor;
 import foundry.veil.api.util.CompositeReloadListener;
 import imgui.ImFont;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
 import imgui.type.ImBoolean;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -33,9 +36,10 @@ public class EditorManager implements PreparableReloadListener {
     @ApiStatus.Internal
     public EditorManager(ReloadableResourceManager resourceManager) {
         this.editors = new TreeMap<>(Comparator.comparing(Editor::getDisplayName));
-        resourceManager.registerReloadListener(this);
         this.fonts = new EditorFontManager();
         this.enabled = false;
+
+        resourceManager.registerReloadListener(this);
     }
 
     public ImFont getFont(ResourceLocation name, boolean bold, boolean italic) {
@@ -53,9 +57,16 @@ public class EditorManager implements PreparableReloadListener {
         }
 
         if (ImGui.beginMainMenuBar()) {
-            if (ImGui.beginMenu("Editor")) {
-                for (Map.Entry<Editor, ImBoolean> entry : this.editors.entrySet()) {
-                    Editor editor = entry.getKey();
+            float dingleWidth = 60f;
+            float dingleHeight = 26f;
+            ImGui.getWindowDrawList().addRectFilled(0f, 0f, dingleWidth, dingleHeight, ImGui.getColorU32(ImGuiCol.FrameBgHovered));
+
+            ImGui.text("Veil ");
+
+            for (Map.Entry<Editor, ImBoolean> entry : this.editors.entrySet()) {
+                Editor editor = entry.getKey();
+                String group = editor.getGroup() != null ? editor.getGroup() : "Editor";
+                if (ImGui.beginMenu(group)) {
                     ImBoolean enabled = entry.getValue();
 
                     ImGui.beginDisabled(!editor.isEnabled());
@@ -67,8 +78,8 @@ public class EditorManager implements PreparableReloadListener {
                         }
                     }
                     ImGui.endDisabled();
+                    ImGui.endMenu();
                 }
-                ImGui.endMenu();
             }
 
             for (Map.Entry<Editor, ImBoolean> entry : this.editors.entrySet()) {
@@ -94,6 +105,10 @@ public class EditorManager implements PreparableReloadListener {
                 continue;
             }
 
+            editor.render();
+        }
+
+        for (ResourceFileEditor<?> editor : VeilResourceEditorRegistry.REGISTRY) {
             editor.render();
         }
     }
@@ -175,10 +190,12 @@ public class EditorManager implements PreparableReloadListener {
                 listeners.add(listener);
             }
         }
+        for (ResourceFileEditor<?> editor : VeilResourceEditorRegistry.REGISTRY) {
+            if (editor instanceof PreparableReloadListener listener) {
+                listeners.add(listener);
+            }
+        }
         PreparableReloadListener listener = CompositeReloadListener.of(listeners.toArray(PreparableReloadListener[]::new));
         return listener.reload(preparationBarrier, resourceManager, prepareProfiler, applyProfiler, backgroundExecutor, gameExecutor);
-    }
-
-    private record Preparations(Map<String, byte[]> fontData) {
     }
 }

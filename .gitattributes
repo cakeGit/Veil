@@ -8,6 +8,7 @@
 *.gif binary
 *.exe binary
 *.dll binary
+*.dylib binary
 *.jar binary
 *.lzma binary
 *.zip binary

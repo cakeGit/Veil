@@ -6,7 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
 import foundry.veil.api.client.render.framebuffer.AdvancedFboAttachment;
 import foundry.veil.api.client.render.framebuffer.AdvancedFboTextureAttachment;
-import foundry.veil.mixin.client.pipeline.RenderTargetAccessor;
+import foundry.veil.mixin.accessor.RenderTargetAccessor;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.ApiStatus;

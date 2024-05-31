@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutorService;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL12C.GL_TEXTURE_BASE_LEVEL;
@@ -51,13 +50,7 @@ public final class TextureDownloader {
         }
 
         List<CompletableFuture<?>> result = new ArrayList<>(max - base + 1);
-        ExecutorService ioPool = Util.ioPool();
         for (int level = base; level <= max; level++) {
-            int format = glGetTexLevelParameteri(GL_TEXTURE_2D, level, GL_TEXTURE_INTERNAL_FORMAT);
-            if (format == GL_DEPTH_COMPONENT) {
-                continue;
-            }
-
             Path outputFile = outputFolder.resolve(name + (base == max ? "" : "-" + level) + ".png");
             if (!Files.exists(outputFile)) {
                 try {
@@ -70,19 +63,22 @@ public final class TextureDownloader {
 
             int width = glGetTexLevelParameteri(GL_TEXTURE_2D, level, GL_TEXTURE_WIDTH);
             int height = glGetTexLevelParameteri(GL_TEXTURE_2D, level, GL_TEXTURE_HEIGHT);
+            int format = glGetTexLevelParameteri(GL_TEXTURE_2D, level, GL_TEXTURE_INTERNAL_FORMAT);
 
-            ByteBuffer image = MemoryUtil.memAlloc(width * height * 4);
-            glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, image);
+            boolean floating = format == GL_DEPTH_COMPONENT;
+            int components = floating ? 1 : 4;
+            ByteBuffer image = MemoryUtil.memAlloc(width * height * components);
+            glGetTexImage(GL_TEXTURE_2D, level, floating ? GL_DEPTH_COMPONENT : GL_RGBA, GL_UNSIGNED_BYTE, image);
 
             CompletableFuture<?> future = CompletableFuture.runAsync(() ->
             {
                 stbi_flip_vertically_on_write(flip);
-                boolean success = stbi_write_png(outputFile.toString(), width, height, 4, image, 0);
+                boolean success = stbi_write_png(outputFile.toString(), width, height, components, image, 0);
                 MemoryUtil.memFree(image);
                 if (!success) {
                     throw new CompletionException(new IOException("Failed to write image to: " + outputFile));
                 }
-            }, ioPool);
+            }, Util.ioPool());
             result.add(future);
         }
         return CompletableFuture.allOf(result.toArray(CompletableFuture[]::new));

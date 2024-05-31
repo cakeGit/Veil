@@ -124,8 +124,7 @@ public class VeilUniformBlockState {
         }
 
         if (this.boundBlocks.containsKey(block)) {
-            int binding = this.boundBlocks.removeInt(block);
-            this.unbind(binding, impl);
+            this.unbind(this.boundBlocks.removeInt(block), impl);
         }
     }
 

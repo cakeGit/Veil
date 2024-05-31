@@ -1,13 +1,11 @@
 package foundry.veil.api.quasar.particle;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import foundry.veil.Veil;
 import foundry.veil.api.TickTaskScheduler;
-import foundry.veil.api.quasar.data.EmitterSettings;
-import foundry.veil.api.quasar.data.ParticleEmitterData;
-import foundry.veil.api.quasar.data.QuasarParticleData;
+import foundry.veil.api.quasar.data.*;
+import foundry.veil.api.quasar.data.module.CodeModule;
 import foundry.veil.api.quasar.data.module.ParticleModuleData;
 import foundry.veil.api.quasar.emitters.module.update.FaceVelocityModule;
 import net.minecraft.client.Camera;
@@ -51,10 +49,21 @@ public class ParticleEmitter {
     private final ParticleSystemManager particleManager;
     private final ClientLevel level;
     private final ParticleEmitterData emitterData;
-    private final List<Holder<ParticleModuleData>> modules;
+    private final List<ParticleModuleData> modules;
     private final RandomSource randomSource;
     private final Vector3d position;
+    private final Vector3d offset;
     private final List<QuasarParticle> particles;
+
+    private int maxLifetime;
+    private boolean loop;
+    private int rate;
+    private int count;
+    private int maxParticles;
+    private EmitterShapeSettings emitterShapeSettings;
+    private ParticleSettings particleSettings;
+    private boolean forceSpawn;
+    private QuasarParticleData particleData;
 
     @Nullable
     private Entity attachedEntity;
@@ -69,7 +78,19 @@ public class ParticleEmitter {
         this.modules = createModuleSet(data.particleData());
         this.randomSource = RandomSource.create();
         this.position = new Vector3d();
+        this.offset = new Vector3d();
         this.particles = new ArrayList<>();
+
+        this.maxLifetime = data.maxLifetime();
+        this.loop = data.loop();
+        this.rate = data.rate();
+        this.count = data.count();
+        this.maxParticles = data.maxParticles();
+        EmitterSettings emitterSettings = data.emitterSettings();
+        this.emitterShapeSettings = emitterSettings.emitterShapeSettings();
+        this.particleSettings = emitterSettings.particleSettings();
+        this.forceSpawn = emitterSettings.forceSpawn();
+        this.particleData = data.particleData();
 
         TickTaskScheduler scheduler = particleManager.getScheduler();
         this.spawnTask = scheduler.scheduleAtFixedRate(this::spawn, 0, data.rate());
@@ -82,13 +103,12 @@ public class ParticleEmitter {
     }
 
     private void spawn() {
-        int count = Math.min(this.emitterData.maxParticles(), this.emitterData.count());
+        int count = Math.min(this.maxParticles, this.count);
         this.particleManager.reserve(count);
 
         for (int i = 0; i < count; i++) {
-            EmitterSettings emitterSettings = this.emitterData.emitterSettings();
-            Vector3dc particlePos = emitterSettings.emitterShapeSettings().getPos(this.randomSource, this.position);
-            Vector3fc particleDirection = emitterSettings.particleSettings().particleDirection(this.randomSource);
+            Vector3dc particlePos = this.emitterShapeSettings.getPos(this.randomSource, this.position);
+            Vector3fc particleDirection = this.particleSettings.particleDirection(this.randomSource);
 
             // TODO
 //        this.getParticleData().getInitModules().stream().filter(force -> force instanceof InitialVelocityForce).forEach(f -> {
@@ -103,14 +123,14 @@ public class ParticleEmitter {
 //        });
 
             ParticleModuleSet.Builder builder = ParticleModuleSet.builder();
-            for (Holder<ParticleModuleData> module : this.modules) {
-                module.value().addModules(builder);
+            for (ParticleModuleData module : this.modules) {
+                module.addModules(builder);
             }
-            if (this.emitterData.particleData().faceVelocity()) {
+            if (this.particleData.faceVelocity()) {
                 builder.addModule(new FaceVelocityModule());
             }
 
-            QuasarParticle particle = new QuasarParticle(this.level, this.randomSource, this.particleManager.getScheduler(), this.emitterData.particleData(), builder.build(), this.emitterData.emitterSettings().particleSettings(), this);
+            QuasarParticle particle = new QuasarParticle(this.level, this.randomSource, this.particleManager.getScheduler(), this.particleData, builder.build(), this.particleSettings, this);
             particle.getPosition().set(particlePos);
             particle.getVelocity().set(particleDirection);
             particle.init();
@@ -118,8 +138,8 @@ public class ParticleEmitter {
         }
     }
 
-    private static List<Holder<ParticleModuleData>> createModuleSet(QuasarParticleData data) {
-        ImmutableList.Builder<Holder<ParticleModuleData>> builder = ImmutableList.builder();
+    private static List<ParticleModuleData> createModuleSet(QuasarParticleData data) {
+        List<ParticleModuleData> list = new ArrayList<>();
         data.allModules().forEach(module -> {
             if (!module.isBound()) {
                 if (REPORTED_MODULES.add(module)) {
@@ -127,13 +147,13 @@ public class ParticleEmitter {
                 }
                 return;
             }
-            builder.add(module);
+            list.add(module.value());
         });
-        return builder.build();
+        return list;
     }
 
     private void expire() {
-        if (this.emitterData.loop()) {
+        if (this.loop) {
             this.reset();
         } else {
             this.remove();
@@ -151,10 +171,9 @@ public class ParticleEmitter {
         }
     }
 
-    /**
-     * Tick the emitter. This is run to track the basic functionality of the emitter.
-     */
-    public void tick() {
+    @ApiStatus.Internal
+    void tick() {
+        this.position.set(0);
         if (this.attachedEntity != null) {
             if (this.attachedEntity.isAlive()) {
                 Vec3 pos = this.attachedEntity.position();
@@ -165,6 +184,7 @@ public class ParticleEmitter {
             }
         }
 
+        this.position.add(this.offset);
         Iterator<QuasarParticle> iterator = this.particles.iterator();
         while (iterator.hasNext()) {
             QuasarParticle particle = iterator.next();
@@ -194,8 +214,7 @@ public class ParticleEmitter {
     @ApiStatus.Internal
     public void render(PoseStack poseStack, MultiBufferSource bufferSource, Camera camera, float partialTicks) {
         Vec3 projectedView = camera.getPosition();
-        QuasarParticleData particleData = this.emitterData.particleData();
-        RenderData.RenderStyle renderStyle = particleData.renderStyle();
+        RenderData.RenderStyle renderStyle = this.particleData.renderStyle();
 
         Vector3f renderOffset = new Vector3f();
         RenderType lastRenderType = null;
@@ -267,18 +286,29 @@ public class ParticleEmitter {
     }
 
     /**
+     * <p>Adds a custom module with user code that is added to all particles spawned after this is called.</p>
+     * <p>The module is not able to be serialized and does not affect the state of any other emitters.</p>
+     *
+     * @param module The module to add
+     */
+    public void addCodeModule(CodeModule module) {
+        this.modules.add(module);
+    }
+
+    /**
      * Attempts to remove the oldest specified number of particles.
      *
      * @param count The number of particles to attempt to remove
      * @return The number of particles removed
      */
     public int trim(int count) {
-        int i;
-        int removeCount = Math.min(count, this.particles.size());
-        for (i = 0; i < removeCount; i++) {
-            this.particles.get(i).remove();
+        // Don't allow high-priority particles to be trimmed
+        if (this.forceSpawn) {
+            return 0;
         }
-        return i;
+        int removeCount = Math.min(count, this.particles.size());
+        this.particles.subList(0, removeCount).clear();
+        return removeCount;
     }
 
     /**
@@ -297,7 +327,7 @@ public class ParticleEmitter {
         if (this.removeTask != null) {
             this.removeTask.cancel(false);
         }
-        this.removeTask = this.particleManager.getScheduler().schedule(this::expire, this.emitterData.maxLifetime());
+        this.removeTask = this.particleManager.getScheduler().schedule(this::expire, this.maxLifetime);
     }
 
     public @Nullable ResourceLocation getRegistryName() {
@@ -326,6 +356,42 @@ public class ParticleEmitter {
         return this.particles.size();
     }
 
+    public int getMaxLifetime() {
+        return this.maxLifetime;
+    }
+
+    public boolean isLoop() {
+        return this.loop;
+    }
+
+    public int getRate() {
+        return this.rate;
+    }
+
+    public int getCount() {
+        return this.count;
+    }
+
+    public int getMaxParticles() {
+        return this.maxParticles;
+    }
+
+    public EmitterShapeSettings getEmitterShapeSettings() {
+        return this.emitterShapeSettings;
+    }
+
+    public ParticleSettings getParticleSettings() {
+        return this.particleSettings;
+    }
+
+    public boolean isForceSpawn() {
+        return this.forceSpawn;
+    }
+
+    public QuasarParticleData getParticleData() {
+        return this.particleData;
+    }
+
     /**
      * @return The entity this emitter is attached to and will apply
      */
@@ -335,17 +401,82 @@ public class ParticleEmitter {
 
     @Deprecated
     public void setPosition(Vec3 position) {
-        this.position.set(position.x, position.y, position.z);
+        this.setPosition(position.x, position.y, position.z);
     }
 
+    /**
+     * Sets the position of the emitter relative to the origin of the world or attached entity.
+     *
+     * @param position The position
+     */
     public void setPosition(Vector3dc position) {
-        this.position.set(position);
+        this.setPosition(position.x(), position.y(), position.z());
     }
 
+    /**
+     * Sets the position of the emitter relative to the origin of the world or attached entity.
+     *
+     * @param x The x position
+     * @param y The y position
+     * @param z The z position
+     */
+    public void setPosition(double x, double y, double z) {
+        this.offset.set(x, y, z);
+        if (this.attachedEntity != null) {
+            this.position.set(this.attachedEntity.getX(), this.attachedEntity.getY(), this.attachedEntity.getZ()).add(this.offset);
+        } else {
+            this.position.set(this.offset);
+        }
+    }
+
+    public void setMaxLifetime(int maxLifetime) {
+        this.maxLifetime = maxLifetime;
+    }
+
+    public void setLoop(boolean loop) {
+        this.loop = loop;
+    }
+
+    public void setRate(int rate) {
+        this.rate = rate;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public void setMaxParticles(int maxParticles) {
+        this.maxParticles = maxParticles;
+    }
+
+    public void setEmitterShapeSettings(EmitterShapeSettings emitterShapeSettings) {
+        this.emitterShapeSettings = emitterShapeSettings;
+    }
+
+    public void setParticleSettings(ParticleSettings particleSettings) {
+        this.particleSettings = particleSettings;
+    }
+
+    public void setForceSpawn(boolean forceSpawn) {
+        this.forceSpawn = forceSpawn;
+    }
+
+    public void setParticleData(QuasarParticleData particleData) {
+        this.particleData = particleData;
+    }
+
+    /**
+     * Sets the origin of the emitter position to match the specified entity.
+     * That means the value set by {@link #setPosition(double, double, double)} will not be interpreted as an offset from the entity position.
+     *
+     * @param entity The entity to attach to
+     */
     public void setAttachedEntity(@Nullable Entity entity) {
         this.attachedEntity = entity;
         if (entity != null) {
-            this.position.set(entity.getX(), entity.getY(), entity.getZ());
+            this.position.set(entity.getX(), entity.getY(), entity.getZ()).add(this.offset);
+        } else {
+            this.position.set(this.offset);
         }
     }
 }

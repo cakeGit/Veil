@@ -3,19 +3,28 @@ package foundry.veil.impl.client.editor;
 import foundry.veil.Veil;
 import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.imgui.CodeEditor;
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.client.imgui.VeilLanguageDefinitions;
 import foundry.veil.api.client.render.VeilRenderSystem;
-import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
+import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import foundry.veil.impl.compat.IrisShaderMap;
-import foundry.veil.mixin.client.shader.GameRendererAccessor;
+import foundry.veil.mixin.accessor.GameRendererAccessor;
+import foundry.veil.mixin.accessor.LevelRendererAccessor;
+import foundry.veil.mixin.accessor.PostChainAccessor;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.EffectInstance;
+import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -26,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
+import java.util.function.ObjIntConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -124,7 +134,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
         this.editSourceOpen.set(true);
         this.editProgramId = program;
         this.editShaderId = shader;
-        this.codeEditor.show(glGetShaderSource(shader));
+        this.codeEditor.show(null, glGetShaderSource(shader));
     }
 
     private static Map<Integer, String> parseErrors(String source, String log) {
@@ -190,56 +200,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
 
     private void reloadShaders() {
         this.shaders.clear();
-        GameRendererAccessor gameRendererAccessor = (GameRendererAccessor) Minecraft.getInstance().gameRenderer;
-        VeilRenderer veilRenderer = VeilRenderSystem.renderer();
-
-        switch (TabSource.values()[this.selectedTab]) {
-            case VANILLA -> {
-                for (ShaderInstance shader : gameRendererAccessor.getShaders().values()) {
-                    String name = shader.getName().isBlank() ? Integer.toString(shader.getId()) : shader.getName();
-                    this.shaders.put(new ResourceLocation(name), shader.getId());
-                }
-            }
-            case VEIL -> {
-                for (ShaderProgram shader : veilRenderer.getShaderManager().getShaders().values()) {
-                    this.shaders.put(shader.getId(), shader.getProgram());
-                }
-            }
-            case VEIL_DEFERRED -> {
-                for (ShaderProgram shader : veilRenderer.getDeferredRenderer().getDeferredShaderManager().getShaders().values()) {
-                    this.shaders.put(shader.getId(), shader.getProgram());
-                }
-            }
-            case IRIS -> {
-                for (ShaderInstance shader : IrisShaderMap.getLoadedShaders()) {
-                    String name = shader.getName().isBlank() ? Integer.toString(shader.getId()) : shader.getName();
-                    this.shaders.put(new ResourceLocation(name), shader.getId());
-                }
-            }
-            case OTHER -> {
-                for (int i = 0; i < 10000; i++) {
-                    if (!glIsProgram(i)) {
-                        continue;
-                    }
-
-                    this.shaders.put(new ResourceLocation("unknown", Integer.toString(i)), i);
-                }
-
-                for (ShaderInstance shader : gameRendererAccessor.getShaders().values()) {
-                    this.shaders.values().remove(shader.getId());
-                }
-                for (ShaderProgram shader : veilRenderer.getShaderManager().getShaders().values()) {
-                    this.shaders.values().remove(shader.getProgram());
-                }
-                for (ShaderProgram shader : veilRenderer.getDeferredRenderer().getDeferredShaderManager().getShaders().values()) {
-                    this.shaders.values().remove(shader.getProgram());
-                }
-                for (ShaderInstance shader : IrisShaderMap.getLoadedShaders()) {
-                    this.shaders.values().remove(shader.getId());
-                }
-            }
-        }
-
+        TabSource.values()[this.selectedTab].addShaders(this.shaders::put);
         if (this.selectedProgram != null && !this.shaders.containsKey(this.selectedProgram.name)) {
             this.setSelectedProgram(null);
         }
@@ -248,6 +209,11 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     @Override
     public String getDisplayName() {
         return "Shaders";
+    }
+
+    @Override
+    public @Nullable String getGroup() {
+        return "Renderer";
     }
 
     @Override
@@ -311,9 +277,13 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                     continue;
                 }
 
-                if (ImGui.selectable(name.toString(), selected)) {
+                if (ImGui.selectable("##" + name.toString(), selected)) {
                     this.setSelectedProgram(name);
                 }
+
+                ImGui.sameLine();
+                ImGui.setItemAllowOverlap();
+                VeilImGuiUtil.resourceLocation(name);
             }
 
             ImGui.endListBox();
@@ -326,12 +296,12 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
             if (ImGui.beginChild("Open Source", 0, ImGui.getContentRegionAvailY() / 2)) {
                 ImGui.text("Open Source");
 
+                this.openShaderButton("Fragment Shader", GL_FRAGMENT_SHADER);
                 this.openShaderButton("Vertex Shader", GL_VERTEX_SHADER);
+                this.openShaderButton("Compute Shader", GL_COMPUTE_SHADER);
+                this.openShaderButton("Geometry Shader", GL_GEOMETRY_SHADER);
                 this.openShaderButton("Tesselation Control Shader", GL_TESS_CONTROL_SHADER);
                 this.openShaderButton("Tesselation Evaluation Shader", GL_TESS_EVALUATION_SHADER);
-                this.openShaderButton("Geometry Shader", GL_GEOMETRY_SHADER);
-                this.openShaderButton("Fragment Shader", GL_FRAGMENT_SHADER);
-                this.openShaderButton("Compute Shader", GL_COMPUTE_SHADER);
             }
             ImGui.endChild();
 
@@ -383,10 +353,21 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     }
 
     private void openShaderButton(String name, int type) {
-        ImGui.beginDisabled(this.selectedProgram == null || !this.selectedProgram.shaders.containsKey(type));
+        boolean disabled = this.selectedProgram == null || !this.selectedProgram.shaders.containsKey(type);
+        ImGui.beginDisabled(disabled);
+
+        if (disabled) {
+            ImGui.pushStyleColor(ImGuiCol.Button, ImGui.getColorU32(ImGuiCol.FrameBg));
+        }
+
         if (ImGui.button(name)) {
             this.setEditShaderSource(this.selectedProgram.programId, this.selectedProgram.shaders.get(type));
         }
+
+        if (disabled) {
+            ImGui.popStyleColor();
+        }
+
         ImGui.endDisabled();
     }
 
@@ -419,11 +400,95 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     }
 
     private enum TabSource {
-        VANILLA("Vanilla"),
-        VEIL("Veil"),
-        VEIL_DEFERRED("Veil Deferred", VeilRenderSystem.renderer().getDeferredRenderer()::isEnabled, () -> true),
-        IRIS("Iris", IrisShaderMap::isEnabled, IrisShaderMap::isEnabled),
-        OTHER("Unknown");
+        VANILLA("Vanilla") {
+            @Override
+            public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
+                GameRendererAccessor gameRenderer = (GameRendererAccessor) Minecraft.getInstance().gameRenderer;
+                Map<String, ShaderInstance> shaders = gameRenderer.getShaders();
+                for (ShaderInstance shader : shaders.values()) {
+                    String name = shader.getName().isBlank() ? Integer.toString(shader.getId()) : shader.getName();
+                    registry.accept(new ResourceLocation(name), shader.getId());
+                }
+
+                ShaderInstance blitShader = gameRenderer.getBlitShader();
+                registry.accept(new ResourceLocation(blitShader.getName()), blitShader.getId());
+            }
+        },
+        VANILLA_POST("Vanilla Post") {
+            @Override
+            public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
+                LevelRendererAccessor levelRenderer = (LevelRendererAccessor) Minecraft.getInstance().levelRenderer;
+                this.addChainPasses(registry, levelRenderer.getEntityEffect());
+                this.addChainPasses(registry, levelRenderer.getTransparencyChain());
+                GameRendererAccessor gameRenderer = (GameRendererAccessor) Minecraft.getInstance().gameRenderer;
+                this.addChainPasses(registry, gameRenderer.getPostEffect());
+            }
+
+            private void addChainPasses(ObjIntConsumer<ResourceLocation> registry, @Nullable PostChain chain) {
+                if (chain == null) {
+                    return;
+                }
+
+                List<PostPass> passes = ((PostChainAccessor) chain).getPasses();
+                for (PostPass pass : passes) {
+                    EffectInstance effect = pass.getEffect();
+                    registry.accept(new ResourceLocation(effect.getName()), effect.getId());
+                }
+            }
+        },
+        VEIL("Veil") {
+            @Override
+            public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
+                Map<ResourceLocation, ShaderProgram> shaders = VeilRenderSystem.renderer().getShaderManager().getShaders();
+                for (ShaderProgram shader : shaders.values()) {
+                    registry.accept(shader.getId(), shader.getProgram());
+                }
+                VeilImGuiImpl.get().addImguiShaders(registry);
+            }
+        },
+        VEIL_DEFERRED("Veil Deferred", VeilRenderSystem.renderer().getDeferredRenderer()::isEnabled, () -> true) {
+            @Override
+            public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
+                Map<ResourceLocation, ShaderProgram> shaders = VeilRenderSystem.renderer().getDeferredRenderer().getDeferredShaderManager().getShaders();
+                for (ShaderProgram shader : shaders.values()) {
+                    registry.accept(shader.getId(), shader.getProgram());
+                }
+            }
+        },
+        IRIS("Iris", IrisShaderMap::isEnabled, IrisShaderMap::isEnabled) {
+            @Override
+            public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
+                for (ShaderInstance shader : IrisShaderMap.getLoadedShaders()) {
+                    String name = shader.getName().isBlank() ? Integer.toString(shader.getId()) : shader.getName();
+                    registry.accept(new ResourceLocation(name), shader.getId());
+                }
+            }
+        },
+        OTHER("Unknown") {
+            @Override
+            public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
+                IntSet programs = new IntOpenHashSet();
+                for (int i = 0; i < 10000; i++) {
+                    if (!glIsProgram(i)) {
+                        continue;
+                    }
+
+                    programs.add(i);
+                }
+
+                for (TabSource value : TabSource.values()) {
+                    if (value == this) {
+                        continue;
+                    }
+
+                    value.addShaders((name, id) -> programs.remove(id));
+                }
+
+                for (int program : programs) {
+                    registry.accept(new ResourceLocation("unknown", Integer.toString(program)), program);
+                }
+            }
+        };
 
         private final String displayName;
         private final BooleanSupplier active;
@@ -438,5 +503,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
             this.active = active;
             this.visible = visible;
         }
+
+        public abstract void addShaders(ObjIntConsumer<ResourceLocation> registry);
     }
 }

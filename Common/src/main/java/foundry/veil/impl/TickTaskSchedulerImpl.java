@@ -15,12 +15,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ApiStatus.Internal
 public class TickTaskSchedulerImpl implements TickTaskScheduler {
 
-    private final Queue<Task> pendingTasks;
+    private final Queue<Task> tasks;
     private long tick;
     private volatile boolean stopped;
 
     public TickTaskSchedulerImpl() {
-        this.pendingTasks = new PriorityBlockingQueue<>();
+        this.tasks = new PriorityBlockingQueue<>();
         this.tick = 0;
         this.stopped = false;
     }
@@ -29,7 +29,7 @@ public class TickTaskSchedulerImpl implements TickTaskScheduler {
      * Runs a single tick and executes all pending tasks for that time.
      */
     public void run() {
-        Iterator<Task> iterator = this.pendingTasks.iterator();
+        Iterator<Task> iterator = this.tasks.iterator();
         while (iterator.hasNext()) {
             Task task = iterator.next();
             if (task.isDone()) {
@@ -58,7 +58,7 @@ public class TickTaskSchedulerImpl implements TickTaskScheduler {
     public void shutdown() {
         this.stopped = true;
 
-        Iterator<Task> iterator = this.pendingTasks.iterator();
+        Iterator<Task> iterator = this.tasks.iterator();
         while (iterator.hasNext()) {
             Task task = iterator.next();
             if (task.isDone()) {
@@ -75,8 +75,8 @@ public class TickTaskSchedulerImpl implements TickTaskScheduler {
             }
             iterator.remove();
         }
-        if (!this.pendingTasks.isEmpty()) {
-            throw new IllegalStateException(this.pendingTasks.size() + " tasks were left over!");
+        if (!this.tasks.isEmpty()) {
+            throw new IllegalStateException(this.tasks.size() + " tasks were left over!");
         }
     }
 
@@ -90,7 +90,7 @@ public class TickTaskSchedulerImpl implements TickTaskScheduler {
     @Override
     public void execute(Runnable command) {
         this.validate(command);
-        this.pendingTasks.add(new Task(command, 0));
+        this.tasks.add(new Task(command, 0));
     }
 
     @Override
@@ -108,7 +108,7 @@ public class TickTaskSchedulerImpl implements TickTaskScheduler {
                 future.completeExceptionally(t);
             }
         }, this.tick + delay);
-        this.pendingTasks.add(task);
+        this.tasks.add(task);
         future.exceptionally(e -> {
             if (future.isCancelled()) {
                 task.cancel(false);
@@ -133,7 +133,7 @@ public class TickTaskSchedulerImpl implements TickTaskScheduler {
                 future.completeExceptionally(t);
             }
         }, this.tick + delay);
-        this.pendingTasks.add(task);
+        this.tasks.add(task);
         future.exceptionally(e -> {
             if (future.isCancelled()) {
                 task.cancel(false);
@@ -152,7 +152,7 @@ public class TickTaskSchedulerImpl implements TickTaskScheduler {
 
         CompletableFuture<?> future = new CompletableFuture<>();
         Task task = this.schedule(future, command, new AtomicBoolean(), initialDelay, period);
-        this.pendingTasks.add(task);
+        this.tasks.add(task);
         future.exceptionally(e -> {
             if (future.isCancelled()) {
                 task.cancel(false);
@@ -167,7 +167,7 @@ public class TickTaskSchedulerImpl implements TickTaskScheduler {
             try {
                 command.run();
                 if (!this.stopped) {
-                    this.pendingTasks.add(this.schedule(future, command, cancelled, period, period));
+                    this.tasks.add(this.schedule(future, command, cancelled, period, period));
                 }
             } catch (Throwable t) {
                 future.completeExceptionally(t);

@@ -20,6 +20,7 @@ public class GuiInfo implements NativeResource {
 
     private final ShaderBlock<GuiInfo> block;
     private float guiScale;
+    private boolean enabled;
 
     /**
      * Creates a new set of camera matrices.
@@ -27,6 +28,7 @@ public class GuiInfo implements NativeResource {
     public GuiInfo() {
         this.block = ShaderBlock.withSize(GL_UNIFORM_BUFFER, GuiInfo.SIZE, GuiInfo::write);
         this.guiScale = 0.0F;
+        this.enabled = false;
     }
 
     private void write(ByteBuffer buffer) {
@@ -41,6 +43,7 @@ public class GuiInfo implements NativeResource {
         this.guiScale = (float) window.getGuiScale();
         this.block.set(this);
         VeilRenderSystem.bind("GuiInfo", this.block);
+        this.enabled = true;
     }
 
     /**
@@ -48,6 +51,7 @@ public class GuiInfo implements NativeResource {
      */
     public void unbind() {
         VeilRenderSystem.unbind(this.block);
+        this.enabled = false;
     }
 
     /**
@@ -55,6 +59,13 @@ public class GuiInfo implements NativeResource {
      */
     public float getGuiScale() {
         return this.guiScale;
+    }
+
+    /**
+     * @return Whether the gui is currently being drawn
+     */
+    public boolean isGuiRendering() {
+        return this.enabled;
     }
 
     @Override

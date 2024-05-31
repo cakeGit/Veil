@@ -343,7 +343,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
                         }
 
                         if (attempt >= 3) {
-                            Veil.LOGGER.error("Failed to recompile shaders after " + attempt + " attempts");
+                            Veil.LOGGER.error("Failed to recompile shaders after {} attempts", attempt);
                             return value;
                         }
 
@@ -386,6 +386,11 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
                         }, backgroundExecutor)
                         .thenCompose(preparationBarrier::wait)
                         .thenAcceptAsync(this::apply, gameExecutor));
+    }
+
+    @Override
+    public String getName() {
+        return this.getClass().getSimpleName() + " " + this.getSourceSet().getFolder();
     }
 
     /**
@@ -447,7 +452,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
         this.shaders.clear();
     }
 
-    record ReloadState(Map<ResourceLocation, ProgramDefinition> definitions,
-                       Map<ResourceLocation, Resource> shaderSources) {
+    private record ReloadState(Map<ResourceLocation, ProgramDefinition> definitions,
+                               Map<ResourceLocation, Resource> shaderSources) {
     }
 }

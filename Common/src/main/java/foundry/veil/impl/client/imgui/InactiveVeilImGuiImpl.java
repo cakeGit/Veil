@@ -2,8 +2,11 @@ package foundry.veil.impl.client.imgui;
 
 import foundry.veil.api.client.imgui.VeilImGui;
 import imgui.ImFont;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.ObjIntConsumer;
 
 @ApiStatus.Internal
 public class InactiveVeilImGuiImpl implements VeilImGui {
@@ -26,6 +29,10 @@ public class InactiveVeilImGuiImpl implements VeilImGui {
 
     @Override
     public void updateFonts() {
+    }
+
+    @Override
+    public void addImguiShaders(ObjIntConsumer<ResourceLocation> registry) {
     }
 
     @Override

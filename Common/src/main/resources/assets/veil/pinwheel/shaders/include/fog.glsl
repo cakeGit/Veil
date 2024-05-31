@@ -26,3 +26,11 @@ float fog_distance(mat4 modelViewMat, vec3 pos, int shape) {
         return max(distXZ, distY);
     }
 }
+
+float fog_distance(vec3 pos, int shape) {
+    if (shape == 0) {
+        return length(pos);
+    } else {
+        return max(length(vec3(pos.x, 0.0, pos.z)), pos.y);
+    }
+}

@@ -1,7 +1,7 @@
 package foundry.veil.api.client.registry;
 
 import foundry.veil.ext.CompositeStateExtension;
-import foundry.veil.mixin.client.stage.RenderStateShardAccessor;
+import foundry.veil.mixin.accessor.RenderStateShardAccessor;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import org.jetbrains.annotations.ApiStatus;

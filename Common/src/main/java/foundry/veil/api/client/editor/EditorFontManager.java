@@ -1,10 +1,12 @@
 package foundry.veil.api.client.editor;
 
 import foundry.veil.Veil;
-import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.impl.client.imgui.VeilImGuiImpl;
-import imgui.*;
+import imgui.ImFont;
+import imgui.ImFontAtlas;
+import imgui.ImFontConfig;
+import imgui.ImGui;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -41,7 +43,7 @@ public class EditorFontManager implements PreparableReloadListener {
         this.fonts = new HashMap<>();
     }
 
-    public ImFont getFont(ResourceLocation name, boolean italic, boolean bold) {
+    public ImFont getFont(ResourceLocation name, boolean bold, boolean italic) {
         FontPack font = this.fonts.get(name);
         if (font == null) {
             return this.defaultFont;
@@ -61,11 +63,15 @@ public class EditorFontManager implements PreparableReloadListener {
         }
 
         return CompletableFuture.supplyAsync(() -> {
-            Map<ResourceLocation, byte[]> fontData = new HashMap<>();
+            Map<ResourceLocation, FontData> fontData = new HashMap<>();
             for (Map.Entry<ResourceLocation, Resource> entry : FONT_LISTER.listMatchingResources(resourceManager).entrySet()) {
                 ResourceLocation id = FONT_LISTER.fileToId(entry.getKey());
-                try (InputStream stream = entry.getValue().open()) {
-                    fontData.put(id, stream.readAllBytes());
+                Resource resource = entry.getValue();
+                try (InputStream stream = resource.open()) {
+                    short[] ranges = resource.metadata().getSection(ImGuiFontMetadataSectionSerializer.INSTANCE)
+                            .map(ImGuiFontMetadataSectionSerializer.FontMetadata::ranges)
+                            .orElseGet(() -> new short[]{0x0020, 0x00FF, 0});
+                    fontData.put(id, new FontData(stream.readAllBytes(), ranges));
                 } catch (IOException e) {
                     Veil.LOGGER.error("Failed to load ImGui font: {}", id, e);
                 }
@@ -73,7 +79,7 @@ public class EditorFontManager implements PreparableReloadListener {
             return fontData;
         }, backgroundExecutor).thenCompose(preparationBarrier::wait).thenAcceptAsync(fontData -> {
             this.fontBuilders.clear();
-            for (Map.Entry<ResourceLocation, byte[]> entry : fontData.entrySet()) {
+            for (Map.Entry<ResourceLocation, FontData> entry : fontData.entrySet()) {
                 ResourceLocation id = entry.getKey();
                 String[] parts = id.getPath().split("-", 2);
                 if (parts.length < 2) {
@@ -139,16 +145,16 @@ public class EditorFontManager implements PreparableReloadListener {
     private static class FontPackBuilder {
 
         private final ResourceLocation name;
-        private byte[] main;
-        private byte[] italic;
-        private byte[] bold;
-        private byte[] boldItalic;
+        private FontData main;
+        private FontData italic;
+        private FontData bold;
+        private FontData boldItalic;
 
         private FontPackBuilder(ResourceLocation name) {
             this.name = name;
         }
 
-        private ImFont loadOrDefault(byte @Nullable [] data, String type, float sizePixels, ImFont defaultFont) {
+        private ImFont loadOrDefault(@Nullable FontData data, String type, float sizePixels, ImFont defaultFont) {
             if (data == null) {
                 return defaultFont;
             } else {
@@ -156,7 +162,8 @@ public class EditorFontManager implements PreparableReloadListener {
                 ImFontConfig fontConfig = new ImFontConfig();
                 try {
                     fontConfig.setName(this.name + "-" + type + ".ttf, " + FONT_FORMAT.format(sizePixels) + " px");
-                    return atlas.addFontFromMemoryTTF(data, sizePixels, fontConfig);
+                    fontConfig.setGlyphRanges(data.ranges);
+                    return atlas.addFontFromMemoryTTF(data.bytes, sizePixels, fontConfig);
                 } finally {
                     fontConfig.destroy();
                 }
@@ -170,5 +177,8 @@ public class EditorFontManager implements PreparableReloadListener {
             ImFont boldItalic = this.loadOrDefault(this.boldItalic, "bold_italic", sizePixels, main);
             return new FontPack(main, italic, bold, boldItalic);
         }
+    }
+
+    private record FontData(byte[] bytes, short[] ranges) {
     }
 }

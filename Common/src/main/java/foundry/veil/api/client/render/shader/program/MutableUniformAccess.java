@@ -3,6 +3,8 @@ package foundry.veil.api.client.render.shader.program;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.*;
 
+import java.lang.Math;
+
 /**
  * Provides write access to all uniform variables in a shader program.
  *
@@ -16,8 +18,13 @@ public interface MutableUniformAccess extends UniformAccess {
     default void applyRenderSystem() {
         this.setMatrix("RenderModelViewMat", RenderSystem.getModelViewMatrix());
         this.setMatrix("RenderProjMat", RenderSystem.getProjectionMatrix());
-        float[] color = RenderSystem.getShaderColor();
-        this.setVector("ColorModulator", color[0], color[1], color[2], color[3]);
+        this.setVector("ColorModulator", RenderSystem.getShaderColor());
+        this.setFloat("GlintAlpha", RenderSystem.getShaderGlintAlpha());
+        this.setFloat("FogStart", RenderSystem.getShaderFogStart());
+        this.setFloat("FogEnd", RenderSystem.getShaderFogEnd());
+        this.setVector("FogColor", RenderSystem.getShaderFogColor());
+        this.setInt("FogShape", RenderSystem.getShaderFogShape().getIndex());
+        this.setMatrix("TextureMatrix", RenderSystem.getTextureMatrix());
         this.setFloat("GameTime", RenderSystem.getShaderGameTime());
     }
 
@@ -103,6 +110,23 @@ public interface MutableUniformAccess extends UniformAccess {
      */
     default void setVector(CharSequence name, Vector4fc value) {
         this.setVector(name, value.x(), value.y(), value.z(), value.w());
+    }
+
+    /**
+     * Sets a vector in the shader.
+     *
+     * @param name   The name of the uniform to set
+     * @param values The values to set
+     * @throws UnsupportedOperationException If the array passed in is empty
+     */
+    default void setVector(CharSequence name, float[] values) {
+        switch (Math.min(4, values.length)) {
+            case 1 -> this.setFloat(name, values[0]);
+            case 2 -> this.setVector(name, values[0], values[1]);
+            case 3 -> this.setVector(name, values[0], values[1], values[2]);
+            case 4 -> this.setVector(name, values[0], values[1], values[2], values[3]);
+            default -> throw new UnsupportedOperationException("At least 1 value must be specified");
+        }
     }
 
     /**

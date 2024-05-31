@@ -46,6 +46,7 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
             return DataResult.error(() -> "Not a valid resource location: " + name + ". " + e.getMessage());
         }
     }, location -> "temp".equals(location.getNamespace()) ? location.getPath() : location.toString()).stable();
+    public static final FileToIdConverter FRAMEBUFFER_LISTER = FileToIdConverter.json("pinwheel/framebuffers");
 
     private final Map<ResourceLocation, FramebufferDefinition> framebufferDefinitions;
     private final Map<ResourceLocation, AdvancedFbo> framebuffers;
@@ -57,7 +58,7 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
      * Creates a new instance of the framebuffer manager.
      */
     public FramebufferManager() {
-        super(FramebufferDefinition.CODEC, FileToIdConverter.json("pinwheel/framebuffers"));
+        super(FramebufferDefinition.CODEC, FRAMEBUFFER_LISTER);
         this.framebufferDefinitions = new HashMap<>();
         this.framebuffers = new HashMap<>();
         this.framebuffersView = Collections.unmodifiableMap(this.framebuffers);
@@ -71,6 +72,9 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
             fbo.bindDraw(false);
             fbo.clear();
             this.framebuffers.put(name, fbo);
+            if (!definition.autoClear()) {
+                this.manualFramebuffers.add(name);
+            }
         } catch (Exception e) {
             Veil.LOGGER.error("Failed to initialize framebuffer: {}", name, e);
         }
@@ -85,6 +89,7 @@ public class FramebufferManager extends CodecReloadListener<FramebufferDefinitio
 
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
         for (ResourceLocation name : this.screenFramebuffers) {
+            this.manualFramebuffers.remove(name);
             AdvancedFbo fbo = this.framebuffers.remove(name);
             if (fbo != null) {
                 fbo.free();

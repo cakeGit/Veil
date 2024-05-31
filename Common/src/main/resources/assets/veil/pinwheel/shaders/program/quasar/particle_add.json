@@ -1,4 +1,4 @@
 {
-  "vertex": "veil:quasar/particle_base",
-  "fragment": "veil:quasar/particle_add"
+  "vertex": "veil:quasar/particle",
+  "fragment": "veil:quasar/particle"
 }

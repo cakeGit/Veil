@@ -98,8 +98,8 @@ public class CameraMatrices implements NativeResource {
         this.inverseViewMatrix.identity();
         this.inverseViewRotMatrix.identity();
 
-        this.nearPlane = this.projectionMatrix.transformPosition(0, 0, -1, this.cameraPosition).z();
-        this.farPlane = this.projectionMatrix.transformPosition(0, 0, 1, this.cameraPosition).z();
+        this.nearPlane = this.inverseProjectionMatrix.transformPosition(0, 0, -1, this.cameraPosition).z();
+        this.farPlane = this.inverseProjectionMatrix.transformPosition(0, 0, 1, this.cameraPosition).z();
         this.cameraPosition.set(0);
 
         this.block.set(this);

@@ -12,9 +12,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.javafmlmod.FMLModContainer;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -30,18 +28,13 @@ public class ForgeRegistrationFactory implements RegistrationProvider.Factory {
 
     @Override
     public <T> RegistrationProvider<T> create(ResourceKey<? extends Registry<T>> resourceKey, String modId) {
-        ModContainer container = ModList.get().getModContainerById(modId).orElseThrow(() -> new NullPointerException("Cannot find mod container for id " + modId));
-        if (!(container instanceof FMLModContainer forgeContainer)) {
-            throw new ClassCastException("The container of the mod " + modId + " is not a FML one!");
-        }
-
         RegistryBuilder<T> registryFactory;
         if (RegistryManager.ACTIVE.getRegistry(resourceKey) == null && !BuiltInRegistries.REGISTRY.containsKey(resourceKey.location())) {
             registryFactory = RegistryBuilder.<T>of().disableSaving().disableSync().setName(resourceKey.location());
         } else {
             registryFactory = null;
         }
-        return new Provider<>(modId, resourceKey, registryFactory, forgeContainer.getEventBus());
+        return new Provider<>(modId, resourceKey, registryFactory, FMLJavaModLoadingContext.get().getModEventBus());
     }
 
     private static class Provider<T> implements RegistrationProvider<T> {

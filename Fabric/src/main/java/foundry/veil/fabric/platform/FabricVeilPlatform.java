@@ -8,8 +8,8 @@ import org.jetbrains.annotations.ApiStatus;
 public class FabricVeilPlatform implements VeilPlatform {
 
     @Override
-    public String getPlatformName() {
-        return "Fabric";
+    public PlatformType getPlatformType() {
+        return PlatformType.FABRIC;
     }
 
     @Override

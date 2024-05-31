@@ -1,6 +1,7 @@
 package foundry.veil.api.client.render.shader;
 
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 
@@ -17,6 +18,15 @@ import static org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER;
  * @author Ocelot
  */
 public final class ShaderSourceSet {
+
+    private static final Map<String, Integer> EXTENSION_TYPES = Map.of(
+            ".vsh", GL_VERTEX_SHADER,
+            ".tcsh", GL_TESS_CONTROL_SHADER,
+            ".tesh", GL_TESS_EVALUATION_SHADER,
+            ".gsh", GL_GEOMETRY_SHADER,
+            ".fsh", GL_FRAGMENT_SHADER,
+            ".comp", GL_COMPUTE_SHADER
+    );
 
     private final String folder;
     private final FileToIdConverter shaderDefinitionLister;
@@ -66,5 +76,20 @@ public final class ShaderSourceSet {
      */
     public FileToIdConverter getTypeConverter(int type) {
         return this.typeConverters.getOrDefault(type, this.glslConverter);
+    }
+
+    /**
+     * Retrieves the type of shader the location points to based on extension.
+     *
+     * @param location The location of the file
+     * @return The GL type of the shader or <code>-1</code> if invalid
+     */
+    public static int getShaderType(ResourceLocation location) {
+        for (Map.Entry<String, Integer> entry : EXTENSION_TYPES.entrySet()) {
+            if (location.getPath().endsWith(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return -1;
     }
 }

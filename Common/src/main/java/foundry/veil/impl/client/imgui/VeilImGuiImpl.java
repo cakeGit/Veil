@@ -3,6 +3,8 @@ package foundry.veil.impl.client.imgui;
 import foundry.veil.Veil;
 import foundry.veil.api.client.imgui.VeilImGui;
 import foundry.veil.api.client.render.VeilRenderSystem;
+import foundry.veil.impl.client.imgui.style.VeilImGuiStylesheet;
+import foundry.veil.mixin.client.imgui.ImGuiImplGl3Mixin;
 import imgui.ImGui;
 import imgui.extension.implot.ImPlot;
 import imgui.extension.implot.ImPlotContext;
@@ -10,7 +12,10 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.internal.ImGuiContext;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
+
+import java.util.function.ObjIntConsumer;
 
 import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
@@ -37,6 +42,8 @@ public class VeilImGuiImpl implements VeilImGui {
         this.imPlotContext = ImPlot.createContext();
         this.implGlfw.init(window, true);
         this.implGl3.init("#version 410 core");
+
+        VeilImGuiStylesheet.initStyles();
     }
 
     @Override
@@ -87,6 +94,11 @@ public class VeilImGuiImpl implements VeilImGui {
     }
 
     @Override
+    public void addImguiShaders(ObjIntConsumer<ResourceLocation> registry) {
+        registry.accept(new ResourceLocation("imgui", "blit"), ((ImGuiImplGl3Mixin) (Object) this.implGl3).getGShaderHandle());
+    }
+
+    @Override
     public boolean mouseButtonCallback(long window, int button, int action, int mods) {
         return ImGui.getIO().getWantCaptureMouse();
     }
@@ -121,6 +133,10 @@ public class VeilImGuiImpl implements VeilImGui {
 
     public static void init(long window) {
         try {
+            if (System.getProperty("os.arch").equals("arm") || System.getProperty("os.arch").startsWith("aarch64")) {
+                System.setProperty("imgui.library.name", "libimgui-javaarm64.dylib");
+            }
+
             instance = Veil.IMGUI ? new VeilImGuiImpl(window) : new InactiveVeilImGuiImpl();
         } catch (Throwable t) {
             Veil.LOGGER.error("Failed to load ImGui", t);

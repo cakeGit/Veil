@@ -36,6 +36,7 @@ import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Collections;
@@ -84,8 +85,9 @@ public class VeilFabricClient implements ClientModInitializer {
                     return 0;
                 }
 
-                WorldCoordinates pos = ctx.getArgument("position", WorldCoordinates.class);
-                instance.setPosition(pos.getPosition(source.getEntity().createCommandSourceStack()));
+                WorldCoordinates coordinates = ctx.getArgument("position", WorldCoordinates.class);
+                Vec3 pos = coordinates.getPosition(source.getEntity().createCommandSourceStack());
+                instance.setPosition(pos.x, pos.y, pos.z);
                 particleManager.addParticleSystem(instance);
                 source.sendFeedback(Component.literal("Spawned " + id));
                 return 1;

@@ -2,11 +2,13 @@ package foundry.veil.api.client.registry;
 
 import foundry.veil.Veil;
 import foundry.veil.api.client.render.deferred.light.*;
+import foundry.veil.api.client.render.deferred.light.renderer.IndirectLightRenderer;
 import foundry.veil.api.client.render.deferred.light.renderer.LightTypeRenderer;
 import foundry.veil.impl.client.editor.LightEditor;
 import foundry.veil.impl.client.render.deferred.light.AreaLightRenderer;
 import foundry.veil.impl.client.render.deferred.light.DirectionalLightRenderer;
-import foundry.veil.impl.client.render.deferred.light.PointLightRenderer;
+import foundry.veil.impl.client.render.deferred.light.IndirectPointLightRenderer;
+import foundry.veil.impl.client.render.deferred.light.InstancedPointLightRenderer;
 import foundry.veil.platform.registry.RegistrationProvider;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -27,7 +29,16 @@ public class LightTypeRegistry {
     public static final Registry<LightType<?>> REGISTRY = PROVIDER.asVanillaRegistry();
 
     public static final Supplier<LightType<DirectionalLight>> DIRECTIONAL = register("directional", DirectionalLightRenderer::new, (level, camera) -> new DirectionalLight().setTo(camera).setDirection(0, -1, 0));
-    public static final Supplier<LightType<PointLight>> POINT = register("point", PointLightRenderer::new, (level, camera) -> new PointLight().setTo(camera).setRadius(15.0F));
+    public static final Supplier<LightType<PointLight>> POINT = register("point", () -> {
+        boolean supported = IndirectLightRenderer.isSupported();
+        if (supported) {
+            Veil.LOGGER.info("Using Indirect Point Light Renderer");
+            return new IndirectPointLightRenderer();
+        } else {
+            Veil.LOGGER.info("Using Instanced Point Light Renderer");
+            return new InstancedPointLightRenderer();
+        }
+    }, (level, camera) -> new PointLight().setTo(camera).setRadius(15.0F));
     public static final Supplier<LightType<AreaLight>> AREA = register("area", AreaLightRenderer::new, (level, camera) -> new AreaLight().setDistance(15.0F).setTo(camera));
 
     @ApiStatus.Internal

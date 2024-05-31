@@ -54,6 +54,10 @@ public class VanillaShaderImportProcessor {
         }
 
         @Override
+        public void addInclude(ResourceLocation name) {
+        }
+
+        @Override
         public @Nullable ResourceLocation getName() {
             return null;
         }

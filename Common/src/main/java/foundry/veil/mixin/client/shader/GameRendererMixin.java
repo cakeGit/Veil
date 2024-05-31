@@ -32,7 +32,7 @@ public class GameRendererMixin {
      *
      * @author Ocelot
      */
-    @Redirect(method = "reloadShaders", at = @At(value = "NEW", args = "class=net/minecraft/client/renderer/ShaderInstance"))
+    @Redirect(method = "reloadShaders", at = @At(value = "NEW", target = "(Lnet/minecraft/server/packs/resources/ResourceProvider;Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;)Lnet/minecraft/client/renderer/ShaderInstance;"))
     public ShaderInstance veil$replaceShaders(ResourceProvider resourceProvider, String name, VertexFormat vertexFormat) throws IOException {
         ResourceLocation loc = new ResourceLocation(name);
         ResourceLocation id = new ResourceLocation(loc.getNamespace(), "shaders/core/" + loc.getPath());

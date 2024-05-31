@@ -1,6 +1,7 @@
 package foundry.veil.api.client.editor;
 
 import foundry.veil.api.client.render.VeilRenderSystem;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.NativeResource;
 
 /**
@@ -31,6 +32,13 @@ public interface Editor extends NativeResource {
      * @return The visible display name of this editor
      */
     String getDisplayName();
+
+    /**
+     * @return The name of the tab group to put this editor in or <code>null</code> for default
+     */
+    default @Nullable String getGroup() {
+        return null;
+    }
 
     /**
      * @return Whether this editor should be selectable.

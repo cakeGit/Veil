@@ -5,6 +5,7 @@ import foundry.veil.api.event.VeilRegisterFixedBuffersEvent;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.event.IModBusEvent;
 
 import java.util.function.Consumer;
 
@@ -16,7 +17,7 @@ import java.util.function.Consumer;
  * @see VeilRegisterFixedBuffersEvent
  * @see VeilRegisterBlockLayerEvent
  */
-public class ForgeVeilRegisterBlockLayerEvent extends Event implements VeilRegisterBlockLayerEvent.Registry {
+public class ForgeVeilRegisterBlockLayerEvent extends Event implements VeilRegisterBlockLayerEvent.Registry, IModBusEvent {
 
     private final VeilRegisterBlockLayerEvent.Registry registry;
 

@@ -66,6 +66,7 @@ public class ShaderProgramImpl implements ShaderProgram {
     private final Set<String> definitionDependencies;
     private final TextureCache textures;
     private final Supplier<Wrapper> wrapper;
+    private ProgramDefinition definition;
     private int program;
 
     public ShaderProgramImpl(ResourceLocation id) {
@@ -104,17 +105,17 @@ public class ShaderProgramImpl implements ShaderProgram {
 
     @Override
     public void compile(ShaderCompiler.Context context, ShaderCompiler compiler) throws Exception {
-        ProgramDefinition definition = Objects.requireNonNull(context.definition());
+        this.definition = Objects.requireNonNull(context.definition());
 
         this.clearShader();
-        this.textureSources.putAll(definition.textures());
+        this.textureSources.putAll(this.definition.textures());
 
         if (this.program == 0) {
             this.program = glCreateProgram();
         }
 
         try {
-            Int2ObjectMap<ResourceLocation> shaders = definition.shaders();
+            Int2ObjectMap<ResourceLocation> shaders = this.definition.shaders();
             for (Int2ObjectMap.Entry<ResourceLocation> entry : shaders.int2ObjectEntrySet()) {
                 int glType = entry.getIntKey();
                 CompiledShader shader = compiler.compile(context, glType, entry.getValue());
@@ -144,7 +145,7 @@ public class ShaderProgramImpl implements ShaderProgram {
             });
             ShaderProgram.unbind();
         } catch (Exception e) {
-            this.free(); // F
+            this.clearShader(); // F
             throw e;
         }
     }
@@ -205,6 +206,11 @@ public class ShaderProgramImpl implements ShaderProgram {
     @Override
     public int getProgram() {
         return this.program;
+    }
+
+    @Override
+    public @Nullable ProgramDefinition getDefinition() {
+        return this.definition;
     }
 
     @Override
@@ -333,7 +339,11 @@ public class ShaderProgramImpl implements ShaderProgram {
             int activeTexture = GlStateManager._getActiveTexture();
             this.uploadTextures(start, (sampler, id) -> {
                 RenderSystem.activeTexture(GL_TEXTURE0 + sampler);
-                RenderSystem.bindTexture(id);
+                if (sampler >= 12) {
+                    glBindTexture(GL_TEXTURE_2D, id);
+                } else {
+                    RenderSystem.bindTexture(id);
+                }
             });
             RenderSystem.activeTexture(activeTexture);
             return start;

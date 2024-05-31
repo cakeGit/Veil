@@ -35,7 +35,7 @@ public class QuasarParticle {
     private final TickTaskScheduler scheduler;
     private final QuasarParticleData data;
     private final ParticleSettings settings;
-    private final ParticleEmitter parent;
+    private final ParticleEmitter emitter;
     private final ParticleModuleSet modules;
     private final Vector3d position;
     private final Vector3d velocity;
@@ -51,13 +51,13 @@ public class QuasarParticle {
     private final Supplier<MolangRuntime> environment;
     private final RenderData renderData;
 
-    public QuasarParticle(ClientLevel level, RandomSource randomSource, TickTaskScheduler scheduler, QuasarParticleData data, ParticleModuleSet modules, ParticleSettings settings, ParticleEmitter parent) {
+    public QuasarParticle(ClientLevel level, RandomSource randomSource, TickTaskScheduler scheduler, QuasarParticleData data, ParticleModuleSet modules, ParticleSettings settings, ParticleEmitter emitter) {
         this.level = level;
         this.randomSource = randomSource;
         this.scheduler = scheduler;
         this.data = data;
         this.settings = settings;
-        this.parent = parent;
+        this.emitter = emitter;
         this.modules = modules;
         this.position = new Vector3d();
         this.velocity = new Vector3d();
@@ -155,8 +155,7 @@ public class QuasarParticle {
     }
 
     private int getLightColor() {
-        BlockPos pos = this.getBlockPosition();
-        return this.level.hasChunkAt(pos) ? LevelRenderer.getLightColor(this.level, pos) : 0;
+        return LevelRenderer.getLightColor(this.level, this.getBlockPosition());
     }
 
     @ApiStatus.Internal
@@ -233,8 +232,8 @@ public class QuasarParticle {
         return this.settings;
     }
 
-    public ParticleEmitter getParent() {
-        return this.parent;
+    public ParticleEmitter getEmitter() {
+        return this.emitter;
     }
 
     public ParticleModuleSet getModules() {

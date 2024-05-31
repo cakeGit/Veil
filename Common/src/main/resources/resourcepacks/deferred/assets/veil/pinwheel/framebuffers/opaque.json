@@ -19,7 +19,7 @@
     },
     {
       "name": "VanillaLightSampler",
-      "format": "RG8"
+      "format": "RG8UI"
     },
     {
       "name": "LightMapSampler",

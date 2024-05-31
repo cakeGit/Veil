@@ -20,15 +20,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2i;
-import org.joml.Vector2ic;
-import org.joml.Vector3i;
-import org.joml.Vector3ic;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL40C;
-import org.lwjgl.opengl.GL44C;
-import org.lwjgl.opengl.GLCapabilities;
+import org.joml.*;
+import org.lwjgl.opengl.*;
 
+import java.lang.Math;
 import java.nio.IntBuffer;
 import java.util.HashSet;
 import java.util.Locale;
@@ -64,6 +59,7 @@ public final class VeilRenderSystem {
     private static final BooleanSupplier ATOMIC_COUNTER_SUPPORTED = glCapability(caps -> caps.OpenGL42 || caps.GL_ARB_shader_atomic_counters);
     private static final BooleanSupplier TRANSFORM_FEEDBACK_SUPPORTED = glCapability(caps -> caps.OpenGL40 || caps.GL_ARB_transform_feedback3);
     private static final BooleanSupplier TEXTURE_MULTIBIND_SUPPORTED = glCapability(caps -> caps.OpenGL44 || caps.glBindTextures != 0L);
+    private static final BooleanSupplier SPARSE_BUFFERS_SUPPORTED = glCapability(caps -> caps.OpenGL44 || caps.GL_ARB_sparse_buffer);
     private static final IntSupplier MAX_COMBINED_TEXTURE_IMAGE_UNITS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
     private static final IntSupplier MAX_COLOR_ATTACHMENTS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_COLOR_ATTACHMENTS));
     private static final IntSupplier MAX_SAMPLES = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_SAMPLES));
@@ -71,6 +67,86 @@ public final class VeilRenderSystem {
     private static final IntSupplier MAX_UNIFORM_BUFFER_BINDINGS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_UNIFORM_BUFFER_BINDINGS));
     private static final IntSupplier MAX_ATOMIC_COUNTER_BUFFER_BINDINGS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS));
     private static final IntSupplier MAX_SHADER_STORAGE_BUFFER_BINDINGS = VeilRenderSystem.glGetter(() -> glGetInteger(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS));
+
+    private static final Supplier<VeilShaderLimits> VERTEX_SHADER_LIMITS = VeilRenderSystem.glGetter(() -> {
+        GLCapabilities caps = GL.getCapabilities();
+        return new VeilShaderLimits(caps,
+                GL_MAX_VERTEX_UNIFORM_COMPONENTS,
+                GL_MAX_VERTEX_UNIFORM_BLOCKS,
+                GL_MAX_VERTEX_ATTRIBS * 4,
+                GL_MAX_VERTEX_OUTPUT_COMPONENTS,
+                GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
+                GL_MAX_VERTEX_IMAGE_UNIFORMS,
+                GL_MAX_VERTEX_ATOMIC_COUNTERS,
+                GL_MAX_VERTEX_ATOMIC_COUNTER_BUFFERS,
+                GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS);
+    });
+    private static final Supplier<VeilShaderLimits> GL_TESS_CONTROL_SHADER_LIMITS = VeilRenderSystem.glGetter(() -> {
+        GLCapabilities caps = GL.getCapabilities();
+        return new VeilShaderLimits(caps,
+                GL_MAX_TESS_CONTROL_UNIFORM_COMPONENTS,
+                GL_MAX_TESS_CONTROL_UNIFORM_BLOCKS,
+                GL_MAX_TESS_CONTROL_INPUT_COMPONENTS,
+                GL_MAX_TESS_CONTROL_OUTPUT_COMPONENTS,
+                GL_MAX_TESS_CONTROL_TEXTURE_IMAGE_UNITS,
+                GL_MAX_TESS_CONTROL_IMAGE_UNIFORMS,
+                GL_MAX_TESS_CONTROL_ATOMIC_COUNTERS,
+                GL_MAX_TESS_CONTROL_ATOMIC_COUNTER_BUFFERS,
+                GL_MAX_TESS_CONTROL_SHADER_STORAGE_BLOCKS);
+    });
+    private static final Supplier<VeilShaderLimits> GL_TESS_EVALUATION_SHADER_LIMITS = VeilRenderSystem.glGetter(() -> {
+        GLCapabilities caps = GL.getCapabilities();
+        return new VeilShaderLimits(caps,
+                GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS,
+                GL_MAX_TESS_EVALUATION_UNIFORM_BLOCKS,
+                GL_MAX_TESS_EVALUATION_INPUT_COMPONENTS,
+                GL_MAX_TESS_EVALUATION_OUTPUT_COMPONENTS,
+                GL_MAX_TESS_EVALUATION_TEXTURE_IMAGE_UNITS,
+                GL_MAX_TESS_EVALUATION_IMAGE_UNIFORMS,
+                GL_MAX_TESS_EVALUATION_ATOMIC_COUNTERS,
+                GL_MAX_TESS_EVALUATION_ATOMIC_COUNTER_BUFFERS,
+                GL_MAX_TESS_EVALUATION_SHADER_STORAGE_BLOCKS);
+    });
+    private static final Supplier<VeilShaderLimits> GL_GEOMETRY_SHADER_LIMITS = VeilRenderSystem.glGetter(() -> {
+        GLCapabilities caps = GL.getCapabilities();
+        return new VeilShaderLimits(caps,
+                GL_MAX_GEOMETRY_UNIFORM_COMPONENTS,
+                GL_MAX_GEOMETRY_UNIFORM_BLOCKS,
+                GL_MAX_GEOMETRY_INPUT_COMPONENTS,
+                GL_MAX_GEOMETRY_OUTPUT_COMPONENTS,
+                GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS,
+                GL_MAX_GEOMETRY_IMAGE_UNIFORMS,
+                GL_MAX_GEOMETRY_ATOMIC_COUNTERS,
+                GL_MAX_GEOMETRY_ATOMIC_COUNTER_BUFFERS,
+                GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS);
+    });
+    private static final Supplier<VeilShaderLimits> GL_FRAGMENT_SHADER_LIMITS = VeilRenderSystem.glGetter(() -> {
+        GLCapabilities caps = GL.getCapabilities();
+        return new VeilShaderLimits(caps,
+                GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,
+                GL_MAX_FRAGMENT_UNIFORM_BLOCKS,
+                GL_MAX_FRAGMENT_INPUT_COMPONENTS,
+                GL_MAX_DRAW_BUFFERS * 4,
+                GL_MAX_TEXTURE_IMAGE_UNITS,
+                GL_MAX_FRAGMENT_IMAGE_UNIFORMS,
+                GL_MAX_FRAGMENT_ATOMIC_COUNTERS,
+                GL_MAX_FRAGMENT_ATOMIC_COUNTER_BUFFERS,
+                GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS);
+    });
+    private static final Supplier<VeilShaderLimits> GL_COMPUTE_SHADER_LIMITS = VeilRenderSystem.glGetter(() -> {
+        GLCapabilities caps = GL.getCapabilities();
+        return new VeilShaderLimits(caps,
+                GL_MAX_COMPUTE_UNIFORM_COMPONENTS,
+                GL_MAX_COMPUTE_UNIFORM_BLOCKS,
+                0,
+                0,
+                GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS,
+                GL_MAX_COMPUTE_IMAGE_UNIFORMS,
+                GL_MAX_COMPUTE_ATOMIC_COUNTERS,
+                GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS,
+                GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS);
+    });
+
     private static final Supplier<Vector2ic> MAX_FRAMEBUFFER_SIZE = Suppliers.memoize(() -> {
         RenderSystem.assertOnRenderThreadOrInit();
         if (!GL.getCapabilities().OpenGL43) {
@@ -103,6 +179,9 @@ public final class VeilRenderSystem {
         return new Vector3i(width, height, depth);
     });
     private static final IntSupplier MAX_COMPUTE_WORK_GROUP_INVOCATIONS = VeilRenderSystem.glGetter(() -> COMPUTE_SUPPORTED.getAsBoolean() ? glGetInteger(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS) : 0);
+
+    private static final Vector3f LIGHT0_POSITION = new Vector3f();
+    private static final Vector3f LIGHT1_POSITION = new Vector3f();
 
     private static VeilRenderer renderer;
     private static ResourceLocation shaderLocation;
@@ -142,6 +221,21 @@ public final class VeilRenderSystem {
         };
     }
 
+    private static <T> Supplier<T> glGetter(Supplier<T> delegate) {
+        return new Supplier<T>() {
+            private T value = null;
+
+            @Override
+            public T get() {
+                RenderSystem.assertOnRenderThreadOrInit();
+                if (this.value == null) {
+                    return this.value = delegate.get();
+                }
+                return this.value;
+            }
+        };
+    }
+
     @ApiStatus.Internal
     public static void init() {
         Minecraft client = Minecraft.getInstance();
@@ -162,7 +256,8 @@ public final class VeilRenderSystem {
 
     /**
      * Binds the specified texture ids to sequential texture units and invalidates the GLStateManager.
-     * @param first The first unit to bind to
+     *
+     * @param first    The first unit to bind to
      * @param textures The textures to bind
      */
     public static void bindTextures(int first, IntBuffer textures) {
@@ -172,7 +267,8 @@ public final class VeilRenderSystem {
 
     /**
      * Binds the specified texture ids to sequential texture units and invalidates the GLStateManager.
-     * @param first The first unit to bind to
+     *
+     * @param first    The first unit to bind to
      * @param textures The textures to bind
      */
     public static void bindTextures(int first, int... textures) {
@@ -243,7 +339,8 @@ public final class VeilRenderSystem {
 
     /**
      * Draws instances of the specified vertex buffer.
-     * @param vbo The vertex buffer to draw
+     *
+     * @param vbo       The vertex buffer to draw
      * @param instances The number of instances to draw
      * @see <a target="_blank" href="http://docs.gl/gl4/glDrawArraysInstanced">Reference Page</a>
      */
@@ -253,10 +350,11 @@ public final class VeilRenderSystem {
 
     /**
      * Draws indirect instances of the specified vertex buffer.
-     * @param vbo The vertex buffer to draw
-     * @param indirect A pointer into the currently bound {@link GL40C#GL_DRAW_INDIRECT_BUFFER} or the address of a struct containing draw data
+     *
+     * @param vbo       The vertex buffer to draw
+     * @param indirect  A pointer into the currently bound {@link GL40C#GL_DRAW_INDIRECT_BUFFER} or the address of a struct containing draw data
      * @param drawCount The number of primitives to draw
-     * @param stride The offset between indirect elements
+     * @param stride    The offset between indirect elements
      * @see <a target="_blank" href="http://docs.gl/gl4/glMultiDrawElementsIndirect">Reference Page</a>
      */
     public static void drawIndirect(VertexBuffer vbo, long indirect, int drawCount, int stride) {
@@ -265,6 +363,7 @@ public final class VeilRenderSystem {
 
     /**
      * Retrieves the number of indices in the specified vertex buffer.
+     *
      * @param vbo The vertex buffer to query
      * @return The number of indices in the buffer
      */
@@ -301,6 +400,13 @@ public final class VeilRenderSystem {
     }
 
     /**
+     * @return Whether {@link ARBSparseBuffer} is supported
+     */
+    public static boolean sparseBuffersSupported() {
+        return VeilRenderSystem.SPARSE_BUFFERS_SUPPORTED.getAsBoolean();
+    }
+
+    /**
      * @return The GL maximum number of texture units that can be bound
      */
     public static int maxCombinedTextureUnits() {
@@ -323,6 +429,7 @@ public final class VeilRenderSystem {
 
     /**
      * Retrieves the maximum bindings for the specified buffer binding.
+     *
      * @param target The target to query the maximum bindings of
      * @return The GL maximum amount of buffer bindings available
      */
@@ -333,6 +440,24 @@ public final class VeilRenderSystem {
             case GL_ATOMIC_COUNTER_BUFFER -> maxAtomicCounterBufferBindings();
             case GL_SHADER_STORAGE_BUFFER -> maxShaderStorageBufferBindings();
             default -> throw new IllegalArgumentException("Invalid Target: 0x" + Integer.toHexString(target).toUpperCase(Locale.ROOT));
+        };
+    }
+
+    /**
+     * Retrieves the maximum limits for the specified shader type.
+     *
+     * @param shader The shader to query the limits for
+     * @return The GL limits available
+     */
+    public static VeilShaderLimits shaderLimits(int shader) {
+        return switch (shader) {
+            case GL_VERTEX_SHADER -> VERTEX_SHADER_LIMITS.get();
+            case GL_TESS_CONTROL_SHADER -> GL_TESS_CONTROL_SHADER_LIMITS.get();
+            case GL_TESS_EVALUATION_SHADER -> GL_TESS_EVALUATION_SHADER_LIMITS.get();
+            case GL_GEOMETRY_SHADER -> GL_GEOMETRY_SHADER_LIMITS.get();
+            case GL_FRAGMENT_SHADER -> GL_FRAGMENT_SHADER_LIMITS.get();
+            case GL_COMPUTE_SHADER -> GL_COMPUTE_SHADER_LIMITS.get();
+            default -> throw new IllegalArgumentException("Invalid Shader Type: 0x" + Integer.toHexString(shader).toUpperCase(Locale.ROOT));
         };
     }
 
@@ -496,6 +621,21 @@ public final class VeilRenderSystem {
         return shader instanceof ShaderProgramImpl.Wrapper wrapper ? wrapper.program() : null;
     }
 
+    /**
+     * @return The position of the first light
+     */
+    public static Vector3fc getLight0Position() {
+        return LIGHT0_POSITION;
+    }
+
+    /**
+     * @return The position of the second light
+     */
+
+    public static Vector3fc getLight1Position() {
+        return LIGHT1_POSITION;
+    }
+
     // Internal
 
     @ApiStatus.Internal
@@ -534,5 +674,11 @@ public final class VeilRenderSystem {
     @ApiStatus.Internal
     public static void renderPost() {
         renderer.getPostProcessingManager().runPipeline();
+    }
+
+    @ApiStatus.Internal
+    public static void setShaderLights(Vector3fc light0, Vector3fc light1) {
+        LIGHT0_POSITION.set(light0);
+        LIGHT1_POSITION.set(light1);
     }
 }

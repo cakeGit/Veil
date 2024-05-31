@@ -8,8 +8,8 @@ import org.jetbrains.annotations.ApiStatus;
 public class ForgeVeilPlatform implements VeilPlatform {
 
     @Override
-    public String getPlatformName() {
-        return "Forge";
+    public PlatformType getPlatformType() {
+        return PlatformType.FORGE;
     }
 
     @Override

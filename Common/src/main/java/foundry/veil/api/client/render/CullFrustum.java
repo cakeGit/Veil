@@ -274,6 +274,16 @@ public interface CullFrustum {
     Vector4fc[] getPlanes();
 
     /**
+     * @return The matrix used to create this frustum
+     */
+    Matrix4fc getModelViewProjectionMatrix();
+
+    /**
+     * @return The direction of the camera frustum
+     */
+    Vector3fc getViewVector();
+
+    /**
      * @return The position of the camera
      */
     Vector3dc getPosition();

@@ -62,8 +62,9 @@ public class VeilForgeClient {
     private static void registerListeners(RegisterClientReloadListenersEvent event) {
         VeilClient.initRenderer();
         VeilReloadListeners.registerListeners((type, id, listener) -> event.registerReloadListener(listener));
-        ModLoader.get().postEvent(new ForgeVeilRendererEvent(VeilRenderSystem.renderer()));
-        ModLoader.get().postEvent(new ForgeVeilRegisterFixedBuffersEvent(ForgeRenderTypeStageHandler::register));
+        ModLoader loader = ModLoader.get();
+        loader.postEvent(new ForgeVeilRendererEvent(VeilRenderSystem.renderer()));
+        loader.postEvent(new ForgeVeilRegisterFixedBuffersEvent(ForgeRenderTypeStageHandler::register));
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {

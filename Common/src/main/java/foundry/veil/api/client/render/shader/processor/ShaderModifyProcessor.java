@@ -3,6 +3,7 @@ package foundry.veil.api.client.render.shader.processor;
 import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.ShaderModificationManager;
 import foundry.veil.impl.client.render.shader.modifier.ShaderModification;
+import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 
@@ -32,12 +33,12 @@ public class ShaderModifyProcessor implements ShaderPreProcessor {
 
     @Override
     public String modify(Context context) throws IOException {
-        ResourceLocation name = context.getName();
+        ResourceLocation name = context.name();
         if (name == null || !this.appliedModifications.add(name)) {
-            return context.getInput();
+            return context.sourceCode();
         }
-        int flags = context.isSourceFile() ? ShaderModification.APPLY_VERSION | ShaderModification.ALLOW_OUT : 0;
-        FileToIdConverter converter = context.isSourceFile() ? context.getConverter() : ShaderManager.INCLUDE_LISTER;
-        return context.modify(context.getName(), this.shaderModificationManager.applyModifiers(converter.idToFile(name), context.getInput(), flags));
+        int flags = context.isSourceFile() ? VeilJobParameters.APPLY_VERSION | VeilJobParameters.ALLOW_OUT : 0;
+        FileToIdConverter converter = context.isSourceFile() ? context.idConverter() : ShaderManager.INCLUDE_LISTER;
+        return context.modify(context.name(), this.shaderModificationManager.applyModifiers(converter.idToFile(name), context.sourceCode(), flags));
     }
 }

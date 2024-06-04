@@ -14,13 +14,13 @@ public class ShaderPredefinitionProcessor implements ShaderPreProcessor {
 
     @Override
     public String modify(Context context) {
-        ProgramDefinition programDefinition = context.getDefinition();
-        String input = context.getInput();
+        ProgramDefinition programDefinition = context.definitions();
+        String input = context.sourceCode();
         if (programDefinition == null) {
             return input;
         }
 
-        ShaderPreDefinitions definitions = context.getPreDefinitions();
+        ShaderPreDefinitions definitions = context.preDefinitions();
         StringBuilder builder = new StringBuilder();
 
         definitions.addStaticDefinitions(value -> builder.append(value).append('\n'));

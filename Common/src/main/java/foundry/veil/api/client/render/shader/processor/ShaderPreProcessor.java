@@ -8,6 +8,10 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -17,6 +21,7 @@ import java.util.regex.Pattern;
  */
 public interface ShaderPreProcessor {
 
+    ShaderPreProcessor NOOP = Context::sourceCode;
     Pattern UNIFORM_PATTERN = Pattern.compile(".*uniform\\s+(?<type>\\w+)\\W(?<name>\\w*)");
 
     /**
@@ -33,6 +38,29 @@ public interface ShaderPreProcessor {
      * @throws IOException If any error occurs while editing the source
      */
     String modify(Context context) throws IOException;
+
+    static ShaderPreProcessor allOf(ShaderPreProcessor... processors) {
+        return allOf(Arrays.asList(processors));
+    }
+
+    static ShaderPreProcessor allOf(Collection<ShaderPreProcessor> processors) {
+        List<ShaderPreProcessor> list = new ArrayList<>(processors.size());
+        for (ShaderPreProcessor processor : processors) {
+            if (processor instanceof ShaderMultiProcessor multiProcessor) {
+                list.addAll(Arrays.asList(multiProcessor.processors()));
+            } else if (processor != NOOP) {
+                list.add(processor);
+            }
+        }
+
+        if (list.isEmpty()) {
+            return NOOP;
+        }
+        if (list.size() == 1) {
+            return list.get(0);
+        }
+        return new ShaderMultiProcessor(list.toArray(new ShaderPreProcessor[0]));
+    }
 
     /**
      * Context for modifying source code and shader behavior.
@@ -73,43 +101,47 @@ public interface ShaderPreProcessor {
         /**
          * @return The id of the shader being compiled or <code>null</code> if the shader is compiled from a raw string
          */
-        @Nullable ResourceLocation getName();
+        @Nullable
+        ResourceLocation name();
 
         /**
          * @return The input source code. This is GLSL
          */
-        String getInput();
+        String sourceCode();
 
         /**
          * @return The OpenGL type of the shader being compiled
          */
-        int getType();
+        int type();
 
         /**
          * @return The file to id converter for the loading shader file type
          */
-        FileToIdConverter getConverter();
+        FileToIdConverter idConverter();
 
         /**
          * @return The readable name of the loading shader file type
          */
         default String getTypeName() {
-            return ShaderManager.getTypeName(this.getType());
+            return ShaderManager.getTypeName(this.type());
         }
 
         /**
-         * @return Whether the processor is being run for a source file and not an include file
+         * @return Whether the processor is being run for a source file and not a #include file
          */
         boolean isSourceFile();
 
         /**
          * @return The definition of the program this is being compiled for or <code>null</code> if the shader is standalone
          */
-        @Nullable ProgramDefinition getDefinition();
+        @Nullable
+        ProgramDefinition definitions();
 
         /**
          * @return The set of pre-definitions for shaders
          */
-        ShaderPreDefinitions getPreDefinitions();
+        ShaderPreDefinitions preDefinitions();
+
+        Context withSource(@Nullable ResourceLocation name, String source);
     }
 }

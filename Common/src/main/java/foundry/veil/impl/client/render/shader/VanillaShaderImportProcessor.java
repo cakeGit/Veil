@@ -2,6 +2,7 @@ package foundry.veil.impl.client.render.shader;
 
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
+import foundry.veil.api.client.render.shader.processor.ShaderBindingProcessor;
 import foundry.veil.api.client.render.shader.processor.ShaderImportProcessor;
 import foundry.veil.api.client.render.shader.processor.ShaderPreProcessor;
 import foundry.veil.api.client.render.shader.program.ProgramDefinition;
@@ -19,10 +20,10 @@ import java.io.IOException;
 @ApiStatus.Internal
 public class VanillaShaderImportProcessor {
 
-    private static ShaderImportProcessor processor;
+    private static ShaderPreProcessor processor;
 
     public static void setup(ResourceProvider resourceProvider) {
-        processor = new ShaderImportProcessor(resourceProvider);
+        processor = ShaderPreProcessor.allOf(new ShaderImportProcessor(resourceProvider), new ShaderBindingProcessor());
     }
 
     public static void free() {
@@ -33,14 +34,14 @@ public class VanillaShaderImportProcessor {
         if (processor == null) {
             throw new NullPointerException("Processor not initialized");
         }
-        return processor.modify(new Context(source));
+        return processor.modify(new Context(processor, source));
     }
 
-    private record Context(String source) implements ShaderPreProcessor.Context {
+    private record Context(ShaderPreProcessor processor, String source) implements ShaderPreProcessor.Context {
 
         @Override
         public String modify(@Nullable ResourceLocation name, String source) throws IOException {
-            return VanillaShaderImportProcessor.modify(source);
+            return this.processor.modify(this.withSource(name, source));
         }
 
         @Override
@@ -58,23 +59,23 @@ public class VanillaShaderImportProcessor {
         }
 
         @Override
-        public @Nullable ResourceLocation getName() {
+        public @Nullable ResourceLocation name() {
             return null;
         }
 
         @Override
-        public String getInput() {
+        public String sourceCode() {
             return this.source;
         }
 
         @Override
-        public int getType() {
+        public int type() {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public FileToIdConverter getConverter() {
-            return VeilRenderSystem.renderer().getShaderManager().getSourceSet().getTypeConverter(this.getType());
+        public FileToIdConverter idConverter() {
+            return VeilRenderSystem.renderer().getShaderManager().getSourceSet().getTypeConverter(this.type());
         }
 
         @Override
@@ -83,13 +84,18 @@ public class VanillaShaderImportProcessor {
         }
 
         @Override
-        public @Nullable ProgramDefinition getDefinition() {
+        public @Nullable ProgramDefinition definitions() {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public ShaderPreDefinitions getPreDefinitions() {
+        public ShaderPreDefinitions preDefinitions() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ShaderPreProcessor.Context withSource(@Nullable ResourceLocation name, String source) {
+            return new Context(this.processor, source);
         }
     }
 }

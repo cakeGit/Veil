@@ -9,6 +9,9 @@ import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import foundry.veil.api.client.render.shader.processor.*;
 import foundry.veil.api.client.render.shader.program.ProgramDefinition;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -35,29 +38,38 @@ import static org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER;
 public class DirectShaderCompiler implements ShaderCompiler {
 
     private final ResourceProvider provider;
-    private final List<ShaderPreProcessor> preProcessors;
+    private final List<ShaderPreProcessor> processors;
     private final List<ShaderPreProcessor> importProcessors;
     private final Set<Integer> shaders;
     private ResourceLocation compilingName;
+    private ShaderPreProcessor processor;
+    private ShaderPreProcessor importProcessor;
 
     public DirectShaderCompiler(@Nullable ResourceProvider provider) {
         this.provider = provider;
-        this.preProcessors = new LinkedList<>();
+        this.processors = new LinkedList<>();
         this.importProcessors = new LinkedList<>();
         this.shaders = new HashSet<>();
+    }
+
+    private ShaderPreProcessor getProcessor() {
+        if (this.processor == null) {
+            this.processor = ShaderPreProcessor.allOf(this.processors);
+        }
+        return this.processor;
+    }
+
+    private ShaderPreProcessor getImportProcessor() {
+        if (this.importProcessor == null) {
+            this.importProcessor = ShaderPreProcessor.allOf(this.importProcessors);
+        }
+        return this.importProcessor;
     }
 
     private void validateType(int type) throws ShaderException {
         if (type == GL_COMPUTE_SHADER && !VeilRenderSystem.computeSupported()) {
             throw new ShaderException("Compute is not supported", null);
         }
-    }
-
-    private String modifySource(ShaderCompiler.Context context, List<ShaderPreProcessor> preProcessors, Map<String, Integer> uniformBindings, Set<String> dependencies, Set<ResourceLocation> includes, @Nullable ResourceLocation name, String source, int type, boolean sourceFile) throws IOException {
-        for (ShaderPreProcessor preProcessor : preProcessors) {
-            source = preProcessor.modify(new PreProcessorContext(this, context, uniformBindings, dependencies, includes, name, source, type, sourceFile));
-        }
-        return source;
     }
 
     @Override
@@ -79,34 +91,39 @@ public class DirectShaderCompiler implements ShaderCompiler {
     @Override
     public CompiledShader compile(ShaderCompiler.Context context, int type, String source) throws IOException, ShaderException {
         this.validateType(type);
-        this.preProcessors.forEach(ShaderPreProcessor::prepare);
+        ShaderPreProcessor processor = this.getProcessor();
+        ShaderPreProcessor importProcessor = this.getImportProcessor();
+        processor.prepare();
+        importProcessor.prepare();
 
-        Map<String, Integer> uniformBindings = new HashMap<>();
+        Object2IntMap<String> uniformBindings = new Object2IntArrayMap<>();
         Set<String> dependencies = new HashSet<>();
         Set<ResourceLocation> includes = new HashSet<>();
-        source = this.modifySource(context, this.preProcessors, uniformBindings, dependencies, includes, this.compilingName, source, type, true);
+        String transformed = processor.modify(new PreProcessorContext(importProcessor, context, uniformBindings, dependencies, includes, this.compilingName, source, type, true));
 
         int shader = glCreateShader(type);
-        glShaderSource(shader, source);
+        glShaderSource(shader, transformed);
         glCompileShader(shader);
         if (glGetShaderi(shader, GL_COMPILE_STATUS) != GL_TRUE) {
             String log = glGetShaderInfoLog(shader);
             if (Veil.VERBOSE_SHADER_ERRORS) {
-                log += "\n" + source;
+                log += "\n" + transformed;
             }
             glDeleteShader(shader); // Delete to prevent leaks
             throw new ShaderException("Failed to compile " + ShaderManager.getTypeName(type) + " shader", log);
         }
 
         this.shaders.add(shader);
-        return new CompiledShader(this.compilingName, shader, Collections.unmodifiableMap(uniformBindings), Collections.unmodifiableSet(dependencies), Collections.unmodifiableSet(includes));
+        return new CompiledShader(this.compilingName, shader, Object2IntMaps.unmodifiable(uniformBindings), Collections.unmodifiableSet(dependencies), Collections.unmodifiableSet(includes));
     }
 
     @Override
     public ShaderCompiler addPreprocessor(ShaderPreProcessor processor, boolean modifyImports) {
-        this.preProcessors.add(processor);
+        this.processors.add(processor);
+        this.processor = null;
         if (modifyImports) {
             this.importProcessors.add(processor);
+            this.importProcessor = null;
         }
         return this;
     }
@@ -124,24 +141,25 @@ public class DirectShaderCompiler implements ShaderCompiler {
 
     @Override
     public void free() {
-        this.preProcessors.clear();
+        this.processors.clear();
+        this.importProcessors.clear();
         this.shaders.forEach(GL20C::glDeleteShader);
         this.shaders.clear();
     }
 
-    private record PreProcessorContext(DirectShaderCompiler compiler,
+    private record PreProcessorContext(ShaderPreProcessor preProcessor,
                                        ShaderCompiler.Context context,
                                        Map<String, Integer> uniformBindings,
                                        Set<String> dependencies,
                                        Set<ResourceLocation> includes,
                                        @Nullable ResourceLocation name,
-                                       String input,
+                                       String sourceCode,
                                        int type,
                                        boolean sourceFile) implements ShaderPreProcessor.Context {
 
         @Override
         public String modify(@Nullable ResourceLocation name, String source) throws IOException {
-            return this.compiler.modifySource(this.context, this.compiler.importProcessors, this.uniformBindings, this.dependencies, this.includes, name, source, this.type, false);
+            return this.preProcessor.modify(this.withSource(name, source));
         }
 
         @Override
@@ -160,23 +178,8 @@ public class DirectShaderCompiler implements ShaderCompiler {
         }
 
         @Override
-        public @Nullable ResourceLocation getName() {
-            return this.name;
-        }
-
-        @Override
-        public String getInput() {
-            return this.input;
-        }
-
-        @Override
-        public int getType() {
-            return this.type;
-        }
-
-        @Override
-        public FileToIdConverter getConverter() {
-            return this.context.sourceSet().getTypeConverter(this.getType());
+        public FileToIdConverter idConverter() {
+            return this.context.sourceSet().getTypeConverter(this.type());
         }
 
         @Override
@@ -185,13 +188,18 @@ public class DirectShaderCompiler implements ShaderCompiler {
         }
 
         @Override
-        public @Nullable ProgramDefinition getDefinition() {
+        public @Nullable ProgramDefinition definitions() {
             return this.context.definition();
         }
 
         @Override
-        public ShaderPreDefinitions getPreDefinitions() {
+        public ShaderPreDefinitions preDefinitions() {
             return this.context.preDefinitions();
+        }
+
+        @Override
+        public ShaderPreProcessor.Context withSource(@Nullable ResourceLocation name, String source) {
+            return new PreProcessorContext(this.preProcessor, this.context, this.uniformBindings, this.dependencies, this.includes, name, source, this.type, false);
         }
     }
 }

@@ -5,6 +5,15 @@ import foundry.veil.impl.client.render.shader.modifier.InputShaderModification;
 import foundry.veil.impl.client.render.shader.modifier.ReplaceShaderModification;
 import foundry.veil.impl.client.render.shader.modifier.ShaderModification;
 import foundry.veil.impl.client.render.shader.modifier.SimpleShaderModification;
+import foundry.veil.impl.client.render.shader.transformer.VeilASTTransformer;
+import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
+import io.github.douira.glsl_transformer.ast.print.PrintType;
+import io.github.douira.glsl_transformer.ast.query.RootSupplier;
+import io.github.douira.glsl_transformer.ast.transform.TransformationException;
+import io.github.douira.glsl_transformer.parser.ParsingException;
+import io.github.douira.glsl_transformer.token_filter.ChannelFilter;
+import io.github.douira.glsl_transformer.token_filter.TokenChannel;
+import io.github.douira.glsl_transformer.token_filter.TokenFilter;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -13,6 +22,7 @@ import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.antlr.v4.runtime.Token;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -36,10 +46,26 @@ public class ShaderModificationManager extends SimplePreparableReloadListener<Sh
     );
     private static final Pattern OUT_PATTERN = Pattern.compile("out ");
 
+    private static final TokenFilter<?> FILTER = new ChannelFilter<>(TokenChannel.PREPROCESSOR) {
+        @Override
+        public boolean isTokenAllowed(Token token) {
+            if (!super.isTokenAllowed(token)) {
+                throw new IllegalArgumentException("Unparsed preprocessor directives such as '" + token.getText()
+                        + "' may not be present at this stage of shader processing!");
+            }
+            return true;
+        }
+    };
+
+    private final VeilASTTransformer transformer;
     private Map<ResourceLocation, List<ShaderModification>> shaders;
     private Map<ShaderModification, ResourceLocation> names;
 
     public ShaderModificationManager() {
+        this.transformer = new VeilASTTransformer();
+        this.transformer.setPrintType(PrintType.INDENTED_ANNOTATED);
+        this.transformer.setRootSupplier(RootSupplier.PREFIX_UNORDERED_ED_EXACT);
+        this.transformer.setTokenFilter(FILTER);
         this.shaders = Collections.emptyMap();
     }
 
@@ -53,12 +79,10 @@ public class ShaderModificationManager extends SimplePreparableReloadListener<Sh
      * @see ShaderModification
      */
     public String applyModifiers(ResourceLocation shaderId, String source, int flags) {
-        for (ShaderModification modification : this.getModifiers(shaderId)) {
-            try {
-                source = modification.inject(source, flags);
-            } catch (Exception e) {
-                Veil.LOGGER.error("Failed to apply modification {} to shader instance {}. Skipping", this.names.get(modification), shaderId, e);
-            }
+        try {
+            return this.transformer.transform(source, new VeilJobParameters(this, shaderId, flags));
+        } catch (TransformationException | ParsingException | IllegalStateException | IllegalArgumentException e) {
+            Veil.LOGGER.error("Failed to parse shader: {}", shaderId, e);
         }
         return source;
     }
@@ -71,6 +95,16 @@ public class ShaderModificationManager extends SimplePreparableReloadListener<Sh
      */
     public Collection<ShaderModification> getModifiers(ResourceLocation shaderId) {
         return this.shaders.getOrDefault(shaderId, Collections.emptyList());
+    }
+
+    /**
+     * Retrieves the id of the specified modifier.
+     *
+     * @param modification The modification to get the id of
+     * @return The id of that modification or <code>null</code> if unregistered
+     */
+    public @Nullable ResourceLocation getModifierId(ShaderModification modification) {
+        return this.names.get(modification);
     }
 
     private @Nullable ResourceLocation getNextStage(ResourceLocation shader, ResourceProvider resourceProvider) {
@@ -145,12 +179,12 @@ public class ShaderModificationManager extends SimplePreparableReloadListener<Sh
                     break;
                 }
 
-                InputShaderModification input = new InputShaderModification(simpleMod.getPriority(), () -> OUT_PATTERN.matcher(simpleMod.fillPlaceholders(simpleMod.getOutput())).replaceAll("in "));
+                InputShaderModification input = new InputShaderModification(simpleMod.priority(), () -> OUT_PATTERN.matcher(simpleMod.fillPlaceholders(simpleMod.getOutput())).replaceAll("in "));
                 modifiers.computeIfAbsent(nextStage, unused -> new LinkedList<>()).add(input);
                 names.put(input, names.get(simpleMod));
             }
         }
-        modifiers.values().forEach(modifications -> modifications.sort(Comparator.comparingInt(ShaderModification::getPriority).thenComparing(names::get)));
+        modifiers.values().forEach(modifications -> modifications.sort(Comparator.comparingInt(ShaderModification::priority).thenComparing(names::get)));
 
         return new Preparations(modifiers, names);
     }

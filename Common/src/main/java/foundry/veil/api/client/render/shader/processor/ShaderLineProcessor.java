@@ -18,7 +18,7 @@ public abstract class ShaderLineProcessor implements ShaderPreProcessor {
     @Override
     public @NotNull String modify(@NotNull Context context) throws IOException {
         StringBuilder finalSource = new StringBuilder();
-        List<String> lines = new ArrayList<>(Arrays.asList(context.getInput().split("\n")));
+        List<String> lines = new ArrayList<>(Arrays.asList(context.sourceCode().split("\n")));
         List<String> output = new LinkedList<>();
 
         for (String line : lines) {

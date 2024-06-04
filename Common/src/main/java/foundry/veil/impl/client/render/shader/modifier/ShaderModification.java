@@ -1,5 +1,8 @@
 package foundry.veil.impl.client.render.shader.modifier;
 
+import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
+import io.github.douira.glsl_transformer.ast.node.TranslationUnit;
+import io.github.douira.glsl_transformer.ast.transform.ASTParser;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
@@ -21,28 +24,19 @@ public interface ShaderModification {
     Pattern PLACEHOLDER_PATTERN = Pattern.compile("#(\\w+)");
 
     /**
-     * Whether the version is required and will be applied
-     */
-    int APPLY_VERSION = 0b01;
-    /**
-     * Whether [OUT] is a valid command
-     */
-    int ALLOW_OUT = 0b10;
-
-    /**
      * Injects this modification into the specified shader source.
      *
-     * @param source The source to inject into
-     * @param flags  The flags to use when injecting
-     * @return The injected shader source
+     * @param parser     The parser instance
+     * @param tree       The source to modify
+     * @param parameters The parameters to use when injecting
      * @throws IOException If an error occurs with the format or applying the modifications
      */
-    String inject(String source, int flags) throws IOException;
+    void inject(ASTParser parser, TranslationUnit tree, VeilJobParameters parameters) throws IOException;
 
     /**
      * @return The priority of this modification. A higher priority will be applied before a lower priority modification
      */
-    int getPriority();
+    int priority();
 
     static ShaderModification parse(String input, boolean vertex) throws ShaderModificationSyntaxException {
         return ShaderModificationParser.parse(ShaderModifierLexer.createTokens(input), vertex);

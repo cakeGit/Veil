@@ -1,5 +1,9 @@
 package foundry.veil.impl.client.render.shader.modifier;
 
+import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
+import io.github.douira.glsl_transformer.ast.node.TranslationUnit;
+import io.github.douira.glsl_transformer.ast.transform.ASTInjectionPoint;
+import io.github.douira.glsl_transformer.ast.transform.ASTParser;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
@@ -18,22 +22,12 @@ public class InputShaderModification implements ShaderModification {
     }
 
     @Override
-    public String inject(String source, int flags) throws IOException {
-        StringBuilder result = new StringBuilder(source);
-
-        int pointer = 0;
-        Matcher matcher = IN_PATTERN.matcher(result);
-        while (matcher.find()) {
-            pointer = matcher.end();
-        }
-
-        String code = this.input.get() + '\n';
-        result.insert(pointer, code);
-        return result.toString();
+    public void inject(ASTParser parser, TranslationUnit tree, VeilJobParameters parameters) throws IOException {
+        tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, this.input.get() + '\n');
     }
 
     @Override
-    public int getPriority() {
+    public int priority() {
         return this.priority;
     }
 }

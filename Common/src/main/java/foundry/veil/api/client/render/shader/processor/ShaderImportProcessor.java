@@ -46,7 +46,7 @@ public class ShaderImportProcessor implements ShaderPreProcessor {
 
     @Override
     public String modify(Context context) throws IOException {
-        List<String> inputLines = context.getInput().lines().toList();
+        List<String> inputLines = context.sourceCode().lines().toList();
         List<String> output = new LinkedList<>();
 
         for (String line : inputLines) {

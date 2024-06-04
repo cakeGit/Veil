@@ -25,6 +25,7 @@ dependencies {
     compileOnly 'org.spongepowered:mixin:0.8.5'
     compileOnly 'org.jetbrains:annotations:24.0.1'
 
+    implementation "io.github.douira:glsl-transformer:${glsl_transformer_version}"
     implementation("gg.moonflower:molang-compiler:${molang_compiler_version}")
 
     implementation "io.github.spair:imgui-java-binding:$imgui_version"

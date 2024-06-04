@@ -1,6 +1,7 @@
 package foundry.veil.api.client.render.shader;
 
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +21,7 @@ import java.util.Set;
  */
 public record CompiledShader(@Nullable ResourceLocation sourceFile,
                              int id,
-                             Map<String, Integer> uniformBindings,
+                             Object2IntMap<String> uniformBindings,
                              Set<String> definitionDependencies,
                              Set<ResourceLocation> includes) {
 

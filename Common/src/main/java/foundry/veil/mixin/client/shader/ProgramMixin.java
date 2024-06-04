@@ -6,15 +6,17 @@ import foundry.veil.Veil;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.impl.client.render.shader.VanillaShaderImportProcessor;
 import foundry.veil.impl.client.render.shader.modifier.ShaderModification;
+import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.io.InputStream;
+import java.util.List;
 
 @Mixin(Program.class)
 public class ProgramMixin {
@@ -34,14 +36,19 @@ public class ProgramMixin {
         veil$captureId = null;
     }
 
-    @ModifyVariable(method = "compileShaderInternal", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/preprocessor/GlslPreprocessor;process(Ljava/lang/String;)Ljava/util/List;", shift = At.Shift.BEFORE), ordinal = 2)
-    private static String veil$modifyVanillaShader(String value) {
-        String source = VeilRenderSystem.renderer().getShaderModificationManager().applyModifiers(veil$captureId, value, ShaderModification.APPLY_VERSION | ShaderModification.ALLOW_OUT);
+    @ModifyArg(method = "compileShaderInternal", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;glShaderSource(ILjava/util/List;)V"), index = 1)
+    private static List<String> veil$modifyVanillaShader(List<String> sourceLines) {
         try {
-            return VanillaShaderImportProcessor.modify(source);
+            StringBuilder source = new StringBuilder();
+            for (String sourceLine : sourceLines) {
+                source.append(sourceLine);
+            }
+
+            String transformed = VeilRenderSystem.renderer().getShaderModificationManager().applyModifiers(veil$captureId, source.toString(), VeilJobParameters.APPLY_VERSION | VeilJobParameters.ALLOW_OUT);
+            return List.of(VanillaShaderImportProcessor.modify(transformed));
         } catch (Exception e) {
             Veil.LOGGER.error("Failed to modify vanilla source for shader: {}", veil$captureId, e);
         }
-        return source;
+        return sourceLines;
     }
 }

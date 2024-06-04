@@ -16,7 +16,7 @@ public class ShaderVersionProcessor implements ShaderPreProcessor {
 
     @Override
     public @NotNull String modify(@NotNull Context context) {
-        String input = context.getInput();
+        String input = context.sourceCode();
 
         Matcher matcher = ShaderVersionProcessor.PATTERN.matcher(input);
         if (!matcher.find()) {

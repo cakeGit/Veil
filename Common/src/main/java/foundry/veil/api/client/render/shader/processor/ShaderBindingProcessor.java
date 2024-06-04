@@ -19,7 +19,7 @@ public class ShaderBindingProcessor extends ShaderLineProcessor {
 
     @Override
     public @NotNull String modify(@NotNull Context context) throws IOException {
-        String source = context.getInput();
+        String source = context.sourceCode();
         Matcher versionMatcher = VERSION_PATTERN.matcher(source);
         if (versionMatcher.find()) {
             try {

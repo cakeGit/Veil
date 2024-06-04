@@ -1,5 +1,12 @@
 package foundry.veil.impl.client.render.shader.modifier;
 
+import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
+import io.github.douira.glsl_transformer.ast.node.TranslationUnit;
+import io.github.douira.glsl_transformer.ast.node.Version;
+import io.github.douira.glsl_transformer.ast.node.VersionStatement;
+import io.github.douira.glsl_transformer.ast.node.statement.Statement;
+import io.github.douira.glsl_transformer.ast.transform.ASTInjectionPoint;
+import io.github.douira.glsl_transformer.ast.transform.ASTParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
 import org.jetbrains.annotations.ApiStatus;
@@ -28,47 +35,41 @@ public class SimpleShaderModification implements ShaderModification {
     }
 
     @Override
-    public String inject(String source, int flags) throws IOException {
-        int pointer;
-        if ((flags & APPLY_VERSION) > 0) {
-            Matcher versionMatcher = VERSION_PATTERN.matcher(source);
-            if (!versionMatcher.find()) {
-                throw new IOException("Failed to find version");
+    public void inject(ASTParser parser, TranslationUnit tree, VeilJobParameters parameters) throws IOException {
+        if (parameters.applyVersion()) {
+            tree.ensureVersionStatement();
+            VersionStatement statement = tree.getVersionStatement();
+            if (statement.version.number < this.version) {
+                statement.version = Version.fromNumber(this.version);
             }
-
-            if (this.version == -1) {
-                throw new IOException("Missing #version field");
-            }
-
-            try {
-                int version = Integer.parseInt(versionMatcher.group(1));
-                if (version < this.version) {
-                    source = versionMatcher.replaceAll("#version " + this.version + "\n\n");
-
-                    versionMatcher.reset(source);
-                    if (!versionMatcher.find()) {
-                        throw new IllegalStateException();
-                    }
-                }
-            } catch (Exception e) {
-                throw new IOException("Failed to inject version", e);
-            }
-
-            pointer = versionMatcher.end();
-        } else {
-            pointer = 0;
         }
 
-        StringBuilder result = new StringBuilder(source);
-        for (ResourceLocation include : this.includes) {
-            String code = "#include " + include + "\n";
-            result.insert(pointer, code);
-            pointer += code.length();
+        tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, "null");
+
+//        StringBuilder result = new StringBuilder(source);
+//        for (ResourceLocation include : this.includes) {
+//            String code = "#include " + include + "\n";
+//            result.insert(pointer, code);
+//            pointer += code.length();
+//        }
+
+        if (!StringUtil.isNullOrEmpty(this.uniform)) {
+            tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, this.fillPlaceholders(this.uniform) + '\n');
         }
 
-        this.processBody(pointer, result);
+        if (!StringUtil.isNullOrEmpty(this.output)) {
+            tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, this.fillPlaceholders(this.output) + '\n');
+        }
 
-        return result.toString();
+        for (Function function : this.functions) {
+            Statement statement = parser.parseStatement(tree.getRoot(), this.fillPlaceholders("{" + function.code() + "}"));
+
+            if (function.head()) {
+                tree.prependFunctionBody(function.name(), statement);
+            } else {
+                tree.appendFunctionBody(function.name(), statement);
+            }
+        }
     }
 
     protected void processBody(int pointer, StringBuilder builder) throws IOException {
@@ -152,7 +153,7 @@ public class SimpleShaderModification implements ShaderModification {
     }
 
     @Override
-    public int getPriority() {
+    public int priority() {
         return this.priority;
     }
 

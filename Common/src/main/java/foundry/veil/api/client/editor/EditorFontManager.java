@@ -119,6 +119,7 @@ public class EditorFontManager implements PreparableReloadListener {
 
         this.fonts.clear();
         for (Map.Entry<ResourceLocation, FontPackBuilder> entry : this.fontBuilders.entrySet()) {
+            Veil.LOGGER.info("Built {}", entry.getKey());
             this.fonts.put(entry.getKey(), entry.getValue().build(FONT_SIZE));
         }
         ImGui.getIO().setFontDefault(this.getFont(EditorManager.DEFAULT, false, false));
@@ -161,7 +162,7 @@ public class EditorFontManager implements PreparableReloadListener {
                 ImFontAtlas atlas = ImGui.getIO().getFonts();
                 ImFontConfig fontConfig = new ImFontConfig();
                 try {
-                    fontConfig.setName(this.name + "-" + type + ".ttf, " + FONT_FORMAT.format(sizePixels) + " px");
+                    fontConfig.setName(this.name.getPath() + " " + type + " " + FONT_FORMAT.format(sizePixels) + " px");
                     fontConfig.setGlyphRanges(data.ranges);
                     return atlas.addFontFromMemoryTTF(data.bytes, sizePixels, fontConfig);
                 } finally {

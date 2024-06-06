@@ -16,11 +16,14 @@ import foundry.veil.mixin.accessor.PostChainAccessor;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiInputTextFlags;
+import imgui.flag.ImGuiStyleVar;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.client.renderer.PostChain;
@@ -53,7 +56,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     private static final Pattern LINE_DIRECTIVE_PARSER = Pattern.compile("#line\\s+(\\d+)\\s*(\\d+)?");
 
     private final CodeEditor codeEditor;
-    private final Map<ResourceLocation, Integer> shaders;
+    private final Object2IntMap<ResourceLocation> shaders;
 
     private final ImString programFilterText;
     private Pattern programFilter;
@@ -68,7 +71,13 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     private int editShaderId;
 
     public ShaderEditor() {
-        this.shaders = new TreeMap<>();
+        this.shaders = new Object2IntRBTreeMap<>((a, b) -> {
+            int compare = a.getNamespace().compareTo(b.getNamespace());
+            if (compare == 0) {
+                return a.getPath().compareTo(b.getPath());
+            }
+            return compare;
+        });
 
         this.codeEditor = new CodeEditor("Upload");
         this.codeEditor.setSaveCallback((source, errorConsumer) -> {
@@ -110,7 +119,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
 
     private void setSelectedProgram(@Nullable ResourceLocation name) {
         if (name != null && this.shaders.containsKey(name)) {
-            int program = this.shaders.get(name);
+            int program = this.shaders.getInt(name);
             if (glIsProgram(program)) {
                 int[] attachedShaders = new int[glGetProgrami(program, GL_ATTACHED_SHADERS)];
                 glGetAttachedShaders(program, null, attachedShaders);
@@ -267,7 +276,8 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
         }
 
         if (ImGui.beginListBox("##programs", ImGui.getContentRegionAvailX(), -Float.MIN_VALUE)) {
-            for (ResourceLocation name : this.shaders.keySet()) {
+            for (Object2IntMap.Entry<ResourceLocation> entry : this.shaders.object2IntEntrySet()) {
+                ResourceLocation name = entry.getKey();
                 boolean selected = this.selectedProgram != null && name.equals(this.selectedProgram.name);
 
                 if (this.programFilter != null && !this.programFilter.matcher(name.toString()).find()) {
@@ -284,6 +294,11 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 ImGui.sameLine();
                 ImGui.setItemAllowOverlap();
                 VeilImGuiUtil.resourceLocation(name);
+
+                ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
+                ImGui.sameLine();
+                ImGui.text(" (" + entry.getIntValue() + ")");
+                ImGui.popStyleVar();
             }
 
             ImGui.endListBox();

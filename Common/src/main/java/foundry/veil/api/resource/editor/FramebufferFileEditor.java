@@ -93,8 +93,20 @@ public class FramebufferFileEditor implements ResourceFileEditor<FramebufferReso
                 ResourceLocation id = FramebufferManager.FRAMEBUFFER_LISTER.fileToId(this.resource.resourceInfo().location());
                 AdvancedFbo fbo = framebufferManager.getFramebuffer(id);
 
-                if (fbo != null && fbo.isColorTextureAttachment(0)) {
-                    ImGui.image(fbo.getColorTextureAttachment(0).getId(), boxWidth, boxHeight, 0, 1, 1, 0);
+                if (fbo != null) {
+                    int textureId = 0;
+                    if (this.attachmentIndex == 0) {
+                        if (fbo.isDepthTextureAttachment()) {
+                            textureId = fbo.getDepthTextureAttachment().getId();
+                        }
+                    } else {
+                        if (fbo.isColorTextureAttachment(this.attachmentIndex - 1)) {
+                            textureId = fbo.getColorTextureAttachment(this.attachmentIndex - 1).getId();
+                        }
+                    }
+                    if (textureId > 0) {
+                        ImGui.image(textureId, boxWidth, boxHeight, 0, 1, 1, 0);
+                    }
                 }
             }
             ImGui.endChild();

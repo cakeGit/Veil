@@ -56,7 +56,10 @@ public class BlitPostStage extends FramebufferPostStage {
             return;
         }
 
-        shader.setup();
+        shader.bind();
+        shader.applyRenderSystem();
+        shader.addRenderSystemTextures();
+        context.applySamplers(shader);
         this.setupFramebuffer(context, shader);
         shader.applyShaderSamplers(context, 0);
         context.drawScreenQuad();

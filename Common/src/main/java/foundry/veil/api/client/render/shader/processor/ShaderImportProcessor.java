@@ -45,8 +45,8 @@ public class ShaderImportProcessor implements ShaderPreProcessor {
     }
 
     @Override
-    public String modify(Context context) throws IOException {
-        List<String> inputLines = context.sourceCode().lines().toList();
+    public String modify(Context context, String source) throws IOException {
+        List<String> inputLines = source.lines().toList();
         List<String> output = new LinkedList<>();
 
         for (String line : inputLines) {
@@ -57,32 +57,33 @@ public class ShaderImportProcessor implements ShaderPreProcessor {
 
             try {
                 String trimmedImport = line.substring(ShaderImportProcessor.INCLUDE_KEY.length()).trim();
-                ResourceLocation source = new ResourceLocation(trimmedImport);
-                context.addInclude(source);
+                ResourceLocation include = new ResourceLocation(trimmedImport);
+                context.addInclude(include);
 
                 // Only read and process the import if it hasn't been added yet
-                if (!this.addedImports.add(source)) {
+                if (!this.addedImports.add(include)) {
                     continue;
                 }
 
                 try {
-                    if (!this.imports.containsKey(source)) {
-                        this.imports.put(source, this.loadImport(source));
-                        this.importOrder.add(source);
+                    if (!this.imports.containsKey(include)) {
+                        this.imports.put(include, this.loadImport(include));
+                        this.importOrder.add(include);
                     }
 
-                    String importString = this.imports.get(source);
+                    String importString = this.imports.get(include);
                     if (importString == null) {
                         throw new IOException("Import previously failed to load");
                     }
 
-                    long lineNumber = String.join("\n", output).lines().filter(s -> !s.startsWith("#line")).count() + 2;
-                    int sourceNumber = this.importOrder.indexOf(source) + 1;
-                    output.add("#line 0 " + sourceNumber);
+                    long lineNumber = String.join("\n", output).lines().count();
+                    int sourceNumber = this.importOrder.indexOf(include) + 1;
+//                    output.add("#line 0 " + sourceNumber);
                     this.layer++;
-                    output.add(context.modify(source, importString));
+                    output.add(context.modify(include, importString));
                     this.layer--;
-                    output.add("#line " + lineNumber + " " + (this.layer == 0 ? 0 : sourceNumber));
+//                    output.add("#line " + lineNumber + " " + (this.layer == 0 ? 0 : sourceNumber));
+//                    output.add("#line " + lineNumber);
                 } catch (Exception e) {
                     throw new IOException("Failed to add import: " + line, e);
                 }

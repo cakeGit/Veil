@@ -12,11 +12,9 @@ public record ShaderMultiProcessor(ShaderPreProcessor[] processors) implements S
     }
 
     @Override
-    public String modify(Context context) throws IOException {
-        String source = context.sourceCode();
+    public String modify(Context ctx, String source) throws IOException {
         for (ShaderPreProcessor preProcessor : this.processors) {
-            source = preProcessor.modify(context);
-            context = context.withSource(context.name(), source);
+            source = preProcessor.modify(ctx, source);
         }
         return source;
     }

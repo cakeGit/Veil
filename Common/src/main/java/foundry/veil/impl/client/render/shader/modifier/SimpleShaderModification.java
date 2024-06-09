@@ -44,14 +44,11 @@ public class SimpleShaderModification implements ShaderModification {
             }
         }
 
-        tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, "null");
-
-//        StringBuilder result = new StringBuilder(source);
-//        for (ResourceLocation include : this.includes) {
-//            String code = "#include " + include + "\n";
-//            result.insert(pointer, code);
-//            pointer += code.length();
-//        }
+        StringBuilder includes = new StringBuilder();
+        for (ResourceLocation include : this.includes) {
+            includes.append("#custom veil:include ").append(include).append("\n");
+        }
+        tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, includes.toString());
 
         if (!StringUtil.isNullOrEmpty(this.uniform)) {
             tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, this.fillPlaceholders(this.uniform) + '\n');
@@ -68,67 +65,6 @@ public class SimpleShaderModification implements ShaderModification {
                 tree.prependFunctionBody(function.name(), statement);
             } else {
                 tree.appendFunctionBody(function.name(), statement);
-            }
-        }
-    }
-
-    protected void processBody(int pointer, StringBuilder builder) throws IOException {
-        if (!StringUtil.isNullOrEmpty(this.uniform)) {
-            Matcher matcher = UNIFORM_PATTERN.matcher(builder);
-            while (matcher.find()) {
-                pointer = matcher.end();
-            }
-
-            String code = this.fillPlaceholders(this.uniform) + '\n';
-            builder.insert(pointer, code);
-            pointer += code.length();
-        }
-
-        if (!StringUtil.isNullOrEmpty(this.output)) {
-            Matcher matcher = OUT_PATTERN.matcher(builder);
-            while (matcher.find()) {
-                pointer = matcher.end();
-            }
-
-            String code = this.fillPlaceholders(this.output) + '\n';
-            builder.insert(pointer, code);
-        }
-
-        for (Function function : this.functions) {
-            Matcher matcher = function.pattern().matcher(builder);
-            if (!matcher.find()) {
-                throw new IOException("Unknown function: " + function.name());
-            }
-
-            int head = matcher.end();
-            pointer = head;
-            if (!function.head()) {
-                int parenthesis = 1;
-                while (pointer < builder.length()) {
-                    if (builder.charAt(pointer) == '{') {
-                        parenthesis++;
-                    }
-                    if (builder.charAt(pointer) == '}') {
-                        parenthesis--;
-                    }
-                    if (parenthesis == 0) {
-                        pointer--;
-                        break;
-                    }
-                    pointer++;
-                }
-
-                Matcher returnMatcher = RETURN_PATTERN.matcher(builder.substring(head, pointer));
-                while (returnMatcher.find()) {
-                    pointer = returnMatcher.start() - 1;
-                }
-            }
-
-            String code = this.fillPlaceholders("\n{\n" + function.code() + "}");
-            builder.insert(pointer, code);
-
-            if (matcher.find()) {
-                throw new IOException("Ambiguous method: " + function.name());
             }
         }
     }

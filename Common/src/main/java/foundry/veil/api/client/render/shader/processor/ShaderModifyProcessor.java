@@ -1,10 +1,8 @@
 package foundry.veil.api.client.render.shader.processor;
 
-import foundry.veil.api.client.render.shader.ShaderManager;
+import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.shader.ShaderModificationManager;
-import foundry.veil.impl.client.render.shader.modifier.ShaderModification;
 import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 
 import java.io.IOException;
@@ -21,8 +19,8 @@ public class ShaderModifyProcessor implements ShaderPreProcessor {
     private final ShaderModificationManager shaderModificationManager;
     private final Set<ResourceLocation> appliedModifications;
 
-    public ShaderModifyProcessor(ShaderModificationManager shaderModificationManager) {
-        this.shaderModificationManager = shaderModificationManager;
+    public ShaderModifyProcessor() {
+        this.shaderModificationManager = VeilRenderSystem.renderer().getShaderModificationManager();
         this.appliedModifications = new HashSet<>();
     }
 
@@ -32,13 +30,12 @@ public class ShaderModifyProcessor implements ShaderPreProcessor {
     }
 
     @Override
-    public String modify(Context context) throws IOException {
+    public String modify(Context context, String source) throws IOException {
         ResourceLocation name = context.name();
         if (name == null || !this.appliedModifications.add(name)) {
-            return context.sourceCode();
+            return source;
         }
         int flags = context.isSourceFile() ? VeilJobParameters.APPLY_VERSION | VeilJobParameters.ALLOW_OUT : 0;
-        FileToIdConverter converter = context.isSourceFile() ? context.idConverter() : ShaderManager.INCLUDE_LISTER;
-        return context.modify(context.name(), this.shaderModificationManager.applyModifiers(converter.idToFile(name), context.sourceCode(), flags));
+        return this.shaderModificationManager.applyModifiers(name, source, flags);
     }
 }

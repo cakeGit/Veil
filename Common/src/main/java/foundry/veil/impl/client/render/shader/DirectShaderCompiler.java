@@ -99,7 +99,7 @@ public class DirectShaderCompiler implements ShaderCompiler {
         Object2IntMap<String> uniformBindings = new Object2IntArrayMap<>();
         Set<String> dependencies = new HashSet<>();
         Set<ResourceLocation> includes = new HashSet<>();
-        String transformed = processor.modify(new PreProcessorContext(importProcessor, context, uniformBindings, dependencies, includes, this.compilingName, source, type, true));
+        String transformed = processor.modify(new PreProcessorContext(importProcessor, context, uniformBindings, dependencies, includes, this.compilingName, true), source);
 
         int shader = glCreateShader(type);
         glShaderSource(shader, transformed);
@@ -153,13 +153,12 @@ public class DirectShaderCompiler implements ShaderCompiler {
                                        Set<String> dependencies,
                                        Set<ResourceLocation> includes,
                                        @Nullable ResourceLocation name,
-                                       String sourceCode,
-                                       int type,
                                        boolean sourceFile) implements ShaderPreProcessor.Context {
 
         @Override
         public String modify(@Nullable ResourceLocation name, String source) throws IOException {
-            return this.preProcessor.modify(this.withSource(name, source));
+            PreProcessorContext context = new PreProcessorContext(this.preProcessor, this.context, this.uniformBindings, this.dependencies, this.includes, name, false);
+            return this.preProcessor.modify(context, source);
         }
 
         @Override
@@ -178,28 +177,18 @@ public class DirectShaderCompiler implements ShaderCompiler {
         }
 
         @Override
-        public FileToIdConverter idConverter() {
-            return this.context.sourceSet().getTypeConverter(this.type());
-        }
-
-        @Override
         public boolean isSourceFile() {
             return this.sourceFile;
         }
 
         @Override
-        public @Nullable ProgramDefinition definitions() {
+        public @Nullable ProgramDefinition definition() {
             return this.context.definition();
         }
 
         @Override
         public ShaderPreDefinitions preDefinitions() {
             return this.context.preDefinitions();
-        }
-
-        @Override
-        public ShaderPreProcessor.Context withSource(@Nullable ResourceLocation name, String source) {
-            return new PreProcessorContext(this.preProcessor, this.context, this.uniformBindings, this.dependencies, this.includes, name, source, this.type, false);
         }
     }
 }

@@ -1,9 +1,7 @@
 package foundry.veil.api.client.render.shader.processor;
 
-import foundry.veil.api.client.render.shader.ShaderManager;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import foundry.veil.api.client.render.shader.program.ProgramDefinition;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +19,7 @@ import java.util.regex.Pattern;
  */
 public interface ShaderPreProcessor {
 
-    ShaderPreProcessor NOOP = Context::sourceCode;
+    ShaderPreProcessor NOOP = (ctx, source) -> source;
     Pattern UNIFORM_PATTERN = Pattern.compile(".*uniform\\s+(?<type>\\w+)\\W(?<name>\\w*)");
 
     /**
@@ -33,11 +31,12 @@ public interface ShaderPreProcessor {
     /**
      * Modifies the specified shader source input.
      *
-     * @param context Context for modifying shaders
+     * @param ctx    Context for modifying shaders
+     * @param source The GLSL source code to modify
      * @return The modified source or the input if nothing changed
      * @throws IOException If any error occurs while editing the source
      */
-    String modify(Context context) throws IOException;
+    String modify(Context ctx, String source) throws IOException;
 
     static ShaderPreProcessor allOf(ShaderPreProcessor... processors) {
         return allOf(Arrays.asList(processors));
@@ -105,28 +104,6 @@ public interface ShaderPreProcessor {
         ResourceLocation name();
 
         /**
-         * @return The input source code. This is GLSL
-         */
-        String sourceCode();
-
-        /**
-         * @return The OpenGL type of the shader being compiled
-         */
-        int type();
-
-        /**
-         * @return The file to id converter for the loading shader file type
-         */
-        FileToIdConverter idConverter();
-
-        /**
-         * @return The readable name of the loading shader file type
-         */
-        default String getTypeName() {
-            return ShaderManager.getTypeName(this.type());
-        }
-
-        /**
          * @return Whether the processor is being run for a source file and not a #include file
          */
         boolean isSourceFile();
@@ -135,13 +112,12 @@ public interface ShaderPreProcessor {
          * @return The definition of the program this is being compiled for or <code>null</code> if the shader is standalone
          */
         @Nullable
-        ProgramDefinition definitions();
+        ProgramDefinition definition();
 
         /**
          * @return The set of pre-definitions for shaders
          */
+        @Nullable
         ShaderPreDefinitions preDefinitions();
-
-        Context withSource(@Nullable ResourceLocation name, String source);
     }
 }

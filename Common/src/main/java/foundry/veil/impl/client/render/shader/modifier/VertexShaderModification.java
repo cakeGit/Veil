@@ -25,7 +25,7 @@ public class VertexShaderModification extends SimpleShaderModification {
         {
             Root root = this.pattern.getRoot();
             this.markClassWildcard("type", root.identifierIndex.getUnique("type").getAncestor(TypeSpecifier.class));
-            this.markClassWildcard("name*", root.identifierIndex.getUnique("name").getAncestor(DeclarationMember.class));
+            this.markClassWildcard("name", root.identifierIndex.getUnique("name").getAncestor(DeclarationMember.class));
         }
     };
 

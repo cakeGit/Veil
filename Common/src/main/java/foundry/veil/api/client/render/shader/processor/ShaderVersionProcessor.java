@@ -15,14 +15,10 @@ public class ShaderVersionProcessor implements ShaderPreProcessor {
     public static final Pattern PATTERN = Pattern.compile("(#version\\s+.+)");
 
     @Override
-    public @NotNull String modify(@NotNull Context context) {
-        String input = context.sourceCode();
-
-        Matcher matcher = ShaderVersionProcessor.PATTERN.matcher(input);
-        if (!matcher.find()) {
-            return "#version 410 core\n" + input;
+    public @NotNull String modify(@NotNull Context context, String source) {
+        if (!ShaderVersionProcessor.PATTERN.matcher(source).matches()) {
+            return "#version 410 core\n" + source;
         }
-
-        return matcher.group() + "\n" + matcher.replaceAll("");
+        return source;
     }
 }

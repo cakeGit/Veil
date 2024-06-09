@@ -13,14 +13,17 @@ import java.util.Locale;
 public class ShaderPredefinitionProcessor implements ShaderPreProcessor {
 
     @Override
-    public String modify(Context context) {
-        ProgramDefinition programDefinition = context.definitions();
-        String input = context.sourceCode();
+    public String modify(Context context, String source) {
+        ProgramDefinition programDefinition = context.definition();
         if (programDefinition == null) {
-            return input;
+            return source;
         }
 
         ShaderPreDefinitions definitions = context.preDefinitions();
+        if (definitions == null) {
+            return source;
+        }
+
         StringBuilder builder = new StringBuilder();
 
         definitions.addStaticDefinitions(value -> builder.append(value).append('\n'));
@@ -43,7 +46,7 @@ public class ShaderPredefinitionProcessor implements ShaderPreProcessor {
             context.addDefinitionDependency(name);
         }
 
-        builder.append(input);
+        builder.append(source);
         return builder.toString();
     }
 }

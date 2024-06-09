@@ -18,8 +18,7 @@ public class ShaderBindingProcessor extends ShaderLineProcessor {
     private static final Pattern VERSION_PATTERN = Pattern.compile("#version\\s+(\\d+)");
 
     @Override
-    public @NotNull String modify(@NotNull Context context) throws IOException {
-        String source = context.sourceCode();
+    public @NotNull String modify(@NotNull Context context, String source) throws IOException {
         Matcher versionMatcher = VERSION_PATTERN.matcher(source);
         if (versionMatcher.find()) {
             try {
@@ -32,7 +31,7 @@ public class ShaderBindingProcessor extends ShaderLineProcessor {
             }
         }
 
-        return super.modify(context);
+        return super.modify(context, source);
     }
 
     @Override

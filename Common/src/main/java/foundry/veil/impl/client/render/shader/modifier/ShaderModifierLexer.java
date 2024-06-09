@@ -39,14 +39,12 @@ public final class ShaderModifierLexer {
     }
 
     private static Token getToken(StringReader reader) {
-        String word = reader.getString().substring(reader.getCursor());
+        String remaining = reader.getRemaining();
         for (TokenType type : TokenType.values()) {
-            Matcher matcher = type.pattern.matcher(word);
+            Matcher matcher = type.pattern.matcher(remaining);
             if (matcher.find() && matcher.start() == 0) {
-                for (int i = 0; i < matcher.end(); i++) {
-                    reader.skip();
-                }
-                return new Token(type, word.substring(0, matcher.end()));
+                reader.setCursor(reader.getCursor() + matcher.end());
+                return new Token(type, remaining.substring(0, matcher.end()));
             }
         }
 
@@ -65,7 +63,7 @@ public final class ShaderModifierLexer {
     }
 
     public enum TokenType {
-        COMMENT("\\/\\/"),
+        COMMENT("\\/\\/.+"),
         VERSION("#version"),
         PRIORITY("#priority"),
         INCLUDE("#include"),
@@ -101,6 +99,14 @@ public final class ShaderModifierLexer {
 
         public boolean isValidLocation() {
             return this == ALPHANUMERIC || this == NAMESPACE || this == PATH || this == COLON;
+        }
+
+        public boolean isCommand() {
+            return this == GET_ATTRIBUTE || this == OUTPUT || this == UNIFORM || this == FUNCTION;
+        }
+
+        public boolean isWhitespace() {
+            return this == COMMENT || this == NEWLINE;
         }
     }
 }

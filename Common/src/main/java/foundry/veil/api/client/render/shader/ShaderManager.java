@@ -198,7 +198,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
     }
 
     private ShaderCompiler addProcessors(ShaderCompiler compiler) {
-        return compiler.addDefaultProcessors().addPreprocessor(new ShaderModifyProcessor(this.shaderModificationManager));
+        return compiler.addDefaultProcessors().addPreprocessor(new ShaderModifyProcessor());
     }
 
     /**

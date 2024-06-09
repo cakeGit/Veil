@@ -44,8 +44,7 @@ public class ProgramMixin {
                 source.append(sourceLine);
             }
 
-            String transformed = VeilRenderSystem.renderer().getShaderModificationManager().applyModifiers(veil$captureId, source.toString(), VeilJobParameters.APPLY_VERSION | VeilJobParameters.ALLOW_OUT);
-            return List.of(VanillaShaderImportProcessor.modify(transformed));
+            return List.of(VanillaShaderImportProcessor.modify(veil$captureId, source.toString()));
         } catch (Exception e) {
             Veil.LOGGER.error("Failed to modify vanilla source for shader: {}", veil$captureId, e);
         }

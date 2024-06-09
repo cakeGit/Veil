@@ -2,6 +2,7 @@ package foundry.veil.impl.client.render.shader.modifier;
 
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -160,10 +161,17 @@ public final class ShaderModificationParser {
 
     private static String consumeGLSL(TokenReader reader) {
         StringBuilder code = new StringBuilder();
-        while (reader.canRead() && reader.peek().type() != ShaderModifierLexer.TokenType.LEFT_BRACKET) {
+        while (reader.canRead()) {
             ShaderModifierLexer.Token token = reader.peek();
-            code.append(token.value());
+            if (token.type() == ShaderModifierLexer.TokenType.LEFT_BRACKET) {
+                ShaderModifierLexer.Token next = reader.peek(1);
+                if (next != null && next.type().isCommand()) {
+                    // Only stop if a new command is detected
+                    break;
+                }
+            }
 
+            code.append(token.value());
             if (token.type() != ShaderModifierLexer.TokenType.NEWLINE) {
                 code.append(' ');
             }
@@ -256,7 +264,11 @@ public final class ShaderModificationParser {
         }
 
         public ShaderModifierLexer.Token peek() {
-            return this.tokens[this.cursor];
+            return this.peek(0);
+        }
+
+        public @Nullable ShaderModifierLexer.Token peek(int amount) {
+            return this.cursor + amount < this.tokens.length ? this.tokens[this.cursor + amount] : null;
         }
 
         public void skip() {
@@ -264,20 +276,8 @@ public final class ShaderModificationParser {
         }
 
         public void skipWhitespace() {
-            while (this.canRead()) {
-                ShaderModifierLexer.TokenType type = this.peek().type();
-                if (type == ShaderModifierLexer.TokenType.COMMENT) {
-                    this.skip();
-                    while (this.canRead() && this.peek().type() != ShaderModifierLexer.TokenType.NEWLINE) {
-                        this.skip();
-                    }
-                    continue;
-                }
-                if (type == ShaderModifierLexer.TokenType.NEWLINE) {
-                    this.skip();
-                    continue;
-                }
-                break;
+            while (this.canRead() && this.peek().type().isWhitespace()) {
+                this.skip();
             }
         }
     }

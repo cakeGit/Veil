@@ -133,14 +133,18 @@ public class VeilImGuiImpl implements VeilImGui {
 
     public static void init(long window) {
         try {
-            if (System.getProperty("os.arch").equals("arm") || System.getProperty("os.arch").startsWith("aarch64")) {
-                System.setProperty("imgui.library.name", "libimgui-javaarm64.dylib");
-            }
-
             instance = Veil.IMGUI ? new VeilImGuiImpl(window) : new InactiveVeilImGuiImpl();
         } catch (Throwable t) {
             Veil.LOGGER.error("Failed to load ImGui", t);
             instance = new InactiveVeilImGuiImpl();
+        }
+    }
+
+    public static void setImGuiPath() {
+        if (System.getProperty("os.arch").equals("arm") || System.getProperty("os.arch").startsWith("aarch64")) {
+            // ImGui infers a path for loading the library using this name property
+            // Essential that this property is set, before any ImGui-adjacent native code is loaded
+            System.setProperty("imgui.library.name", "libimgui-javaarm64.dylib");
         }
     }
 

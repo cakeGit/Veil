@@ -7,6 +7,7 @@ import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
 import foundry.veil.impl.client.editor.*;
+import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import foundry.veil.impl.resource.VeilResourceManagerImpl;
 import foundry.veil.platform.VeilClientPlatform;
 import foundry.veil.platform.VeilEventPlatform;
@@ -28,6 +29,8 @@ public class VeilClient {
 
     @ApiStatus.Internal
     public static void init() {
+        VeilImGuiImpl.setImGuiPath();
+
         VeilEventPlatform.INSTANCE.onFreeNativeResources(() -> {
             VeilRenderSystem.close();
             RESOURCE_MANAGER.free();

@@ -21,7 +21,8 @@
     "client.stage.LevelRendererMixin",
     "client.stage.sodium.SodiumWorldRendererMixin",
     "client.stage.vanilla.LevelRendererMixin",
-    "compat.iris.NewWorldRenderingPipelineAccessor"
+    "compat.iris.NewWorldRenderingPipelineAccessor",
+    "compat.replaymod.PipelineMixin"
   ],
   "injectors": {
     "defaultRequire": 1

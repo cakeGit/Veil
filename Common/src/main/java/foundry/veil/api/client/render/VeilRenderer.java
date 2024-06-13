@@ -44,10 +44,10 @@ public class VeilRenderer implements NativeResource {
     public VeilRenderer(ReloadableResourceManager resourceManager) {
         this.shaderModificationManager = new ShaderModificationManager();
         this.shaderPreDefinitions = new ShaderPreDefinitions();
-        this.shaderManager = new ShaderManager(ShaderManager.PROGRAM_SET, this.shaderModificationManager, this.shaderPreDefinitions);
+        this.shaderManager = new ShaderManager(ShaderManager.PROGRAM_SET, this.shaderPreDefinitions);
         this.framebufferManager = new FramebufferManager();
         this.postProcessingManager = new PostProcessingManager();
-        ShaderManager deferredShaderManager = new ShaderManager(ShaderManager.DEFERRED_SET, this.shaderModificationManager, this.shaderPreDefinitions);
+        ShaderManager deferredShaderManager = new ShaderManager(ShaderManager.DEFERRED_SET, this.shaderPreDefinitions);
         this.deferredRenderer = new VeilDeferredRenderer(deferredShaderManager, this.shaderPreDefinitions, this.framebufferManager, this.postProcessingManager);
         this.dynamicRenderTypeManager = new DynamicRenderTypeManager();
         this.quasarParticleManager = new ParticleSystemManager();

@@ -10,6 +10,7 @@ import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.client.render.framebuffer.FramebufferManager;
 import foundry.veil.api.client.render.post.PostProcessingManager;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
+import foundry.veil.api.client.render.shader.processor.ShaderCustomProcessor;
 import foundry.veil.api.client.render.shader.processor.ShaderModifyProcessor;
 import foundry.veil.api.client.render.shader.program.ProgramDefinition;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
@@ -70,7 +71,6 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
     );
 
     private final ShaderSourceSet sourceSet;
-    private final ShaderModificationManager shaderModificationManager;
     private final ShaderPreDefinitions definitions;
     private final Map<ResourceLocation, ShaderProgram> shaders;
     private final Map<ResourceLocation, ShaderProgram> shadersView;
@@ -81,13 +81,11 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
     /**
      * Creates a new shader manager.
      *
-     * @param sourceSet                 The source set to load all shaders from
-     * @param shaderModificationManager The manager for shader file modifications
-     * @param shaderPreDefinitions      The set of shader pre-definitions
+     * @param sourceSet            The source set to load all shaders from
+     * @param shaderPreDefinitions The set of shader pre-definitions
      */
-    public ShaderManager(ShaderSourceSet sourceSet, ShaderModificationManager shaderModificationManager, ShaderPreDefinitions shaderPreDefinitions) {
+    public ShaderManager(ShaderSourceSet sourceSet, ShaderPreDefinitions shaderPreDefinitions) {
         this.sourceSet = sourceSet;
-        this.shaderModificationManager = shaderModificationManager;
         this.definitions = shaderPreDefinitions;
         this.definitions.addListener(this::onDefinitionChanged);
         this.shaders = new HashMap<>();
@@ -197,8 +195,8 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
         }
     }
 
-    private ShaderCompiler addProcessors(ShaderCompiler compiler) {
-        return compiler.addDefaultProcessors().addPreprocessor(new ShaderModifyProcessor());
+    private ShaderCompiler addProcessors(ShaderCompiler compiler, ResourceProvider provider) {
+        return compiler.addDefaultProcessors().addPreprocessor(new ShaderModifyProcessor()).addPreprocessor(new ShaderCustomProcessor(provider));
     }
 
     /**
@@ -208,7 +206,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
      * @param provider The source of resources
      */
     public void recompile(ResourceLocation id, ResourceProvider provider) {
-        try (ShaderCompiler compiler = this.addProcessors(ShaderCompiler.direct(provider))) {
+        try (ShaderCompiler compiler = this.addProcessors(ShaderCompiler.direct(provider), provider)) {
             this.recompile(id, provider, compiler);
         }
     }
@@ -284,7 +282,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
         this.shaders.clear();
 
         ResourceProvider sourceProvider = loc -> Optional.ofNullable(reloadState.shaderSources().get(loc));
-        try (ShaderCompiler compiler = this.addProcessors(ShaderCompiler.cached(sourceProvider))) {
+        try (ShaderCompiler compiler = this.addProcessors(ShaderCompiler.cached(sourceProvider), sourceProvider)) {
             for (Map.Entry<ResourceLocation, ProgramDefinition> entry : reloadState.definitions().entrySet()) {
                 ResourceLocation id = entry.getKey();
                 ShaderProgram program = ShaderProgram.create(id);
@@ -300,7 +298,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
 
     private void applyRecompile(ShaderManager.ReloadState reloadState, Collection<ResourceLocation> shaders) {
         ResourceProvider sourceProvider = loc -> Optional.ofNullable(reloadState.shaderSources().get(loc));
-        try (ShaderCompiler compiler = this.addProcessors(ShaderCompiler.cached(sourceProvider))) {
+        try (ShaderCompiler compiler = this.addProcessors(ShaderCompiler.cached(sourceProvider), sourceProvider)) {
             for (Map.Entry<ResourceLocation, ProgramDefinition> entry : reloadState.definitions().entrySet()) {
                 ResourceLocation id = entry.getKey();
                 ShaderProgram program = this.getShader(id);

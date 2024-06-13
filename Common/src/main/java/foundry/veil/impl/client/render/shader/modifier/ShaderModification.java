@@ -42,19 +42,10 @@ public interface ShaderModification {
         return ShaderModificationParser.parse(ShaderModifierLexer.createTokens(input), vertex);
     }
 
-    record Function(String name, Pattern pattern, int parameters, boolean head, String code) {
+    record Function(String name, int parameters, boolean head, String code) {
 
         public static Function create(String name, int parameters, boolean head, String code) {
-            if (parameters == -1) {
-                return new Function(name, Pattern.compile("\\w+\\s+" + name + "\\s*\\([^)]*\\)[^{]*\\{"), parameters, head, code);
-            }
-            if (parameters == 0) {
-                return new Function(name, Pattern.compile("\\w+\\s+" + name + "\\s*\\(\\s*\\)[^{]*\\{"), parameters, head, code);
-            }
-            if (parameters == 1) {
-                return new Function(name, Pattern.compile("\\w+\\s+" + name + "\\s*\\(\\s*\\w+\\s\\w+)\\)[^{]*\\{"), parameters, head, code);
-            }
-            return new Function(name, Pattern.compile("\\w+\\s+" + name + "\\s*\\(((\\s*\\w+\\s\\w+,)\\{" + (parameters - 1) + "}\\s*\\w+\\s\\w+)\\)[^{]*\\{"), parameters, head, code);
+            return new Function(name, parameters, head, code);
         }
     }
 }

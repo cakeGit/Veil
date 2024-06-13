@@ -14,16 +14,16 @@ import java.util.regex.Matcher;
 public class InputShaderModification implements ShaderModification {
 
     private final int priority;
-    private final Supplier<String> input;
+    private final String input;
 
-    public InputShaderModification(int priority, Supplier<String> input) {
+    public InputShaderModification(int priority, String input) {
         this.priority = priority;
         this.input = input;
     }
 
     @Override
     public void inject(ASTParser parser, TranslationUnit tree, VeilJobParameters parameters) throws IOException {
-        tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, this.input.get() + '\n');
+        tree.parseAndInjectNodes(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, this.input.split("\n"));
     }
 
     @Override

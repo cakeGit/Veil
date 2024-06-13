@@ -7,6 +7,10 @@ import foundry.veil.impl.client.render.shader.modifier.ShaderModification;
 import foundry.veil.impl.client.render.shader.modifier.SimpleShaderModification;
 import foundry.veil.impl.client.render.shader.transformer.VeilASTTransformer;
 import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
+import io.github.douira.glsl_preprocessor.DefaultPreprocessorListener;
+import io.github.douira.glsl_preprocessor.Feature;
+import io.github.douira.glsl_preprocessor.Preprocessor;
+import io.github.douira.glsl_preprocessor.StringLexerSource;
 import io.github.douira.glsl_transformer.GLSLLexer;
 import io.github.douira.glsl_transformer.ast.print.PrintType;
 import io.github.douira.glsl_transformer.ast.query.RootSupplier;
@@ -27,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Reader;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -43,7 +46,6 @@ public class ShaderModificationManager extends SimplePreparableReloadListener<Sh
             "gsh", "fsh"
     );
     private static final Pattern OUT_PATTERN = Pattern.compile("out ");
-    private static final Pattern DEFINE_PATTERN = Pattern.compile("#define(.+)");
 
     private final VeilASTTransformer transformer;
     private Map<ResourceLocation, List<ShaderModification>> shaders;
@@ -69,16 +71,14 @@ public class ShaderModificationManager extends SimplePreparableReloadListener<Sh
      * @see ShaderModification
      */
     public String applyModifiers(ResourceLocation shaderId, String source, int flags) {
-        try {
-            Matcher matcher = DEFINE_PATTERN.matcher(source);
-            StringBuilder defines = new StringBuilder();
-            while (matcher.find()) {
-                defines.append("#define ").append(matcher.group(1)).append('\n');
-            }
+        try (Preprocessor preprocessor = new Preprocessor()) {
+            preprocessor.setListener(new DefaultPreprocessorListener());
+            preprocessor.addInput(new StringLexerSource(source, true));
+            preprocessor.addFeature(Feature.KEEPCOMMENTS);
+            preprocessor.addFeature(Feature.GLSL_PASSTHROUGH);
 
-            String transformed = this.transformer.transform(source, new VeilJobParameters(this, shaderId, flags));
-            String[] parts = transformed.split("\n", 2);
-            return parts[0] + '\n' + defines + parts[1];
+            String processed = preprocessor.printToString();
+            return this.transformer.transform(processed, new VeilJobParameters(this, shaderId, flags));
         } catch (TransformationException | ParsingException | IllegalStateException | IllegalArgumentException e) {
             Veil.LOGGER.error("Failed to parse shader: {}", shaderId, e);
         }
@@ -177,7 +177,7 @@ public class ShaderModificationManager extends SimplePreparableReloadListener<Sh
                     break;
                 }
 
-                InputShaderModification input = new InputShaderModification(simpleMod.priority(), () -> OUT_PATTERN.matcher(simpleMod.fillPlaceholders(simpleMod.getOutput())).replaceAll("in "));
+                InputShaderModification input = new InputShaderModification(simpleMod.priority(), OUT_PATTERN.matcher(simpleMod.fillPlaceholders(simpleMod.getOutput())).replaceAll("in "));
                 modifiers.computeIfAbsent(nextStage, unused -> new LinkedList<>()).add(input);
                 names.put(input, names.get(simpleMod));
             }

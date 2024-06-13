@@ -113,6 +113,7 @@ dependencies {
 
     shade "io.github.douira:glsl-transformer:${glsl_transformer_version}"
     shade "gg.moonflower:molang-compiler:$molang_compiler_version"
+    shade "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
 
     shade "io.github.spair:imgui-java-binding:$imgui_version"
     shade("io.github.spair:imgui-java-lwjgl3:$imgui_version") {

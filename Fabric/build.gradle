@@ -75,6 +75,9 @@ dependencies {
     implementation "io.github.douira:glsl-transformer:${glsl_transformer_version}"
     shade "io.github.douira:glsl-transformer:${glsl_transformer_version}"
 
+    implementation "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
+    shade "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
+
     implementation "gg.moonflower:molang-compiler:${molang_compiler_version}"
     shade "gg.moonflower:molang-compiler:$molang_compiler_version"
 

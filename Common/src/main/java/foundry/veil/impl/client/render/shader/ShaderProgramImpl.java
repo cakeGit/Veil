@@ -19,6 +19,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -252,7 +253,7 @@ public class ShaderProgramImpl implements ShaderProgram {
         private final ShaderProgram program;
         private final Object2IntMap<CharSequence> textures;
         private final Object2IntMap<CharSequence> boundSamplers;
-        private final Set<SamplerListener> listeners;
+        private final ObjectSet<SamplerListener> listeners;
         private boolean dirty;
         private IntBuffer bindings;
 
@@ -304,7 +305,7 @@ public class ShaderProgramImpl implements ShaderProgram {
             for (SamplerListener listener : this.listeners) {
                 listener.onUpdateSamplers(this.boundSamplers);
             }
-            return count;
+            return start + count;
         }
 
         public int bind(int start) {
@@ -318,8 +319,8 @@ public class ShaderProgramImpl implements ShaderProgram {
                     }
 
                     this.bindings.clear();
-                    int count = this.uploadTextures(start, (sampler, id) -> this.bindings.put(id));
-                    if (count == 0) {
+                    int end = this.uploadTextures(start, (sampler, id) -> this.bindings.put(id));
+                    if (end == start) {
                         this.bindings.position(0);
                         return start;
                     }
@@ -337,7 +338,7 @@ public class ShaderProgramImpl implements ShaderProgram {
             this.dirty = false;
 
             int activeTexture = GlStateManager._getActiveTexture();
-            this.uploadTextures(start, (sampler, id) -> {
+            int end = this.uploadTextures(start, (sampler, id) -> {
                 RenderSystem.activeTexture(GL_TEXTURE0 + sampler);
                 if (sampler >= 12) {
                     glBindTexture(GL_TEXTURE_2D, id);
@@ -346,7 +347,7 @@ public class ShaderProgramImpl implements ShaderProgram {
                 }
             });
             RenderSystem.activeTexture(activeTexture);
-            return start;
+            return end;
         }
 
         public void addSamplerListener(SamplerListener listener) {

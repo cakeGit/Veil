@@ -132,7 +132,7 @@ public class FramebufferEditor extends SingleWindowEditor {
                     ImGui.endGroup();
                 }
 
-                if (ImGui.button("Save", ImGui.getContentRegionAvailX() - 4, 26)) {
+                if (ImGui.button("Save", ImGui.getContentRegionAvailX() - 4, 0)) {
                     this.downloadBuffer = buffer;
                 }
             }

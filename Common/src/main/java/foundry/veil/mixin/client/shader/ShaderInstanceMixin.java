@@ -3,7 +3,7 @@ package foundry.veil.mixin.client.shader;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Uniform;
 import foundry.veil.impl.client.render.shader.ShaderProgramImpl;
-import foundry.veil.impl.client.render.shader.VanillaShaderImportProcessor;
+import foundry.veil.impl.client.render.shader.SimpleShaderProcessor;
 import foundry.veil.impl.client.render.wrapper.VanillaUniformWrapper;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -48,12 +48,12 @@ public class ShaderInstanceMixin {
 
     @Inject(method = "getOrCreate", at = @At("HEAD"))
     private static void veil$setupFallbackProcessor(ResourceProvider provider, Program.Type type, String name, CallbackInfoReturnable<Program> cir) {
-        VanillaShaderImportProcessor.setup(provider);
+        SimpleShaderProcessor.setup(provider);
     }
 
     @Inject(method = "getOrCreate", at = @At("RETURN"))
     private static void veil$clearFallbackProcessor(ResourceProvider provider, Program.Type type, String name, CallbackInfoReturnable<Program> cir) {
-        VanillaShaderImportProcessor.free();
+        SimpleShaderProcessor.free();
     }
 
     // Allows users to request uniforms that aren't "registered"

@@ -3,10 +3,7 @@ package foundry.veil.mixin.client.shader;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.Program;
 import foundry.veil.Veil;
-import foundry.veil.api.client.render.VeilRenderSystem;
-import foundry.veil.impl.client.render.shader.VanillaShaderImportProcessor;
-import foundry.veil.impl.client.render.shader.modifier.ShaderModification;
-import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
+import foundry.veil.impl.client.render.shader.SimpleShaderProcessor;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -44,7 +41,7 @@ public class ProgramMixin {
                 source.append(sourceLine);
             }
 
-            return List.of(VanillaShaderImportProcessor.modify(veil$captureId, source.toString()));
+            return List.of(SimpleShaderProcessor.modify(veil$captureId, source.toString()));
         } catch (Exception e) {
             Veil.LOGGER.error("Failed to modify vanilla source for shader: {}", veil$captureId, e);
         }

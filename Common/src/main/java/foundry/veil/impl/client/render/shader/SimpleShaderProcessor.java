@@ -11,10 +11,10 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 
 /**
- * Allows vanilla shaders to use <code>#define namespace:id</code> imports
+ * Allows vanilla and sodium shaders to use shader modifications.
  */
 @ApiStatus.Internal
-public class VanillaShaderImportProcessor {
+public class SimpleShaderProcessor {
 
     private static ShaderPreProcessor processor;
 

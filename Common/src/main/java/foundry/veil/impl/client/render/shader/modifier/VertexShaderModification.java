@@ -71,7 +71,7 @@ public class VertexShaderModification extends SimpleShaderModification {
                 Attribute sourceAttribute = validInputs.get(attribute.index);
                 if (sourceAttribute == null) {
                     // TODO this might be messed up on mac. It needs to be tested
-                    tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, "layout(location = " + attribute.index + ") in " + attribute.type + " " + attribute.name);
+                    tree.parseAndInjectNode(parser, ASTInjectionPoint.BEFORE_DECLARATIONS, "layout(location = " + attribute.index + ") in " + attribute.type + " " + attribute.name + ";");
                     this.mapper.put(attribute.name, attribute.name);
                     continue;
                 }

@@ -10,6 +10,7 @@ import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.impl.client.imgui.VeilImGuiImpl;
 import foundry.veil.impl.compat.IrisShaderMap;
+import foundry.veil.impl.compat.SodiumShaderMap;
 import foundry.veil.mixin.accessor.GameRendererAccessor;
 import foundry.veil.mixin.accessor.LevelRendererAccessor;
 import foundry.veil.mixin.accessor.PostChainAccessor;
@@ -476,6 +477,14 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 for (ShaderInstance shader : IrisShaderMap.getLoadedShaders()) {
                     String name = shader.getName().isBlank() ? Integer.toString(shader.getId()) : shader.getName();
                     registry.accept(new ResourceLocation(name), shader.getId());
+                }
+            }
+        },
+        SODIUM("Sodium", SodiumShaderMap::isEnabled, SodiumShaderMap::isEnabled) {
+            @Override
+            public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
+                for (Object2IntMap.Entry<ResourceLocation> entry : SodiumShaderMap.getLoadedShaders().object2IntEntrySet()) {
+                    registry.accept(entry.getKey(), entry.getIntValue());
                 }
             }
         },

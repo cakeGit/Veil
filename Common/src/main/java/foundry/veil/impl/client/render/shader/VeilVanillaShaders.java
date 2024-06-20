@@ -6,6 +6,7 @@ import foundry.veil.Veil;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -23,12 +24,23 @@ public final class VeilVanillaShaders {
         context.register(new ResourceLocation("worldborder"), DefaultVertexFormat.POSITION_TEX, value -> worldborder = value);
     }
 
-    public static ShaderInstance getClouds() {
+    public static @Nullable ShaderInstance getClouds() {
         return clouds;
     }
 
-    public static ShaderInstance getWorldborder() {
+    public static @Nullable ShaderInstance getWorldborder() {
         return worldborder;
+    }
+
+    public static void free() {
+        if (clouds != null) {
+            clouds.close();
+            clouds = null;
+        }
+        if (worldborder != null) {
+            worldborder.close();
+            worldborder = null;
+        }
     }
 
     @FunctionalInterface

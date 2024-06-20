@@ -99,7 +99,12 @@ public class VeilFabricClient implements ClientModInitializer {
         ModContainer container = FabricLoader.getInstance().getModContainer(Veil.MODID).orElseThrow();
         VeilBuiltinPacks.registerPacks((id, defaultEnabled) -> ResourceManagerHelper.registerBuiltinResourcePack(id, container, defaultEnabled ? ResourcePackActivationType.DEFAULT_ENABLED : ResourcePackActivationType.NORMAL));
 
-        CoreShaderRegistrationCallback.EVENT.register(context -> VeilVanillaShaders.registerShaders(context::register));
+        CoreShaderRegistrationCallback.EVENT.register(context -> {
+            // On Fabric, this event is called more than once, so this prevents massive resource leaks
+            // FIXME https://github.com/FabricMC/fabric/issues/3230
+            VeilVanillaShaders.free();
+            VeilVanillaShaders.registerShaders(context::register);
+        });
         VeilReloadListeners.registerListeners((type, id, listener) -> ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new FabricReloadListener(Veil.veilPath(id), listener)));
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             LiteralArgumentBuilder<FabricClientCommandSource> builder = LiteralArgumentBuilder.literal("quasar");

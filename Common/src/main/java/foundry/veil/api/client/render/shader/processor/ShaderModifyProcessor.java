@@ -36,6 +36,9 @@ public class ShaderModifyProcessor implements ShaderPreProcessor {
             return source;
         }
         int flags = context.isSourceFile() ? VeilJobParameters.APPLY_VERSION | VeilJobParameters.ALLOW_OUT : 0;
+        for (ResourceLocation include : context.includes()) { // Run include modifiers first
+            source = this.shaderModificationManager.applyModifiers(include, source, flags);
+        }
         return this.shaderModificationManager.applyModifiers(name, source, flags);
     }
 }

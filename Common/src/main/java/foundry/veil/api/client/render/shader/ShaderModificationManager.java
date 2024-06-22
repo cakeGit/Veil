@@ -7,10 +7,6 @@ import foundry.veil.impl.client.render.shader.modifier.ShaderModification;
 import foundry.veil.impl.client.render.shader.modifier.SimpleShaderModification;
 import foundry.veil.impl.client.render.shader.transformer.VeilASTTransformer;
 import foundry.veil.impl.client.render.shader.transformer.VeilJobParameters;
-import io.github.douira.glsl_preprocessor.DefaultPreprocessorListener;
-import io.github.douira.glsl_preprocessor.Feature;
-import io.github.douira.glsl_preprocessor.Preprocessor;
-import io.github.douira.glsl_preprocessor.StringLexerSource;
 import io.github.douira.glsl_transformer.GLSLLexer;
 import io.github.douira.glsl_transformer.ast.print.PrintType;
 import io.github.douira.glsl_transformer.ast.query.RootSupplier;
@@ -71,16 +67,10 @@ public class ShaderModificationManager extends SimplePreparableReloadListener<Sh
      * @see ShaderModification
      */
     public String applyModifiers(ResourceLocation shaderId, String source, int flags) {
-        try (Preprocessor preprocessor = new Preprocessor()) {
-            preprocessor.setListener(new DefaultPreprocessorListener());
-            preprocessor.addInput(new StringLexerSource(source, true));
-            preprocessor.addFeature(Feature.KEEPCOMMENTS);
-            preprocessor.addFeature(Feature.GLSL_PASSTHROUGH);
-
-            String processed = preprocessor.printToString();
-            return this.transformer.transform(processed, new VeilJobParameters(this, shaderId, flags));
+        try {
+            return this.transformer.transform(source, new VeilJobParameters(this, shaderId, flags));
         } catch (TransformationException | ParsingException | IllegalStateException | IllegalArgumentException e) {
-            Veil.LOGGER.error("Failed to parse shader: {}", shaderId, e);
+            Veil.LOGGER.error("Failed to transform shader: {}", shaderId, e);
         }
         return source;
     }

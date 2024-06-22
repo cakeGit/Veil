@@ -12,7 +12,6 @@ import foundry.veil.api.client.render.shader.program.ProgramDefinition;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.apache.commons.io.IOUtils;
@@ -99,7 +98,8 @@ public class DirectShaderCompiler implements ShaderCompiler {
         Object2IntMap<String> uniformBindings = new Object2IntArrayMap<>();
         Set<String> dependencies = new HashSet<>();
         Set<ResourceLocation> includes = new HashSet<>();
-        String transformed = processor.modify(new PreProcessorContext(importProcessor, context, uniformBindings, dependencies, includes, this.compilingName, true), source);
+        Set<ResourceLocation> includesView = Collections.unmodifiableSet(includes);
+        String transformed = processor.modify(new PreProcessorContext(importProcessor, context, uniformBindings, dependencies, includes, includesView, this.compilingName, true), source);
 
         int shader = glCreateShader(type);
         glShaderSource(shader, transformed);
@@ -114,7 +114,7 @@ public class DirectShaderCompiler implements ShaderCompiler {
         }
 
         this.shaders.add(shader);
-        return new CompiledShader(this.compilingName, shader, Object2IntMaps.unmodifiable(uniformBindings), Collections.unmodifiableSet(dependencies), Collections.unmodifiableSet(includes));
+        return new CompiledShader(this.compilingName, shader, Object2IntMaps.unmodifiable(uniformBindings), Collections.unmodifiableSet(dependencies), includesView);
     }
 
     @Override
@@ -152,12 +152,13 @@ public class DirectShaderCompiler implements ShaderCompiler {
                                        Map<String, Integer> uniformBindings,
                                        Set<String> dependencies,
                                        Set<ResourceLocation> includes,
+                                       Set<ResourceLocation> includesView,
                                        @Nullable ResourceLocation name,
                                        boolean sourceFile) implements ShaderPreProcessor.Context {
 
         @Override
         public String modify(@Nullable ResourceLocation name, String source) throws IOException {
-            PreProcessorContext context = new PreProcessorContext(this.preProcessor, this.context, this.uniformBindings, this.dependencies, this.includes, name, false);
+            PreProcessorContext context = new PreProcessorContext(this.preProcessor, this.context, this.uniformBindings, this.dependencies, this.includes, this.includesView, name, false);
             return this.preProcessor.modify(context, source);
         }
 
@@ -174,6 +175,11 @@ public class DirectShaderCompiler implements ShaderCompiler {
         @Override
         public void addInclude(ResourceLocation name) {
             this.includes.add(name);
+        }
+
+        @Override
+        public Set<ResourceLocation> includes() {
+            return this.includesView;
         }
 
         @Override

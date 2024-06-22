@@ -6,10 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -96,6 +93,11 @@ public interface ShaderPreProcessor {
          * @param name The name of the definition to depend on
          */
         void addInclude(ResourceLocation name);
+
+        /**
+         * @return A view of all includes in this shader
+         */
+        Set<ResourceLocation> includes();
 
         /**
          * @return The id of the shader being compiled or <code>null</code> if the shader is compiled from a raw string

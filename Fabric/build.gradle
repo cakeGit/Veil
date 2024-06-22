@@ -1,144 +1,97 @@
 plugins {
-    id 'java'
-    id 'idea'
-    id 'maven-publish'
-    id 'fabric-loom' version '1.4-SNAPSHOT'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
-base {
-    archivesName = "${mod_name}-fabric-${minecraft_version}"
-}
-if (System.getenv('BUILD_NUMBER') != null) {
-    version += "." + System.getenv('BUILD_NUMBER')
+
+architectury {
+    platformSetupLoomIde()
+    fabric()
 }
 
 loom {
-    if (project(":Common").file("src/main/resources/${mod_id}.accesswidener").exists()) {
-        accessWidenerPath.set(project(":Common").file("src/main/resources/${mod_id}.accesswidener"))
-    }
-    mixin {
-        defaultRefmapName.set("${mod_id}.refmap.json")
-    }
-    runs {
-        client {
-            client()
-            setConfigName("Fabric Client")
-            ideConfigGenerated(true)
-            runDir("run")
-        }
-        server {
-            server()
-            setConfigName("Fabric Server")
-            ideConfigGenerated(true)
-            runDir("run")
-        }
-    }
+    accessWidenerPath = project(":common").loom.accessWidenerPath
 }
 
 configurations {
-    shade
-}
-
-repositories {
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Modrinth"
-                url = "https://api.modrinth.com/maven"
-            }
-        }
-        filter {
-            includeGroup "maven.modrinth"
-        }
-    }
-
-    flatDir { dirs '../libs' }
+    common
+    shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-    implementation 'org.jetbrains:annotations:24.0.1'
-    implementation project(":Common")
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
 
-    modRuntimeOnly "maven.modrinth:modmenu:7.2.2"
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
+
+//    modRuntimeOnly "maven.modrinth:modmenu:7.2.2"
 
     modCompileOnly "maven.modrinth:sodium:mc1.20.1-0.5.3"
     modCompileOnly "maven.modrinth:iris:1.6.11+1.20.1"
     modCompileOnly "maven.modrinth:replaymod:1.20.1-2.6.15"
-    modRuntimeOnly "maven.modrinth:sodium:mc1.20.1-0.5.3"
+//    modRuntimeOnly "maven.modrinth:sodium:mc1.20.1-0.5.3"
 //    modRuntimeOnly "maven.modrinth:iris:1.6.11+1.20.1"
 //    modRuntimeOnly "maven.modrinth:replaymod:1.20.1-2.6.15"
 
-    implementation "io.github.douira:glsl-transformer:${glsl_transformer_version}"
-    shade "io.github.douira:glsl-transformer:${glsl_transformer_version}"
+    implementation(include("org.antlr:antlr4-runtime:${antlr_runtime_version}"))
+    implementation(include("io.github.douira:glsl-transformer:${glsl_transformer_version}"))
+    implementation(include("io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"))
+    implementation(include("gg.moonflower:molang-compiler:${molang_compiler_version}"))
 
-    implementation "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
-    shade "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
-
-    implementation "gg.moonflower:molang-compiler:${molang_compiler_version}"
-    shade "gg.moonflower:molang-compiler:$molang_compiler_version"
-
-    implementation "io.github.spair:imgui-java-binding:$imgui_version"
-    implementation("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
+    implementation(include("io.github.spair:imgui-java-binding:$imgui_version"))
+    implementation(include("io.github.spair:imgui-java-lwjgl3:$imgui_version")) {
         exclude group: 'org.lwjgl'
         exclude group: 'org.lwjgl.lwjgl'
     }
 
-    implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-macos-ft:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+    implementation(include("io.github.spair:imgui-java-natives-linux:$imgui_version"))
+    implementation(include("io.github.spair:imgui-java-natives-macos-ft:$imgui_version"))
+    implementation(include("io.github.spair:imgui-java-natives-windows:$imgui_version"))
 
-    shade "io.github.spair:imgui-java-binding:$imgui_version"
-    shade("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
-        exclude group: 'org.lwjgl'
-        exclude group: 'org.lwjgl.lwjgl'
-    }
-
-    shade "io.github.spair:imgui-java-natives-linux:$imgui_version"
-    shade "io.github.spair:imgui-java-natives-macos:$imgui_version"
-    shade "io.github.spair:imgui-java-natives-windows:$imgui_version"
-
-    implementation("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
+    implementation(include("org.lwjgl:lwjgl-opencl:$lwjgl_version")) {
         transitive false
     }
-    shade("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
-        transitive false
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    source(project(":Common").sourceSets.main.allSource)
-}
-tasks.named("sourcesJar", Jar) {
-    from(project(":Common").sourceSets.main.allSource)
-}
-
-shadowJar {
-    archiveClassifier = 'dev'
-    configurations = [project.configurations.shade]
-    relocate "org.objectweb.asm", "${project.group}.lib.asm"
-    relocate "org.lwjgl.opencl", "${project.group}.lib.opencl"
-//    relocate "gg.moonflower.molangcompiler", "${project.group}.lib.molangcompiler"
-//    relocate "imgui", "${project.group}.lib.imgui"
-//    relocate "io.imgui", "${project.group}.lib.imgui-natives"
-    relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.relocated.imgui-java-binding"
-    relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.relocated.imgui-java-lwjgl3"
-    relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.relocated.imgui-java-natives-linux"
-    relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.relocated.imgui-java-natives-windows"
-    relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.relocated.imgui-java-natives-macos"
-    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.relocated.imgui-java-natives-macosarm64"
-}
-
-remapJar {
-    dependsOn(shadowJar)
-    inputFile = tasks.shadowJar.archiveFile
 }
 
 processResources {
-    from project(":Common").sourceSets.main.resources
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+
+    // Resources fix
+    copy {
+        from "$projectDir/../common/src/main/resources/"
+        into "build/resources/main"
+    }
+}
+
+shadowJar {
+    exclude "architectury.common.json"
+
+    configurations = [project.configurations.shadowCommon]
+    archiveClassifier = "dev-shadow"
+}
+
+remapJar {
+    injectAccessWidener = true
+    inputFile.set shadowJar.archiveFile
+    dependsOn shadowJar
+}
+
+sourcesJar {
+    def commonSources = project(":common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
 }
 
 publishing {

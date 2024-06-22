@@ -3,7 +3,6 @@
   "minVersion": "0.8",
   "package": "foundry.veil.mixin",
   "compatibilityLevel": "JAVA_17",
-  "refmap": "veil.refmap.json",
   "mixins": [
     "chargable.BowItemMixin",
     "chargable.CrossbowItemMixin",
@@ -64,6 +63,7 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "refmap": "Veil-common-1.20.1-common-refmap.json"
 }
   

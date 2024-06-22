@@ -1,8 +1,67 @@
-subprojects {
-    apply plugin: 'java'
+plugins {
+    id "architectury-plugin" version "3.4-SNAPSHOT"
+    id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
+}
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-    java.withSourcesJar()
+subprojects {
+    apply plugin: "dev.architectury.loom"
+
+    base {
+        archivesName = "${mod_name}-${project.name}-${minecraft_version}"
+    }
+    if (System.getenv('BUILD_NUMBER') != null) {
+        version += "." + System.getenv('BUILD_NUMBER')
+    }
+
+    loom {
+        silentMojangMappingsLicense()
+    }
+
+    dependencies {
+        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+
+        mappings loom.layered() {
+            officialMojangMappings()
+            parchment("org.parchmentmc.data:parchment-${rootProject.minecraft_version}:2023.09.03")
+        }
+    }
+}
+
+allprojects {
+    apply plugin: "java"
+    apply plugin: "architectury-plugin"
+    apply plugin: "maven-publish"
+
+    version = rootProject.mod_version
+    group = rootProject.maven_group
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = 'ParchmentMC'
+            url = 'https://maven.parchmentmc.org'
+        }
+        maven {
+            name = 'Sponge / Mixin'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
+        maven {
+            name = 'BlameJared Maven (JEI / CraftTweaker / Bookshelf)'
+            url = 'https://maven.blamejared.com'
+        }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Modrinth"
+                    url = "https://api.modrinth.com/maven"
+                }
+            }
+            filter {
+                includeGroup "maven.modrinth"
+            }
+        }
+    }
+
     jar {
         from(rootProject.file("LICENSE")) {
             rename { "${it}_${mod_name}" }
@@ -23,39 +82,13 @@ subprojects {
         }
     }
 
-    sourcesJar {
-        from(rootProject.file("LICENSE")) {
-            rename { "${it}_${mod_name}" }
-        }
-    }
-
-    repositories {
-        mavenLocal()
-        maven {
-            name = 'Sponge / Mixin'
-            url = 'https://repo.spongepowered.org/repository/maven-public/'
-        }
-        maven {
-            name = 'BlameJared Maven (CrT / Bookshelf)'
-            url = 'https://maven.blamejared.com'
-        }
-//        maven {
-//            name "realrobotixImguiJava"
-//            url "https://maven.realrobotix.me/imgui-java"
-//        }
-//        maven {
-//            url "https://jitpack.io"
-//            content {
-//                includeGroupByRegex "com\\.github.*"
-//            }
-//        }
-        mavenCentral()
-    }
-
     tasks.withType(JavaCompile).configureEach {
+        options.encoding = "UTF-8"
+        options.release = 17
+    }
 
-        it.options.encoding = 'UTF-8'
-        it.options.getRelease().set(17)
+    java {
+        withSourcesJar()
     }
 
     processResources {
@@ -81,12 +114,5 @@ subprojects {
             expand expandProps
         }
         inputs.properties(expandProps)
-    }
-
-    // Disables Gradle's custom module metadata from being published to maven. The
-    // metadata includes mapped dependencies which are not reasonably consumable by
-    // other mod developers.
-    tasks.withType(GenerateModuleMetadata) {
-        enabled = false
     }
 }

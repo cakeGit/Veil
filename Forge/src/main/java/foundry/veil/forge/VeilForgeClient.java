@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
@@ -30,6 +29,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.resource.PathPackResources;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.nio.file.Path;
@@ -90,7 +90,11 @@ public class VeilForgeClient {
 
     private static void registerBuiltinPack(AddPackFindersEvent event, ResourceLocation id) {
         Path resourcePath = ModList.get().getModFileById(Veil.MODID).getFile().findResource("resourcepacks/" + id.getPath());
-        Pack pack = Pack.readMetaAndCreate(id.toString(), Component.literal(id.getNamespace() + "/" + id.getPath()), false, s -> new PathPackResources(s, resourcePath, false), PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.BUILT_IN);
+        Pack pack = Pack.readMetaAndCreate(id.toString(), Component.literal(id.getNamespace() + "/" + id.getPath()), false, packId -> new PathPackResources(packId, true, resourcePath), PackType.CLIENT_RESOURCES, Pack.Position.TOP, PackSource.BUILT_IN);
+        if (pack == null) {
+            Veil.LOGGER.error("Failed to find builtin pack: {}", id);
+            return;
+        }
         event.addRepositorySource(packConsumer -> packConsumer.accept(pack));
     }
 }

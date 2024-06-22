@@ -1,9 +1,12 @@
 package foundry.veil.api.client.necromancer;
 
 import net.minecraft.util.Mth;
-import org.joml.*;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4x3f;
+import org.joml.Matrix4x3fc;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class Bone {

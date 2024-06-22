@@ -293,10 +293,9 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 }
 
                 ImGui.sameLine();
-                ImGui.setItemAllowOverlap();
                 VeilImGuiUtil.resourceLocation(name);
 
-                ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
+                ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, ImGui.getStyle().getItemSpacingY());
                 ImGui.sameLine();
                 ImGui.text(" (" + entry.getIntValue() + ")");
                 ImGui.popStyleVar();

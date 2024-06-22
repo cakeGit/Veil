@@ -369,7 +369,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
     }
 
     @Override
-    public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller prepareProfiler, ProfilerFiller applyProfiler, Executor backgroundExecutor, Executor gameExecutor) {
+    public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {
         if (this.reloadFuture != null && !this.reloadFuture.isDone()) {
             return this.reloadFuture.thenCompose(preparationBarrier::wait);
         }

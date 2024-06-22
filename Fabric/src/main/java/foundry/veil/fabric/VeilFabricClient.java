@@ -4,32 +4,22 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import foundry.veil.Veil;
 import foundry.veil.VeilClient;
 import foundry.veil.api.client.render.VeilRenderSystem;
-import foundry.veil.fabric.mixin.compat.sodium.RenderSectionManagerAccessor;
-import foundry.veil.fabric.mixin.compat.sodium.ShaderChunkRendererAccessor;
-import foundry.veil.fabric.mixin.compat.sodium.SodiumWorldRendererAccessor;
-import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import foundry.veil.api.quasar.data.QuasarParticles;
 import foundry.veil.api.quasar.particle.ParticleEmitter;
 import foundry.veil.api.quasar.particle.ParticleSystemManager;
 import foundry.veil.fabric.mixin.compat.iris.NewWorldRenderingPipelineAccessor;
+import foundry.veil.fabric.mixin.compat.sodium.RenderSectionManagerAccessor;
+import foundry.veil.fabric.mixin.compat.sodium.ShaderChunkRendererAccessor;
+import foundry.veil.fabric.mixin.compat.sodium.SodiumWorldRendererAccessor;
 import foundry.veil.fabric.util.FabricReloadListener;
 import foundry.veil.impl.VeilBuiltinPacks;
 import foundry.veil.impl.VeilReloadListeners;
 import foundry.veil.impl.client.render.VeilUITooltipRenderer;
+import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import foundry.veil.impl.compat.IrisShaderMap;
 import foundry.veil.impl.compat.SodiumShaderMap;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntSets;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import me.jellysquid.mods.sodium.client.gl.shader.GlProgram;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
-import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionManager;
-import me.jellysquid.mods.sodium.client.render.chunk.ShaderChunkRenderer;
-import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
-import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkShaderOptions;
 import net.coderbot.iris.Iris;
 import net.coderbot.iris.pipeline.WorldRenderingPipeline;
 import net.fabricmc.api.ClientModInitializer;
@@ -56,7 +46,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Collections;
-import java.util.Map;
 
 @ApiStatus.Internal
 public class VeilFabricClient implements ClientModInitializer {

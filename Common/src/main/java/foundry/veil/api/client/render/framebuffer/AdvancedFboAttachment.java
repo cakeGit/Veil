@@ -10,7 +10,7 @@ import org.lwjgl.system.NativeResource;
  *
  * @author Ocelot
  */
-public interface AdvancedFboAttachment extends NativeResource {
+public interface AdvancedFboAttachment extends NativeResource, Cloneable {
 
     /**
      * Creates the attachment and initializes it with the default properties.
@@ -20,10 +20,9 @@ public interface AdvancedFboAttachment extends NativeResource {
     /**
      * Attaches this attachment to the provided target under the specified attachment point.
      *
-     * @param target     The target to attach this attachment to
      * @param attachment The attachment point to add this attachment to
      */
-    void attach(int target, int attachment);
+    void attach(int attachment);
 
     /**
      * Binds this attachment.
@@ -131,5 +130,5 @@ public interface AdvancedFboAttachment extends NativeResource {
     /**
      * @return A new identical attachment to this one
      */
-    AdvancedFboAttachment createCopy();
+    AdvancedFboAttachment clone();
 }

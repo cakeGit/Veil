@@ -285,6 +285,16 @@ public interface AdvancedFbo extends NativeResource {
     }
 
     /**
+     * Checks to see if the provided attachment has been added to this framebuffer and is a mutable texture attachment.
+     *
+     * @param attachment The attachment to check
+     * @return Whether there is a valid attachment in the specified slot
+     */
+    default boolean isMutableColorTextureAttachment(int attachment) {
+        return this.hasColorAttachment(attachment) && this.getColorAttachment(attachment) instanceof AdvancedFboMutableTextureAttachment;
+    }
+
+    /**
      * Checks to see if the provided attachment has been added to this framebuffer and is a render attachment.
      *
      * @param attachment The attachment to check
@@ -295,7 +305,7 @@ public interface AdvancedFbo extends NativeResource {
     }
 
     /**
-     * Checks the attachments for the specified slot.
+     * Retrieves the attachment for the specified slot.
      * If the attachment is not known to be an {@link AdvancedFboTextureAttachment},
      * use {@link #isColorTextureAttachment(int)} before calling this.
      *
@@ -306,12 +316,52 @@ public interface AdvancedFbo extends NativeResource {
      */
     default AdvancedFboTextureAttachment getColorTextureAttachment(int attachment) {
         AdvancedFboAttachment advancedFboAttachment = this.getColorAttachment(attachment);
-        Validate.isTrue(this.isColorTextureAttachment(attachment), "Color attachment " + attachment + " must be a texture attachment to modify texture information.");
+        Validate.isTrue(this.isColorTextureAttachment(attachment), "Color attachment " + attachment + " must be a texture attachment to get texture information.");
         return (AdvancedFboTextureAttachment) advancedFboAttachment;
     }
 
     /**
-     * Checks the attachments for the specified slot.
+     * Updates the 2D texture attachment reference for the specified slot.
+     * If the attachment is not known to be an {@link AdvancedFboMutableTextureAttachment},
+     * use {@link #isMutableColorTextureAttachment(int)} before calling this.
+     *
+     * @param attachment The attachment to modify
+     * @param textureId  The id of the texture to draw into
+     * @param width      The width of the texture
+     * @param height     The height of the texture
+     * @throws IllegalArgumentException If there is no attachment in the specified attachment
+     *                                  slot, or it is not an {@link AdvancedFboMutableTextureAttachment}
+     */
+    default void setColorAttachmentTexture(int attachment, int textureId, int width, int height) {
+        this.setColorAttachmentTexture(attachment, GL_TEXTURE_2D, textureId, width, height);
+    }
+
+    /**
+     * Updates the texture attachment reference for the specified slot.
+     * If the attachment is not known to be an {@link AdvancedFboMutableTextureAttachment},
+     * use {@link #isMutableColorTextureAttachment(int)} before calling this.
+     *
+     * @param attachment    The attachment to modify
+     * @param textureTarget The texture target to upload
+     * @param textureId     The id of the texture to draw into
+     * @param width         The width of the texture
+     * @param height        The height of the texture
+     * @throws IllegalArgumentException If there is no attachment in the specified attachment
+     *                                  slot, or it is not an {@link AdvancedFboMutableTextureAttachment}
+     */
+    default void setColorAttachmentTexture(int attachment, int textureTarget, int textureId, int width, int height) {
+        AdvancedFboAttachment advancedFboAttachment = this.getColorAttachment(attachment);
+        Validate.isTrue(this.isMutableColorTextureAttachment(attachment), "Color attachment " + attachment + " must be a mutable texture attachment to modify texture information.");
+        AdvancedFboMutableTextureAttachment mutableTextureAttachment = (AdvancedFboMutableTextureAttachment) advancedFboAttachment;
+        if (mutableTextureAttachment.setTexture(textureTarget, textureId, width, height)) {
+            this.bind(false);
+            mutableTextureAttachment.attach(attachment);
+            AdvancedFbo.unbind();
+        }
+    }
+
+    /**
+     * Retrieves the attachment for the specified slot.
      * If the attachment is not known to be an {@link AdvancedFboRenderAttachment},
      * use {@link #isColorRenderAttachment(int)} before calling this.
      *
@@ -322,7 +372,7 @@ public interface AdvancedFbo extends NativeResource {
      */
     default AdvancedFboRenderAttachment getColorRenderAttachment(int attachment) {
         AdvancedFboAttachment advancedFboAttachment = this.getColorAttachment(attachment);
-        Validate.isTrue(this.isColorRenderAttachment(attachment), "Color attachment " + attachment + " must be a render attachment to modify render information.");
+        Validate.isTrue(this.isColorRenderAttachment(attachment), "Color attachment " + attachment + " must be a render attachment to get render information.");
         return (AdvancedFboRenderAttachment) advancedFboAttachment;
     }
 
@@ -340,6 +390,13 @@ public interface AdvancedFbo extends NativeResource {
     }
 
     /**
+     * @return Whether a mutable depth texture attachment has been added to this framebuffer
+     */
+    default boolean isDepthMutableTextureAttachment() {
+        return this.hasDepthAttachment() && this.getDepthAttachment() instanceof AdvancedFboMutableTextureAttachment;
+    }
+
+    /**
      * @return Whether a depth render attachment has been added to this framebuffer
      */
     default boolean isDepthRenderAttachment() {
@@ -347,7 +404,7 @@ public interface AdvancedFbo extends NativeResource {
     }
 
     /**
-     * Checks this framebuffer for a depth buffer texture attachment.
+     * Retrieves a depth buffer texture attachment.
      * If the attachment is not known to be a {@link AdvancedFboTextureAttachment},
      * use {@link #isDepthTextureAttachment()} before calling this.
      *
@@ -357,12 +414,50 @@ public interface AdvancedFbo extends NativeResource {
      */
     default AdvancedFboTextureAttachment getDepthTextureAttachment() {
         AdvancedFboAttachment advancedFboAttachment = this.getDepthAttachment();
-        Validate.isTrue(this.isDepthTextureAttachment(), "Depth attachment must be a texture attachment to modify texture information.");
+        Validate.isTrue(this.isDepthTextureAttachment(), "Depth attachment must be a texture attachment to get texture information.");
         return (AdvancedFboTextureAttachment) advancedFboAttachment;
     }
 
     /**
-     * Checks this framebuffer for a depth buffer render attachment.
+     * Updates the 2D depth texture attachment reference for the specified slot.
+     * If the attachment is not known to be an {@link AdvancedFboMutableTextureAttachment},
+     * use {@link #isMutableColorTextureAttachment(int)} before calling this.
+     *
+     * @param textureId The id of the texture to draw into
+     * @param width     The width of the texture
+     * @param height    The height of the texture
+     * @throws IllegalArgumentException If there is no attachment in the specified attachment
+     *                                  slot, or it is not an {@link AdvancedFboMutableTextureAttachment}
+     */
+    default void setDepthAttachmentTexture(int textureId, int width, int height) {
+        this.setDepthAttachmentTexture(GL_TEXTURE_2D, textureId, width, height);
+    }
+
+    /**
+     * Updates the depth texture attachment reference for the specified slot.
+     * If the attachment is not known to be an {@link AdvancedFboMutableTextureAttachment},
+     * use {@link #isMutableColorTextureAttachment(int)} before calling this.
+     *
+     * @param textureTarget The texture target to upload
+     * @param textureId     The id of the texture to draw into
+     * @param width         The width of the texture
+     * @param height        The height of the texture
+     * @throws IllegalArgumentException If there is no attachment in the specified attachment
+     *                                  slot, or it is not an {@link AdvancedFboMutableTextureAttachment}
+     */
+    default void setDepthAttachmentTexture(int textureTarget, int textureId, int width, int height) {
+        AdvancedFboAttachment advancedFboAttachment = this.getDepthAttachment();
+        Validate.isTrue(this.isDepthMutableTextureAttachment(), "Depth attachment must be a mutable texture attachment to modify texture information.");
+        AdvancedFboMutableTextureAttachment mutableTextureAttachment = (AdvancedFboMutableTextureAttachment) advancedFboAttachment;
+        if (mutableTextureAttachment.setTexture(textureTarget, textureId, width, height)) {
+            this.bind(false);
+            mutableTextureAttachment.attach(0);
+            AdvancedFbo.unbind();
+        }
+    }
+
+    /**
+     * Retrieves a depth buffer render attachment.
      * If the attachment is not known to be a {@link AdvancedFboRenderAttachment},
      * use {@link #isDepthRenderAttachment()} before calling this.
      *
@@ -372,7 +467,7 @@ public interface AdvancedFbo extends NativeResource {
      */
     default AdvancedFboRenderAttachment getDepthRenderAttachment() {
         AdvancedFboAttachment advancedFboAttachment = this.getDepthAttachment();
-        Validate.isTrue(this.isDepthRenderAttachment(), "Depth attachment must be a render attachment to modify render information.");
+        Validate.isTrue(this.isDepthRenderAttachment(), "Depth attachment must be a render attachment to get render information.");
         return (AdvancedFboRenderAttachment) advancedFboAttachment;
     }
 
@@ -481,12 +576,12 @@ public interface AdvancedFbo extends NativeResource {
          */
         public Builder addAttachments(AdvancedFbo parent) {
             for (int i = 0; i < parent.getColorAttachments(); i++) {
-                this.colorAttachments.add(parent.getColorAttachment(i).createCopy());
+                this.colorAttachments.add(parent.getColorAttachment(i).clone());
             }
             this.validateColorSize();
             if (parent.hasDepthAttachment()) {
                 Validate.isTrue(this.depthAttachment == null, "Only one depth attachment can be applied to an FBO.");
-                this.depthAttachment = parent.getDepthAttachment().createCopy();
+                this.depthAttachment = parent.getDepthAttachment().clone();
             }
             return this;
         }
@@ -582,23 +677,26 @@ public interface AdvancedFbo extends NativeResource {
         }
 
         /**
-         * Adds the specified texture as a texture attachment with the size of the framebuffer.
-         *
-         * @param textureId The id of the texture to add
-         */
-        public Builder addColorTextureWrapper(int textureId) {
-            return this.addColorTextureWrapper(textureId, this.width, this.height);
-        }
-
-        /**
-         * Adds the specified texture as a texture attachment.
+         * Adds the specified texture as a 2D texture attachment.
          *
          * @param textureId The id of the texture to add
          * @param width     The width of the texture
          * @param height    The height of the texture
          */
         public Builder addColorTextureWrapper(int textureId, int width, int height) {
-            return this.addColorBuffer(new AdvancedFboTextureWrapperAttachment(textureId, GL_COLOR_ATTACHMENT0, width, height));
+            return this.addColorTextureWrapper(textureId, GL_TEXTURE_2D, width, height);
+        }
+
+        /**
+         * Adds the specified texture as a texture attachment.
+         *
+         * @param textureId     The id of the texture to add
+         * @param textureTarget The target to use for the texture
+         * @param width         The width of the texture
+         * @param height        The height of the texture
+         */
+        public Builder addColorTextureWrapper(int textureId, int textureTarget, int width, int height) {
+            return this.addColorBuffer(new AdvancedFboMutableTextureAttachment(textureId, textureTarget, GL_COLOR_ATTACHMENT0, width, height));
         }
 
         /**
@@ -682,23 +780,26 @@ public interface AdvancedFbo extends NativeResource {
         }
 
         /**
-         * Adds the specified texture as a texture attachment with the size of the framebuffer.
-         *
-         * @param textureId The id of the texture to add
-         */
-        public Builder setDepthTextureWrapper(int textureId) {
-            return this.addColorTextureWrapper(textureId, this.width, this.height);
-        }
-
-        /**
-         * Adds the specified texture as a texture attachment.
+         * Adds the specified texture as a 2D texture attachment.
          *
          * @param textureId The id of the texture to add
          * @param width     The width of the texture
          * @param height    The height of the texture
          */
         public Builder setDepthTextureWrapper(int textureId, int width, int height) {
-            return this.setDepthBuffer(new AdvancedFboTextureWrapperAttachment(textureId, GL_DEPTH_ATTACHMENT, width, height));
+            return this.setDepthTextureWrapper(textureId, GL_TEXTURE_2D, width, height);
+        }
+
+        /**
+         * Adds the specified texture as a texture attachment.
+         *
+         * @param textureId     The id of the texture to add
+         * @param textureTarget The target to use for the texture
+         * @param width         The width of the texture
+         * @param height        The height of the texture
+         */
+        public Builder setDepthTextureWrapper(int textureId, int textureTarget, int width, int height) {
+            return this.setDepthBuffer(new AdvancedFboMutableTextureAttachment(textureId, textureTarget, GL_DEPTH_ATTACHMENT, width, height));
         }
 
         /**

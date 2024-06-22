@@ -17,6 +17,7 @@
     "accessor.BufferBuilderAccessor",
     "accessor.GameRendererAccessor",
     "accessor.LevelRendererAccessor",
+    "accessor.NativeImageAccessor",
     "accessor.PostChainAccessor",
     "accessor.RegistryDataAccessor",
     "accessor.ReloadableResourceManagerAccessor",

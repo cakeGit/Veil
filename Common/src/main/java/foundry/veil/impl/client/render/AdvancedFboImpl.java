@@ -110,10 +110,10 @@ public class AdvancedFboImpl implements AdvancedFbo {
         this.bind(false);
 
         for (int i = 0; i < this.colorAttachments.length; i++) {
-            this.colorAttachments[i].attach(GL_FRAMEBUFFER, i);
+            this.colorAttachments[i].attach(i);
         }
         if (this.depthAttachment != null) {
-            this.depthAttachment.attach(GL_FRAMEBUFFER, 0);
+            this.depthAttachment.attach(0);
         }
 
         int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

@@ -157,7 +157,7 @@ public class VanillaAdvancedFboWrapper implements AdvancedFbo {
         }
 
         @Override
-        public void attach(int target, int attachment) {
+        public void attach(int attachment) {
             throw new UnsupportedOperationException("Vanilla framebuffer attachments cannot be attached");
         }
 
@@ -177,7 +177,7 @@ public class VanillaAdvancedFboWrapper implements AdvancedFbo {
         }
 
         @Override
-        public @NotNull AdvancedFboTextureAttachment createCopy() {
+        public @NotNull AdvancedFboTextureAttachment clone() {
             return new VanillaAdvancedFboWrapper.AttachmentWrapper(this.parent, this.id, this.getAttachmentType());
         }
 

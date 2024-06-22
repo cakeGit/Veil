@@ -62,9 +62,9 @@ public class AdvancedFboRenderAttachment implements AdvancedFboAttachment {
     }
 
     @Override
-    public void attach(int target, int attachment) {
+    public void attach(int attachment) {
         Validate.isTrue(this.attachmentType != GL_DEPTH_ATTACHMENT || attachment == 0, "Only one depth buffer attachment is supported.");
-        glFramebufferRenderbuffer(target, this.attachmentType, GL_RENDERBUFFER, this.getId());
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, this.attachmentType, GL_RENDERBUFFER, this.getId());
     }
 
     @Override
@@ -133,7 +133,7 @@ public class AdvancedFboRenderAttachment implements AdvancedFboAttachment {
     }
 
     @Override
-    public @NotNull AdvancedFboAttachment createCopy() {
+    public @NotNull AdvancedFboAttachment clone() {
         return new AdvancedFboRenderAttachment(this.attachmentType, this.attachmentFormat, this.width, this.height, this.samples);
     }
 

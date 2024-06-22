@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL12C.*;
 import static org.lwjgl.opengl.GL14C.GL_TEXTURE_LOD_BIAS;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT;
 
 /**
@@ -80,9 +81,9 @@ public class AdvancedFboTextureAttachment extends AbstractTexture implements Adv
     }
 
     @Override
-    public void attach(int target, int attachment) {
+    public void attach(int attachment) {
         Validate.isTrue(this.attachmentType < GL_DEPTH_ATTACHMENT || attachment == 0, "Only one depth buffer attachment is supported.");
-        GlStateManager._glFramebufferTexture2D(target,
+        GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER,
                 this.attachmentType + attachment,
                 GL_TEXTURE_2D,
                 this.getId(),
@@ -90,7 +91,7 @@ public class AdvancedFboTextureAttachment extends AbstractTexture implements Adv
     }
 
     @Override
-    public AdvancedFboTextureAttachment createCopy() {
+    public AdvancedFboTextureAttachment clone() {
         return new AdvancedFboTextureAttachment(this.attachmentType, this.format, this.texelFormat, this.dataType, this.width, this.height, this.mipmapLevels, this.linear, this.name);
     }
 

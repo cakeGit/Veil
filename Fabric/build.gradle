@@ -96,7 +96,7 @@ components.java {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenFabric(MavenPublication) {
             artifactId base.archivesName.get()
             from components.java
         }

@@ -1,68 +1,16 @@
 plugins {
-    id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.5-SNAPSHOT" apply false
+    id 'fabric-loom' version '1.6-SNAPSHOT' apply(false)
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)' apply(false)
+    id 'org.spongepowered.gradle.vanilla' version '0.2.1-SNAPSHOT' apply(false)
+    id "org.spongepowered.mixin" version "0.7-SNAPSHOT" apply(false)
     id "com.github.johnrengelman.shadow" version "8.1.1" apply false
 }
 
 subprojects {
-    apply plugin: "dev.architectury.loom"
+    apply plugin: 'java'
 
-    base {
-        archivesName = "${mod_name}-${project.name}-${minecraft_version}"
-    }
-    if (System.getenv('BUILD_NUMBER') != null) {
-        version += "." + System.getenv('BUILD_NUMBER')
-    }
-
-    loom {
-        silentMojangMappingsLicense()
-    }
-
-    dependencies {
-        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-
-        mappings loom.layered() {
-            officialMojangMappings()
-            parchment("org.parchmentmc.data:parchment-${rootProject.minecraft_version}:2023.09.03")
-        }
-    }
-}
-
-allprojects {
-    apply plugin: "java"
-    apply plugin: "architectury-plugin"
-    apply plugin: "maven-publish"
-
-    version = rootProject.mod_version
-    group = rootProject.maven_group
-
-    repositories {
-        mavenCentral()
-        maven {
-            name = 'ParchmentMC'
-            url = 'https://maven.parchmentmc.org'
-        }
-        maven {
-            name = 'Sponge / Mixin'
-            url = 'https://repo.spongepowered.org/repository/maven-public/'
-        }
-        maven {
-            name = 'BlameJared Maven (JEI / CraftTweaker / Bookshelf)'
-            url = 'https://maven.blamejared.com'
-        }
-        exclusiveContent {
-            forRepository {
-                maven {
-                    name = "Modrinth"
-                    url = "https://api.modrinth.com/maven"
-                }
-            }
-            filter {
-                includeGroup "maven.modrinth"
-            }
-        }
-    }
-
+    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+    java.withSourcesJar()
     jar {
         from(rootProject.file("LICENSE")) {
             rename { "${it}_${mod_name}" }
@@ -83,13 +31,39 @@ allprojects {
         }
     }
 
-    tasks.withType(JavaCompile).configureEach {
-        options.encoding = "UTF-8"
-        options.release = 17
+    sourcesJar {
+        from(rootProject.file("LICENSE")) {
+            rename { "${it}_${mod_name}" }
+        }
     }
 
-    java {
-        withSourcesJar()
+    repositories {
+        mavenLocal()
+        maven {
+            name = 'Sponge / Mixin'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
+        maven {
+            name = 'BlameJared Maven (CrT / Bookshelf)'
+            url = 'https://maven.blamejared.com'
+        }
+//        maven {
+//            name "realrobotixImguiJava"
+//            url "https://maven.realrobotix.me/imgui-java"
+//        }
+//        maven {
+//            url "https://jitpack.io"
+//            content {
+//                includeGroupByRegex "com\\.github.*"
+//            }
+//        }
+        mavenCentral()
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+
+        it.options.encoding = 'UTF-8'
+        it.options.getRelease().set(17)
     }
 
     processResources {

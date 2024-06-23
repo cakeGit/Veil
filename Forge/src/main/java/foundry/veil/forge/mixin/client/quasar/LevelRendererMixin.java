@@ -31,13 +31,13 @@ public class LevelRendererMixin {
         }
     }
 
-//    @Inject(method = "close", at = @At("HEAD"))
-//    public void close(CallbackInfo ci) {
-//        if (this.veil$cachedBufferSource != null) {
-//            this.veil$cachedBufferSource.free();
-//            this.veil$cachedBufferSource = null;
-//        }
-//    }
+    @Inject(method = "close", at = @At("HEAD"))
+    public void close(CallbackInfo ci) {
+        if (this.veil$cachedBufferSource != null) {
+            this.veil$cachedBufferSource.free();
+            this.veil$cachedBufferSource = null;
+        }
+    }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V", shift = At.Shift.AFTER))
     public void renderQuasarParticles(PoseStack poseStack, float partialTicks, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projection, CallbackInfo ci) {

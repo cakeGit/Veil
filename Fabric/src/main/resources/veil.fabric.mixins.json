@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "foundry.veil.fabric.mixin",
   "compatibilityLevel": "JAVA_17",
+  "refmap": "${mod_id}.refmap.json",
   "plugin": "foundry.veil.fabric.VeilMixinPlugin",
   "mixins": [
     "resource.GroupResourcePackMixin",

@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "foundry.veil.forge.mixin",
   "compatibilityLevel": "JAVA_17",
+  "refmap": "${mod_id}.refmap.json",
   "plugin": "foundry.veil.forge.VeilMixinPlugin",
   "mixins": [
     "RegistryDataLoaderMixin",

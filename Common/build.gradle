@@ -1,13 +1,20 @@
+plugins {
+    id 'idea'
+    id 'java'
+    id 'maven-publish'
+    id 'org.spongepowered.gradle.vanilla'
+}
 base {
     archivesName = "${mod_name}-common-${minecraft_version}"
 }
-
-architectury {
-    common(rootProject.enabled_platforms.split(","))
+minecraft {
+    version(minecraft_version)
+    if(file("src/main/resources/${mod_id}.accesswidener").exists()){
+        accessWideners(file("src/main/resources/${mod_id}.accesswidener"))
+    }
 }
-
-loom {
-    accessWidenerPath = file("src/main/resources/veil.accesswidener")
+if (System.getenv('BUILD_NUMBER') != null) {
+    version += "." + System.getenv('BUILD_NUMBER')
 }
 
 test {
@@ -15,9 +22,8 @@ test {
 }
 
 dependencies {
-    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
-    // Do NOT use other classes from fabric loader
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    compileOnly 'org.spongepowered:mixin:0.8.5'
+    compileOnly 'org.jetbrains:annotations:24.0.1'
 
     implementation "io.github.douira:glsl-transformer:${glsl_transformer_version}"
     implementation "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"

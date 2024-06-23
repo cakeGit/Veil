@@ -1,106 +1,180 @@
 plugins {
-    id "com.github.johnrengelman.shadow"
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+    id 'com.github.johnrengelman.shadow'
+}
+base {
+    archivesName = "${mod_name}-forge-${minecraft_version}"
+}
+mixin {
+    add(sourceSets.main, "${mod_id}.refmap.json")
+
+    config("${mod_id}.mixins.json")
+    config("${mod_id}.forge.mixins.json")
+}
+if (System.getenv('BUILD_NUMBER') != null) {
+    version += "." + System.getenv('BUILD_NUMBER')
 }
 
-architectury {
-    platformSetupLoomIde()
-    forge()
-}
+jarJar.enable()
 
-loom {
-    accessWidenerPath = project(":common").loom.accessWidenerPath
+minecraft {
+    mappings channel: 'official', version: minecraft_version
 
-    forge {
-//        convertAccessWideners = true
-        extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
+    copyIdeResources = true //Calls processResources when in dev
 
-        mixinConfig "veil.mixins.json"
-        mixinConfig "veil.forge.mixins.json"
+    // Automatically enable forge AccessTransformers if the file exists
+    // This location is hardcoded in Forge and can not be changed.
+    // https://github.com/MinecraftForge/MinecraftForge/blob/be1698bb1554f9c8fa2f58e32b9ab70bc4385e60/fmlloader/src/main/java/net/minecraftforge/fml/loading/moddiscovery/ModFile.java#L123
+    if (file('src/main/resources/META-INF/accesstransformer.cfg').exists()) {
+        accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    }
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Client'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                modClientRun {
+                    source sourceSets.main
+                    source project(":common").sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Server'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                modServerRun {
+                    source sourceSets.main
+                    source project(":common").sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            ideaModule "${rootProject.name}.${project.name}.main"
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            taskName 'Data'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                modDataRun {
+                    source sourceSets.main
+                    source project(":common").sourceSets.main
+                }
+            }
+        }
     }
 }
 
+sourceSets.main.resources.srcDir 'src/generated/resources'
+
 configurations {
-    common
-    shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentForge.extendsFrom common
-    developmentForge.extendsFrom common
+    shade
+    implementation.extendsFrom shade
+}
+
+minecraft.runs.configureEach {
+    lazyToken('minecraft_classpath') {
+        configurations.shade.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
+    }
+}
+
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        forRepositories(fg.repository) // Only add this if you're using ForgeGradle, otherwise remove this line
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
 }
 
 dependencies {
-    forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
+    minecraft "net.minecraftforge:forge:$minecraft_version-$forge_version"
+    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly project(":common")
+    annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
 
-//    runtimeOnly fg.deobf("maven.modrinth:embeddium:0.3.4+mc1.20.1")
-//    runtimeOnly fg.deobf("curse.maven:oculus-581495:4767500")
+    // runtimeOnly fg.deobf("maven.modrinth:embeddium:0.3.4+mc1.20.1")
 
-    // GLSL Transformer requires Antlr v4, but Forge ships v3
-    implementation(shadowCommon("org.antlr:antlr4-runtime:${antlr_runtime_version}"))
-    implementation(shadowCommon("io.github.douira:glsl-transformer:${glsl_transformer_version}"))
-    implementation(include("io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"))
-    implementation(include("gg.moonflower:molang-compiler:${molang_compiler_version}"))
+    shade "io.github.douira:glsl-transformer:${glsl_transformer_version}"
+    shade "gg.moonflower:molang-compiler:$molang_compiler_version"
+    shade "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
 
-    implementation(include("io.github.spair:imgui-java-binding:$imgui_version"))
-    implementation(include("io.github.spair:imgui-java-lwjgl3:$imgui_version")) {
+    shade "io.github.spair:imgui-java-binding:$imgui_version"
+    shade("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
         exclude group: 'org.lwjgl'
         exclude group: 'org.lwjgl.lwjgl'
     }
 
-    implementation(include("io.github.spair:imgui-java-natives-linux:$imgui_version"))
-    implementation(include("io.github.spair:imgui-java-natives-macos-ft:$imgui_version"))
-    implementation(include("io.github.spair:imgui-java-natives-windows:$imgui_version"))
+    shade "io.github.spair:imgui-java-natives-linux:$imgui_version"
+    shade "io.github.spair:imgui-java-natives-macos-ft:$imgui_version"
+    shade "io.github.spair:imgui-java-natives-windows:$imgui_version"
 
-    implementation(include("org.lwjgl:lwjgl-opencl:$lwjgl_version")) {
+    shade("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
         transitive false
     }
+
+//    runtimeOnly fg.deobf("curse.maven:oculus-581495:4767500")
+//    runtimeOnly fg.deobf("curse.maven:rubidium-574856:4767529")
+}
+
+tasks.withType(JavaCompile).configureEach {
+    source(project(":common").sourceSets.main.allSource)
+}
+tasks.named("sourcesJar", Jar) {
+    from(project(":common").sourceSets.main.allSource)
 }
 
 processResources {
-    inputs.property "version", project.version
+    from project(":common").sourceSets.main.resources
+}
 
-    filesMatching("META-INF/mods.toml") {
-        expand "version": project.version
-    }
+jar.finalizedBy('reobfJar')
 
-    // Resources fix
-    copy {
-        from "$projectDir/../common/src/main/resources/"
-        into "build/resources/main"
-    }
+jar {
+    archiveClassifier = 'slim'
 }
 
 shadowJar {
-    exclude "fabric.mod.json"
-    exclude "architectury.common.json"
+    archiveClassifier = ''
+    configurations = [project.configurations.shade]
+    relocate "org.objectweb.asm", "${project.group}.lib.asm"
+    relocate "org.lwjgl.opencl", "${project.group}.lib.opencl"
+//    relocate "gg.moonflower.molangcompiler", "${project.group}.lib.molangcompiler"
+//    relocate "imgui", "${project.group}.lib.imgui"
+//    relocate "io.imgui", "${project.group}.lib.imgui-natives"
+    relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.lib.imgui-java-binding"
+    relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.lib.imgui-java-lwjgl3"
+    relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.lib.imgui-java-natives-linux"
+    relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.lib.imgui-java-natives-windows"
+    relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.lib.imgui-java-natives-macos"
+    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.lib.imgui-java-natives-macosarm64"
 
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier = "dev-shadow"
-
-    relocate "io.github.douira.glsl_transformer", "${project.group}.lib.douira.glsl_transformer"
-    relocate "org.antlr", "${project.group}.lib.antlr"
-    relocate "org.stringtemplate", "${project.group}.lib.stringtemplate"
-    relocate "org.apache.commons.collections4", "${project.group}.lib.apache.commons.collections4"
-    relocate "org.abego.treelayout", "${project.group}.lib.abego.treelayout"
-    relocate "com.ibm.icu", "${project.group}.lib.ibm.icu"
+    finalizedBy 'reobfShadowJar'
 }
 
-remapJar {
-    inputFile.set shadowJar.archiveFile
-    dependsOn shadowJar
-}
+assemble.dependsOn shadowJar
 
-sourcesJar {
-    def commonSources = project(":common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
-}
-
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
+reobf {
+    shadowJar {}
 }
 
 publishing {
@@ -108,6 +182,7 @@ publishing {
         mavenFabric(MavenPublication) {
             artifactId base.archivesName.get()
             from components.java
+            fg.component(it)
         }
     }
     repositories {
@@ -115,4 +190,10 @@ publishing {
             url "file://" + System.getenv("local_maven")
         }
     }
+}
+
+sourceSets.each {
+    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+    it.output.resourcesDir = dir
+    it.java.destinationDirectory = dir
 }

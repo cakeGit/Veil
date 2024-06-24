@@ -1,6 +1,4 @@
 plugins {
-    id 'idea'
-    id 'maven-publish'
     id 'net.minecraftforge.gradle'
     id 'org.spongepowered.mixin'
     id 'com.github.johnrengelman.shadow'
@@ -17,8 +15,6 @@ mixin {
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "." + System.getenv('BUILD_NUMBER')
 }
-
-jarJar.enable()
 
 minecraft {
     mappings channel: 'official', version: minecraft_version
@@ -108,15 +104,17 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:$minecraft_version-$forge_version"
-    compileOnly 'org.jetbrains:annotations:24.0.1'
     compileOnly project(":common")
-    annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     // runtimeOnly fg.deobf("maven.modrinth:embeddium:0.3.4+mc1.20.1")
 
-    shade "io.github.douira:glsl-transformer:${glsl_transformer_version}"
+    shade "org.antlr:antlr4-runtime:$antlr_version"
+    shade "io.github.douira:glsl-transformer:$glsl_transformer_version"
+    shade("io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}") {
+        transitive false
+    }
     shade "gg.moonflower:molang-compiler:$molang_compiler_version"
-    shade "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
 
     shade "io.github.spair:imgui-java-binding:$imgui_version"
     shade("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
@@ -161,6 +159,15 @@ shadowJar {
 //    relocate "gg.moonflower.molangcompiler", "${project.group}.lib.molangcompiler"
 //    relocate "imgui", "${project.group}.lib.imgui"
 //    relocate "io.imgui", "${project.group}.lib.imgui-natives"
+
+    relocate "org.antlr", "${project.group}.lib.antlr"
+    relocate "org.stringtemplate", "${project.group}.lib.stringtemplate"
+    relocate "org.apache.commons.collections4", "${project.group}.lib.apache.commons.collections4"
+    relocate "org.abego.treelayout", "${project.group}.lib.abego.treelayout"
+    relocate "com.ibm.icu", "${project.group}.lib.ibm.icu"
+
+    relocate "io.github.douira.glsl_transformer", "${project.group}.lib.douira.glsl_transformer"
+
     relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.lib.imgui-java-binding"
     relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.lib.imgui-java-lwjgl3"
     relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.lib.imgui-java-natives-linux"
@@ -179,7 +186,7 @@ reobf {
 
 publishing {
     publications {
-        mavenFabric(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId base.archivesName.get()
             from components.java
             fg.component(it)

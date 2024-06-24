@@ -1,7 +1,4 @@
 plugins {
-    id 'java'
-    id 'idea'
-    id 'maven-publish'
     id 'fabric-loom'
     id 'com.github.johnrengelman.shadow'
 }
@@ -51,8 +48,6 @@ repositories {
             includeGroup "maven.modrinth"
         }
     }
-
-    flatDir { dirs '../libs' }
 }
 
 dependencies {
@@ -61,9 +56,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation 'org.jetbrains:annotations:24.0.1'
-    implementation project(":common")
+    implementation project(path: ":common", configuration: "namedElements")
 
-    modRuntimeOnly "maven.modrinth:modmenu:7.2.2"
+//    modRuntimeOnly "maven.modrinth:modmenu:7.2.2"
 
     modCompileOnly "maven.modrinth:sodium:mc1.20.1-0.5.3"
     modCompileOnly "maven.modrinth:iris:1.6.11+1.20.1"
@@ -72,39 +67,23 @@ dependencies {
 //    modRuntimeOnly "maven.modrinth:iris:1.6.11+1.20.1"
 //    modRuntimeOnly "maven.modrinth:replaymod:1.20.1-2.6.15"
 
-    implementation "io.github.douira:glsl-transformer:${glsl_transformer_version}"
-    shade "io.github.douira:glsl-transformer:${glsl_transformer_version}"
+    implementation(include("org.antlr:antlr4-runtime:${antlr_version}"))
+    implementation(include("io.github.douira:glsl-transformer:${glsl_transformer_version}"))
+    implementation(include("io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"))
 
-    implementation "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
-    shade "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
+    implementation(include("gg.moonflower:molang-compiler:${molang_compiler_version}"))
 
-    implementation "gg.moonflower:molang-compiler:${molang_compiler_version}"
-    shade "gg.moonflower:molang-compiler:$molang_compiler_version"
-
-    implementation "io.github.spair:imgui-java-binding:$imgui_version"
-    implementation("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
+    implementation(include( "io.github.spair:imgui-java-binding:$imgui_version"))
+            implementation(include(("io.github.spair:imgui-java-lwjgl3:$imgui_version"))) {
         exclude group: 'org.lwjgl'
         exclude group: 'org.lwjgl.lwjgl'
     }
 
-    implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-macos-ft:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+    implementation(include("io.github.spair:imgui-java-natives-linux:$imgui_version"))
+    implementation(include("io.github.spair:imgui-java-natives-macos-ft:$imgui_version"))
+    implementation(include("io.github.spair:imgui-java-natives-windows:$imgui_version"))
 
-    shade "io.github.spair:imgui-java-binding:$imgui_version"
-    shade("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
-        exclude group: 'org.lwjgl'
-        exclude group: 'org.lwjgl.lwjgl'
-    }
-
-    shade "io.github.spair:imgui-java-natives-linux:$imgui_version"
-    shade "io.github.spair:imgui-java-natives-macos:$imgui_version"
-    shade "io.github.spair:imgui-java-natives-windows:$imgui_version"
-
-    implementation("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
-        transitive false
-    }
-    shade("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
+    implementation(include("org.lwjgl:lwjgl-opencl:$lwjgl_version")) {
         transitive false
     }
 }
@@ -119,17 +98,17 @@ tasks.named("sourcesJar", Jar) {
 shadowJar {
     archiveClassifier = 'dev'
     configurations = [project.configurations.shade]
-    relocate "org.objectweb.asm", "${project.group}.lib.asm"
-    relocate "org.lwjgl.opencl", "${project.group}.lib.opencl"
+//    relocate "org.objectweb.asm", "${project.group}.lib.asm"
+//    relocate "org.lwjgl.opencl", "${project.group}.lib.opencl"
 //    relocate "gg.moonflower.molangcompiler", "${project.group}.lib.molangcompiler"
 //    relocate "imgui", "${project.group}.lib.imgui"
 //    relocate "io.imgui", "${project.group}.lib.imgui-natives"
-    relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.relocated.imgui-java-binding"
-    relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.relocated.imgui-java-lwjgl3"
-    relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.relocated.imgui-java-natives-linux"
-    relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.relocated.imgui-java-natives-windows"
-    relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.relocated.imgui-java-natives-macos"
-    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.relocated.imgui-java-natives-macosarm64"
+//    relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.relocated.imgui-java-binding"
+//    relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.relocated.imgui-java-lwjgl3"
+//    relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.relocated.imgui-java-natives-linux"
+//    relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.relocated.imgui-java-natives-windows"
+//    relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.relocated.imgui-java-natives-macos"
+//    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.relocated.imgui-java-natives-macosarm64"
 }
 
 remapJar {
@@ -143,7 +122,7 @@ processResources {
 
 publishing {
     publications {
-        mavenFabric(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId base.archivesName.get()
             from components.java
         }

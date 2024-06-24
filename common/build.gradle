@@ -1,16 +1,19 @@
 plugins {
-    id 'idea'
-    id 'java'
-    id 'maven-publish'
-    id 'org.spongepowered.gradle.vanilla'
+    id 'fabric-loom'
 }
 base {
     archivesName = "${mod_name}-common-${minecraft_version}"
 }
-minecraft {
-    version(minecraft_version)
-    if(file("src/main/resources/${mod_id}.accesswidener").exists()){
-        accessWideners(file("src/main/resources/${mod_id}.accesswidener"))
+loom {
+    if (file("src/main/resources/${mod_id}.accesswidener").exists()) {
+        accessWidenerPath.set(file("src/main/resources/${mod_id}.accesswidener"))
+    }
+    mixin {
+        defaultRefmapName.set("${mod_id}.refmap.json")
+    }
+
+    runConfigs.configureEach {
+        ideConfigGenerated = false
     }
 }
 if (System.getenv('BUILD_NUMBER') != null) {
@@ -22,19 +25,26 @@ test {
 }
 
 dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    // Need this for mixin deps
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+
     compileOnly 'org.spongepowered:mixin:0.8.5'
     compileOnly 'org.jetbrains:annotations:24.0.1'
 
+    implementation "org.antlr:antlr4-runtime:${antlr_version}"
     implementation "io.github.douira:glsl-transformer:${glsl_transformer_version}"
     implementation "io.github.douira:glsl-preprocessor:${glsl_preprocessor_version}"
-    implementation("gg.moonflower:molang-compiler:${molang_compiler_version}")
+    implementation "gg.moonflower:molang-compiler:${molang_compiler_version}"
 
     implementation "io.github.spair:imgui-java-binding:$imgui_version"
-    implementation ("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
+    implementation("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
         exclude group: 'org.lwjgl'
         exclude group: 'org.lwjgl.lwjgl'
     }
 
+    // VanillaGradle makes this impossible... https://github.com/SpongePowered/VanillaGradle/commit/ccc45765d9881747b2c922be7a13c453c32ce9ed
     implementation "org.lwjgl:lwjgl-opencl:$lwjgl_version"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
@@ -43,7 +53,7 @@ dependencies {
 
 publishing {
     publications {
-        mavenFabric(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId base.archivesName.get()
             from components.java
         }

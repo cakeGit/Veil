@@ -11,7 +11,7 @@ import static org.lwjgl.opencl.CL10.clEnqueueReadBuffer;
 import static org.lwjgl.opencl.CL10.clEnqueueWriteBuffer;
 
 /**
- * <p>A generic data buffer that can be referenced uploaded to/from OpenCL.</p>
+ * <p>A generic data buffer that can be uploaded to/from OpenCL.</p>
  * <p>When using the buffer methods, the data should be provided as follows:</p>
  * <pre>
  *         // Using MemoryStack is fast, but limits the amount of data that can be allocated
@@ -28,7 +28,7 @@ import static org.lwjgl.opencl.CL10.clEnqueueWriteBuffer;
  *             CLBuffer buffer = ...;
  *
  *             buffer.write(data);
- *             // buffer.pointer() is still going to be 0 after this call
+ *             // data.pointer() is still going to be 0 after this call
  *         }
  * </pre>
  *

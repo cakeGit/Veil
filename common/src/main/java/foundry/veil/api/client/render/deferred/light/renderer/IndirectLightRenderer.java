@@ -335,6 +335,6 @@ public abstract class IndirectLightRenderer<T extends Light & IndirectLight<T>> 
      */
     public static boolean isSupported() {
         GLCapabilities caps = GL.getCapabilities();
-        return caps.OpenGL40 || caps.GL_ARB_draw_indirect;
+        return caps.OpenGL43 || caps.GL_ARB_multi_draw_indirect;
     }
 }

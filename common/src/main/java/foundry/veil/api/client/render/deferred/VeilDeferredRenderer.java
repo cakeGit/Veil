@@ -60,8 +60,9 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
     public static final ResourceLocation TRANSPARENT_POST = Veil.veilPath("core/transparent");
     public static final ResourceLocation SCREEN_POST = Veil.veilPath("core/screen");
 
-    private static final MutableComponent UNSUPPORTED_TITLE = Component.translatable(Veil.MODID + ".deferred.unsupported.title");
-    private static final MutableComponent UNSUPPORTED_DESC = Component.translatable(Veil.MODID + ".deferred.unsupported.desc");
+    public static final MutableComponent UNSUPPORTED_TITLE = Component.translatable(Veil.MODID + ".deferred.unsupported.title");
+    public static final MutableComponent UNSUPPORTED_SODIUM_DESC = Component.translatable(Veil.MODID + ".deferred.unsupported.sodium_desc");
+    public static final MutableComponent UNSUPPORTED_FABULOUS_DESC = Component.translatable(Veil.MODID + ".deferred.unsupported.fabulous_desc");
 
     private final ShaderManager deferredShaderManager;
     private final ShaderPreDefinitions shaderPreDefinitions;
@@ -88,8 +89,8 @@ public class VeilDeferredRenderer implements PreparableReloadListener, NativeRes
         return CompletableFuture.<CompletableFuture<Void>>supplyAsync(() -> {
             boolean selected = Minecraft.getInstance().getResourcePackRepository().getSelectedIds().contains(PACK_ID.toString()) || resourceManager.listPacks().anyMatch(pack -> pack.packId().equals(PACK_ID.toString()));
             boolean active = selected && isSupported();
-            if (selected && !active) {
-                SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastIds.PERIODIC_NOTIFICATION, UNSUPPORTED_TITLE, UNSUPPORTED_DESC);
+            if (selected && Minecraft.useShaderTransparency()) {
+                SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastIds.PERIODIC_NOTIFICATION, UNSUPPORTED_TITLE, UNSUPPORTED_FABULOUS_DESC);
             }
             if (this.enabled != active) {
                 this.enabled = active;

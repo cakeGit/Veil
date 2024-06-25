@@ -58,7 +58,7 @@ dependencies {
     implementation 'org.jetbrains:annotations:24.0.1'
     implementation project(path: ":common", configuration: "namedElements")
 
-//    modRuntimeOnly "maven.modrinth:modmenu:7.2.2"
+    modRuntimeOnly "maven.modrinth:modmenu:7.2.2"
 
     modCompileOnly "maven.modrinth:sodium:mc1.20.1-0.5.3"
     modCompileOnly "maven.modrinth:iris:1.6.11+1.20.1"
@@ -73,8 +73,8 @@ dependencies {
 
     implementation(include("gg.moonflower:molang-compiler:${molang_compiler_version}"))
 
-    implementation(include( "io.github.spair:imgui-java-binding:$imgui_version"))
-            implementation(include(("io.github.spair:imgui-java-lwjgl3:$imgui_version"))) {
+    implementation(include("io.github.spair:imgui-java-binding:$imgui_version"))
+    implementation(include(("io.github.spair:imgui-java-lwjgl3:$imgui_version"))) {
         exclude group: 'org.lwjgl'
         exclude group: 'org.lwjgl.lwjgl'
     }

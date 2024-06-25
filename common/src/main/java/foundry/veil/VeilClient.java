@@ -5,6 +5,7 @@ import foundry.veil.api.client.editor.EditorManager;
 import foundry.veil.api.client.registry.*;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
+import foundry.veil.api.client.render.deferred.VeilDeferredRenderer;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
 import foundry.veil.impl.client.editor.*;
 import foundry.veil.impl.client.imgui.VeilImGuiImpl;
@@ -12,6 +13,8 @@ import foundry.veil.impl.resource.VeilResourceManagerImpl;
 import foundry.veil.platform.VeilClientPlatform;
 import foundry.veil.platform.VeilEventPlatform;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import org.jetbrains.annotations.ApiStatus;
@@ -36,6 +39,10 @@ public class VeilClient {
             RESOURCE_MANAGER.free();
         });
         VeilEventPlatform.INSTANCE.onVeilRendererAvailable(renderer -> {
+            if (Veil.SODIUM) {
+                SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastIds.PERIODIC_NOTIFICATION, VeilDeferredRenderer.UNSUPPORTED_TITLE, VeilDeferredRenderer.UNSUPPORTED_SODIUM_DESC);
+            }
+
             RESOURCE_MANAGER.addVeilLoaders(renderer);
             if (VeilRenderer.hasImGui()) {
                 EditorManager editorManager = renderer.getEditorManager();

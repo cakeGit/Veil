@@ -3,6 +3,7 @@ package foundry.veil.api.client.editor;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
+import net.minecraft.network.chat.Component;
 
 /**
  * Displays a single window as the editor. Automatically handles the close widget in the corner.
@@ -15,7 +16,7 @@ public abstract class SingleWindowEditor implements Editor {
 
     @Override
     public void render() {
-        if (ImGui.begin(this.getWindowTitle(), this.open)) {
+        if (ImGui.begin(this.getWindowTitle().getString(), this.open)) {
             this.renderComponents();
         }
         ImGui.end();
@@ -38,7 +39,7 @@ public abstract class SingleWindowEditor implements Editor {
     /**
      * @return The title of the window
      */
-    protected String getWindowTitle() {
+    protected Component getWindowTitle() {
         return this.getDisplayName();
     }
 }

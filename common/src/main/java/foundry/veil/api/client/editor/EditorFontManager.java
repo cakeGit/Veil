@@ -122,7 +122,7 @@ public class EditorFontManager implements PreparableReloadListener {
             Veil.LOGGER.info("Built {}", entry.getKey());
             this.fonts.put(entry.getKey(), entry.getValue().build(FONT_SIZE));
         }
-        ImGui.getIO().setFontDefault(this.getFont(EditorManager.DEFAULT, false, false));
+        ImGui.getIO().setFontDefault(this.getFont(EditorManager.DEFAULT_FONT, false, false));
         VeilImGuiImpl.get().updateFonts();
     }
 

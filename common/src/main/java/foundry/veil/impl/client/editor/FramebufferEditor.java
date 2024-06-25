@@ -1,6 +1,7 @@
 package foundry.veil.impl.client.editor;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import foundry.veil.Veil;
 import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
@@ -12,6 +13,8 @@ import foundry.veil.api.client.util.TextureDownloader;
 import imgui.ImGui;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -21,35 +24,38 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL11C.*;
 
 @ApiStatus.Internal
 public class FramebufferEditor extends SingleWindowEditor {
 
+    public static final Component TITLE = Component.translatable("editor.veil.framebuffer.title");
+
+    private static final Component SAVE = Component.translatable("gui.veil.save");
+
     private AdvancedFbo downloadBuffer;
 
     @Override
-    public String getDisplayName() {
-        return "Framebuffer";
+    public Component getDisplayName() {
+        return TITLE;
     }
 
     @Override
-    public @Nullable String getGroup() {
-        return "Renderer";
+    public Component getGroup() {
+        return RENDERER_GROUP;
     }
 
     @Override
     protected void renderComponents() {
         VeilRenderer renderer = VeilRenderSystem.renderer();
 
-        if (ImGui.beginTabBar("Framebuffers")) {
+        if (ImGui.beginTabBar("##framebuffers")) {
             FramebufferManager framebufferManager = renderer.getFramebufferManager();
-            for (Map.Entry<ResourceLocation, AdvancedFbo> entry : framebufferManager.getFramebuffers().entrySet()) {
-                this.drawBuffers(entry.getKey().toString(), entry.getValue());
+            for (ResourceLocation id : framebufferManager.getFramebuffers().keySet()) {
+                drawBuffers(id, fbo -> this.downloadBuffer = fbo);
             }
             ImGui.endTabBar();
         }
@@ -92,15 +98,16 @@ public class FramebufferEditor extends SingleWindowEditor {
 
                 CompletableFuture.allOf(result.toArray(new CompletableFuture[0])).thenRunAsync(() -> Util.getPlatform().openFile(outputFolder.toFile()), client);
             } catch (Exception e) {
-                e.printStackTrace();
+                Veil.LOGGER.error("Failed to download framebuffer", e);
             }
             this.downloadBuffer = null;
         }
     }
 
-    private void drawBuffers(String name, @Nullable AdvancedFbo buffer) {
+    public static void drawBuffers(ResourceLocation id, @Nullable Consumer<AdvancedFbo> saveCallback) {
+        AdvancedFbo buffer = VeilRenderSystem.renderer().getFramebufferManager().getFramebuffer(id);
         ImGui.beginDisabled(buffer == null);
-        if (ImGui.beginTabItem(name)) {
+        if (ImGui.beginTabItem(id.toString())) {
             if (buffer != null) {
                 int columns = (int) Math.ceil(Math.sqrt(buffer.getColorAttachments() + (buffer.isDepthTextureAttachment() ? 1 : 0)));
                 float width = ImGui.getContentRegionAvailX() / columns - ImGui.getStyle().getItemSpacingX();
@@ -116,7 +123,7 @@ public class FramebufferEditor extends SingleWindowEditor {
                     }
                     ImGui.beginGroup();
                     AdvancedFboTextureAttachment attachment = buffer.getColorTextureAttachment(i);
-                    ImGui.text(this.getAttachmentName(i, attachment));
+                    ImGui.text(getAttachmentName(i, attachment));
                     ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.5F);
                     ImGui.endGroup();
                 }
@@ -127,13 +134,13 @@ public class FramebufferEditor extends SingleWindowEditor {
                     }
                     ImGui.beginGroup();
                     AdvancedFboTextureAttachment attachment = buffer.getDepthTextureAttachment();
-                    ImGui.text(this.getAttachmentName(-1, attachment));
+                    ImGui.text(getAttachmentName(-1, attachment));
                     ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.5F);
                     ImGui.endGroup();
                 }
 
-                if (ImGui.button("Save", ImGui.getContentRegionAvailX() - 4, 0)) {
-                    this.downloadBuffer = buffer;
+                if (saveCallback != null && ImGui.button(SAVE.getString(), ImGui.getContentRegionAvailX() - 4, 0)) {
+                    saveCallback.accept(buffer);
                 }
             }
             ImGui.endTabItem();
@@ -141,9 +148,9 @@ public class FramebufferEditor extends SingleWindowEditor {
         ImGui.endDisabled();
     }
 
-    private String getAttachmentName(int index, AdvancedFboTextureAttachment attachment) {
+    private static String getAttachmentName(int index, AdvancedFboTextureAttachment attachment) {
         RenderSystem.bindTexture(attachment.getId());
-        StringBuilder attachmentName = new StringBuilder(attachment.getName() != null ? attachment.getName() : index == -1 ? "Depth" : ("Attachment " + index));
+        StringBuilder attachmentName = new StringBuilder(attachment.getName() != null ? attachment.getName() : index == -1 ? I18n.get("editor.veil.framebuffer.depth_attachment") : (I18n.get("editor.veil.framebuffer.color_attachment", index)));
 
         int internalFormat = glGetTexLevelParameteri(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT);
         for (FramebufferAttachmentDefinition.Format format : FramebufferAttachmentDefinition.Format.values()) {
@@ -153,7 +160,7 @@ public class FramebufferEditor extends SingleWindowEditor {
             }
         }
 
-        attachmentName.append(" (0x").append(Integer.toHexString(internalFormat).toUpperCase(Locale.ROOT)).append(")");
+        attachmentName.append(" (0x%X)".formatted(internalFormat));
         return attachmentName.toString();
     }
 }

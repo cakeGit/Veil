@@ -1,5 +1,7 @@
 package foundry.veil.api.resource;
 
+import net.minecraft.network.chat.Component;
+
 import java.util.OptionalInt;
 
 public interface VeilResourceAction<T extends VeilResource<?>> {
@@ -7,12 +9,12 @@ public interface VeilResourceAction<T extends VeilResource<?>> {
     /**
      * @return The name of the action
      */
-    String getName();
+    Component getName();
 
     /**
      * @return A brief description of the action
      */
-    String getDescription();
+    Component getDescription();
 
     /**
      * @return The icon to display for the action

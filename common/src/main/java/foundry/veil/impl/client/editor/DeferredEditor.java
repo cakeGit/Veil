@@ -1,25 +1,28 @@
 package foundry.veil.impl.client.editor;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import foundry.veil.api.client.editor.SingleWindowEditor;
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.client.render.deferred.VeilDeferredRenderer;
 import foundry.veil.api.client.render.deferred.light.renderer.LightRenderer;
-import foundry.veil.api.client.render.framebuffer.*;
+import foundry.veil.api.client.render.framebuffer.VeilFramebuffers;
 import foundry.veil.api.client.render.shader.definition.ShaderPreDefinitions;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Locale;
-
-import static org.lwjgl.opengl.GL11C.*;
 
 @ApiStatus.Internal
 public class DeferredEditor extends SingleWindowEditor {
+
+    public static final Component TITLE = Component.translatable("editor.veil.deferred.title");
+
+    private static final Component ENABLE_PIPELINE = Component.translatable("editor.veil.deferred.toggle.pipeline");
+    private static final Component ENABLE_AO = Component.translatable("editor.veil.deferred.toggle.ao");
+    private static final Component ENABLE_VANILLA_LIGHT = Component.translatable("editor.veil.deferred.toggle.vanilla_light");
+    private static final Component ENABLE_VANILLA_ENTITY_LIGHT = Component.translatable("editor.veil.deferred.toggle.vanilla_entity_light");
 
     private final ImBoolean enableDeferredPipeline = new ImBoolean();
     private final ImBoolean enableAmbientOcclusion = new ImBoolean();
@@ -27,13 +30,13 @@ public class DeferredEditor extends SingleWindowEditor {
     private final ImBoolean enableEntityLight = new ImBoolean();
 
     @Override
-    public String getDisplayName() {
-        return "Deferred Renderer";
+    public Component getDisplayName() {
+        return TITLE;
     }
 
     @Override
-    public @Nullable String getGroup() {
-        return "Deferred";
+    public Component getGroup() {
+        return DEFERRED_GROUP;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class DeferredEditor extends SingleWindowEditor {
         LightRenderer lightRenderer = deferredRenderer.getLightRenderer();
 
         this.enableDeferredPipeline.set(deferredRenderer.getRendererState() != VeilDeferredRenderer.RendererState.DISABLED);
-        if (ImGui.checkbox("Enable Pipeline", this.enableDeferredPipeline)) {
+        if (ImGui.checkbox(ENABLE_PIPELINE.getString(), this.enableDeferredPipeline)) {
             if (this.enableDeferredPipeline.get()) {
                 deferredRenderer.enable();
             } else {
@@ -55,7 +58,7 @@ public class DeferredEditor extends SingleWindowEditor {
 
         ImGui.sameLine();
         this.enableAmbientOcclusion.set(lightRenderer.isAmbientOcclusionEnabled());
-        if (ImGui.checkbox("Enable Ambient Occlusion", this.enableAmbientOcclusion)) {
+        if (ImGui.checkbox(ENABLE_AO.getString(), this.enableAmbientOcclusion)) {
             if (this.enableAmbientOcclusion.get()) {
                 lightRenderer.enableAmbientOcclusion();
             } else {
@@ -65,7 +68,7 @@ public class DeferredEditor extends SingleWindowEditor {
 
         ImGui.sameLine();
         this.enableVanillaLight.set(lightRenderer.isVanillaLightEnabled());
-        if (ImGui.checkbox("Enable Vanilla Light", this.enableVanillaLight)) {
+        if (ImGui.checkbox(ENABLE_VANILLA_LIGHT.getString(), this.enableVanillaLight)) {
             if (this.enableVanillaLight.get()) {
                 lightRenderer.enableVanillaLight();
             } else {
@@ -75,7 +78,7 @@ public class DeferredEditor extends SingleWindowEditor {
 
         ImGui.sameLine();
         this.enableEntityLight.set(definitions.getDefinition(VeilDeferredRenderer.DISABLE_VANILLA_ENTITY_LIGHT_KEY) == null);
-        if (ImGui.checkbox("Enable Vanilla Entity Lights", this.enableEntityLight)) {
+        if (ImGui.checkbox(ENABLE_VANILLA_ENTITY_LIGHT.getString(), this.enableEntityLight)) {
             if (this.enableEntityLight.get()) {
                 definitions.remove(VeilDeferredRenderer.DISABLE_VANILLA_ENTITY_LIGHT_KEY);
             } else {
@@ -83,80 +86,16 @@ public class DeferredEditor extends SingleWindowEditor {
             }
         }
 
-        ImGui.text("Framebuffers");
-        if (ImGui.beginTabBar("Framebuffers")) {
-            FramebufferManager framebufferManager = renderer.getFramebufferManager();
-            AdvancedFbo opaqueBuffer = framebufferManager.getFramebuffer(VeilFramebuffers.OPAQUE);
-            AdvancedFbo opaqueLightBuffer = framebufferManager.getFramebuffer(VeilFramebuffers.OPAQUE_LIGHT);
-            AdvancedFbo opaqueFinalBuffer = framebufferManager.getFramebuffer(VeilFramebuffers.OPAQUE_FINAL);
-            AdvancedFbo transparentBuffer = framebufferManager.getFramebuffer(VeilFramebuffers.TRANSPARENT);
-            AdvancedFbo transparentLightBuffer = framebufferManager.getFramebuffer(VeilFramebuffers.TRANSPARENT_LIGHT);
-            AdvancedFbo transparentFinalBuffer = framebufferManager.getFramebuffer(VeilFramebuffers.TRANSPARENT_FINAL);
-
-            this.drawBuffers("Opaque", opaqueBuffer);
-            this.drawBuffers("Opaque Light", opaqueLightBuffer);
-            this.drawBuffers("Opaque Final", opaqueFinalBuffer);
-            this.drawBuffers("Transparent", transparentBuffer);
-            this.drawBuffers("Transparent Light", transparentLightBuffer);
-            this.drawBuffers("Transparent Final", transparentFinalBuffer);
-
+        VeilImGuiUtil.component(FramebufferEditor.TITLE);
+        if (ImGui.beginTabBar("##framebuffers")) {
+            FramebufferEditor.drawBuffers(VeilFramebuffers.OPAQUE, null);
+            FramebufferEditor.drawBuffers(VeilFramebuffers.OPAQUE_LIGHT, null);
+            FramebufferEditor.drawBuffers(VeilFramebuffers.OPAQUE_FINAL, null);
+            FramebufferEditor.drawBuffers(VeilFramebuffers.TRANSPARENT, null);
+            FramebufferEditor.drawBuffers(VeilFramebuffers.TRANSPARENT_LIGHT, null);
+            FramebufferEditor.drawBuffers(VeilFramebuffers.TRANSPARENT_FINAL, null);
             ImGui.endTabBar();
         }
-    }
-
-    private void drawBuffers(String name, @Nullable AdvancedFbo buffer) {
-        ImGui.beginDisabled(buffer == null);
-        if (ImGui.beginTabItem(name)) {
-            if (buffer != null) {
-                int columns = (int) Math.ceil(Math.sqrt(buffer.getColorAttachments() + (buffer.isDepthTextureAttachment() ? 1 : 0)));
-                float width = ImGui.getContentRegionAvailX() / columns - ImGui.getStyle().getItemSpacingX();
-                float height = width * buffer.getHeight() / buffer.getWidth();
-                int i;
-                for (i = 0; i < buffer.getColorAttachments(); i++) {
-                    if (!buffer.isColorTextureAttachment(i)) {
-                        continue;
-                    }
-
-                    if (i % columns != 0) {
-                        ImGui.sameLine();
-                    }
-                    ImGui.beginGroup();
-                    AdvancedFboTextureAttachment attachment = buffer.getColorTextureAttachment(i);
-                    ImGui.text(this.getAttachmentName(i, attachment));
-                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.5F);
-                    ImGui.endGroup();
-                }
-
-                if (buffer.isDepthTextureAttachment()) {
-                    if (i % columns != 0) {
-                        ImGui.sameLine();
-                    }
-                    ImGui.beginGroup();
-                    AdvancedFboTextureAttachment attachment = buffer.getDepthTextureAttachment();
-                    ImGui.text(this.getAttachmentName(-1, attachment));
-                    ImGui.image(attachment.getId(), width, height, 0, 1, 1, 0, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.5F);
-                    ImGui.endGroup();
-                }
-            }
-            ImGui.endTabItem();
-        }
-        ImGui.endDisabled();
-    }
-
-    private String getAttachmentName(int index, AdvancedFboTextureAttachment attachment) {
-        RenderSystem.bindTexture(attachment.getId());
-        StringBuilder attachmentName = new StringBuilder(attachment.getName() != null ? attachment.getName() : index == -1 ? "Depth" : ("Attachment " + index));
-
-        int internalFormat = glGetTexLevelParameteri(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT);
-        for (FramebufferAttachmentDefinition.Format format : FramebufferAttachmentDefinition.Format.values()) {
-            if (internalFormat == format.getInternalId()) {
-                attachmentName.append(" (").append(format.name()).append(")");
-                return attachmentName.toString();
-            }
-        }
-
-        attachmentName.append(" (0x").append(Integer.toHexString(internalFormat).toUpperCase(Locale.ROOT)).append(")");
-        return attachmentName.toString();
     }
 
     @Override

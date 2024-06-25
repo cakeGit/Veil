@@ -1,7 +1,10 @@
 package foundry.veil.api.client.editor;
 
 import foundry.veil.api.client.render.VeilRenderSystem;
-import org.jetbrains.annotations.Nullable;
+import imgui.ImGui;
+import imgui.type.ImBoolean;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.NativeResource;
 
 /**
@@ -10,6 +13,13 @@ import org.lwjgl.system.NativeResource;
  * @author Ocelot
  */
 public interface Editor extends NativeResource {
+
+    Component DEFAULT_GROUP = Component.translatable("editor_group.veil.default");
+    Component EXAMPLE_GROUP = Component.translatable("editor_group.veil.example");
+    Component DEFERRED_GROUP = Component.translatable("editor_group.veil.deferred");
+    Component RENDERER_GROUP = Component.translatable("editor_group.veil.renderer");
+    Component INFO_GROUP = Component.translatable("editor_group.veil.info");
+    Component RESOURCE_GROUP = Component.translatable("editor_group.veil.resource");
 
     /**
      * Renders elements into the menu bar. Only called if {@link #isMenuBarEnabled()} is <code>true</code>.
@@ -31,13 +41,13 @@ public interface Editor extends NativeResource {
     /**
      * @return The visible display name of this editor
      */
-    String getDisplayName();
+    Component getDisplayName();
 
     /**
-     * @return The name of the tab group to put this editor in or <code>null</code> for default
+     * @return The name of the tab group to put this editor in
      */
-    default @Nullable String getGroup() {
-        return null;
+    default Component getGroup() {
+        return DEFAULT_GROUP;
     }
 
     /**
@@ -78,5 +88,9 @@ public interface Editor extends NativeResource {
      */
     @Override
     default void free() {
+    }
+
+    static Component group(ResourceLocation id) {
+        return Component.translatable("editor_group." + id.getNamespace() + "." + id.getPath());
     }
 }

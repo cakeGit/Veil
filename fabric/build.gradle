@@ -64,7 +64,7 @@ dependencies {
     modCompileOnly "maven.modrinth:iris:1.6.11+1.20.1"
     modCompileOnly "maven.modrinth:replaymod:1.20.1-2.6.15"
     modRuntimeOnly "maven.modrinth:sodium:mc1.20.1-0.5.3"
-//    modRuntimeOnly "maven.modrinth:iris:1.6.11+1.20.1"
+    modRuntimeOnly "maven.modrinth:iris:1.6.11+1.20.1"
 //    modRuntimeOnly "maven.modrinth:replaymod:1.20.1-2.6.15"
 
     implementation(include("org.antlr:antlr4-runtime:${antlr_version}"))

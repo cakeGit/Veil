@@ -7,6 +7,7 @@ import foundry.veil.api.client.editor.EditorManager;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import imgui.ImFont;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -48,6 +49,17 @@ public class VeilImGuiUtil {
             ImGui.popTextWrapPos();
             ImGui.endTooltip();
         }
+    }
+
+    /**
+     * Sets the tooltip to the specified component
+     *
+     * @param text The text to render
+     */
+    public static void setTooltip(FormattedText text) {
+        ImGui.beginTooltip();
+        component(text);
+        ImGui.endTooltip();
     }
 
     /**
@@ -162,7 +174,18 @@ public class VeilImGuiUtil {
      * @return The ImFont to use
      */
     public static ImFont getStyleFont(Style style) {
-        return VeilRenderSystem.renderer().getEditorManager().getFont(Style.DEFAULT_FONT.equals(style.getFont()) ? EditorManager.DEFAULT : style.getFont(), style.isBold(), style.isItalic());
+        return VeilRenderSystem.renderer().getEditorManager().getFont(Style.DEFAULT_FONT.equals(style.getFont()) ? EditorManager.DEFAULT_FONT : style.getFont(), style.isBold(), style.isItalic());
+    }
+
+    /**
+     * Retrieves the ImGui font to use for the specified Minecraft style.
+     *
+     * @param color The
+     * @return The ImFont to use
+     */
+    public static int getColor(int color) {
+        float[] colors = ImGui.getStyle().getColors()[color];
+        return (int) (colors[3] * 255) << 24 | (int) (colors[0] * 255) << 16 | (int) (colors[1] * 255) << 8 | (int) (colors[2] * 255);
     }
 
     /**
@@ -189,7 +212,7 @@ public class VeilImGuiUtil {
 
         public void reset() {
             this.font = ImGui.getFont();
-            this.textColor = -1;
+            this.textColor = getColor(ImGuiCol.Text);
             this.buffer.setLength(0);
             this.hoverEvent = null;
             this.clickEvent = null;

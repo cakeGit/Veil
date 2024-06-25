@@ -4,19 +4,24 @@ import foundry.veil.api.client.registry.VeilResourceEditorRegistry;
 import foundry.veil.api.resource.VeilEditorEnvironment;
 import foundry.veil.api.resource.VeilResourceAction;
 import foundry.veil.api.resource.type.FramebufferResource;
+import net.minecraft.network.chat.Component;
 
+import java.util.Comparator;
 import java.util.OptionalInt;
 
 public class FramebufferEditAction implements VeilResourceAction<FramebufferResource> {
 
+    private static final Component NAME = Component.translatable("editor.veil.resource.action.framebuffer_edit");
+    private static final Component DESC = Component.translatable("editor.veil.resource.action.framebuffer_edit.desc");
+
     @Override
-    public String getName() {
-        return "Open in Framebuffer Visual Editor";
+    public Component getName() {
+        return NAME;
     }
 
     @Override
-    public String getDescription() {
-        return "Opens the in-game framebuffer editor";
+    public Component getDescription() {
+        return DESC;
     }
 
     @Override

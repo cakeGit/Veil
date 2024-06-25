@@ -17,9 +17,9 @@ import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiTreeNodeFlags;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -28,6 +28,12 @@ import java.util.concurrent.CompletableFuture;
 
 @ApiStatus.Internal
 public class ResourceManagerEditor extends SingleWindowEditor implements VeilEditorEnvironment {
+
+    public static final Component TITLE = Component.translatable("editor.veil.resource.title");
+
+    private static final Component RELOAD_BUTTON = Component.translatable("editor.veil.resource.button.reload");
+    private static final Component COPY_PATH = Component.translatable("editor.veil.resource.action.copy_path");
+    private static final Component OPEN_FOLDER = Component.translatable("editor.veil.resource.action.open_folder");
 
     private VeilResource<?> contextResource;
     private List<? extends VeilResourceAction<?>> actions;
@@ -40,7 +46,7 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
         this.actions = Collections.emptyList();
 
         ImGui.beginDisabled(this.reloadFuture != null && !this.reloadFuture.isDone());
-        if (ImGui.button("Reload Resources")) {
+        if (ImGui.button(RELOAD_BUTTON.getString())) {
             this.reloadFuture = Minecraft.getInstance().reloadResourcePacks();
         }
         ImGui.endDisabled();
@@ -127,7 +133,7 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
                 VeilImGuiUtil.icon(0xEB91);
                 ImGui.sameLine();
                 ImGui.popStyleVar();
-                ImGui.text("Copy Path");
+                VeilImGuiUtil.component(COPY_PATH);
 
                 ImGui.beginDisabled(info.isStatic());
                 if (ImGui.selectable("##open_folder")) {
@@ -143,7 +149,7 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
                 VeilImGuiUtil.icon(0xECAF);
                 ImGui.sameLine();
                 ImGui.popStyleVar();
-                ImGui.text("Open in Explorer");
+                VeilImGuiUtil.component(OPEN_FOLDER);
                 ImGui.endDisabled();
 
                 for (int i = 0; i < this.actions.size(); i++) {
@@ -160,7 +166,7 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
                         ImGui.sameLine();
                     });
                     ImGui.popStyleVar();
-                    ImGui.text(action.getName());
+                    VeilImGuiUtil.component(action.getName());
                 }
 
                 ImGui.endPopup();
@@ -170,13 +176,13 @@ public class ResourceManagerEditor extends SingleWindowEditor implements VeilEdi
     }
 
     @Override
-    public String getDisplayName() {
-        return "Resource Browser";
+    public Component getDisplayName() {
+        return TITLE;
     }
 
     @Override
-    public @Nullable String getGroup() {
-        return "Resources";
+    public Component getGroup() {
+        return RESOURCE_GROUP;
     }
 
     @Override

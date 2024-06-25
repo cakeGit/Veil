@@ -1,6 +1,7 @@
 package foundry.veil.api.client.editor;
 
 import foundry.veil.Veil;
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.client.registry.VeilResourceEditorRegistry;
 import foundry.veil.api.resource.editor.ResourceFileEditor;
 import foundry.veil.api.util.CompositeReloadListener;
@@ -8,6 +9,7 @@ import imgui.ImFont;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.type.ImBoolean;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
@@ -27,7 +29,7 @@ import java.util.concurrent.Executor;
  */
 public class EditorManager implements PreparableReloadListener {
 
-    public static final ResourceLocation DEFAULT = Veil.veilPath("jetbrains_mono");
+    public static final ResourceLocation DEFAULT_FONT = Veil.veilPath("jetbrains_mono");
 
     private final Map<Editor, ImBoolean> editors;
     private final EditorFontManager fonts;
@@ -35,7 +37,7 @@ public class EditorManager implements PreparableReloadListener {
 
     @ApiStatus.Internal
     public EditorManager(ReloadableResourceManager resourceManager) {
-        this.editors = new TreeMap<>(Comparator.comparing(Editor::getDisplayName));
+        this.editors = new TreeMap<>(Comparator.comparing(editor -> editor.getClass().getSimpleName()));
         this.fonts = new EditorFontManager();
         this.enabled = false;
 
@@ -47,7 +49,7 @@ public class EditorManager implements PreparableReloadListener {
     }
 
     public ImFont getFont(boolean bold, boolean italic) {
-        return this.getFont(DEFAULT, bold, italic);
+        return this.getFont(DEFAULT_FONT, bold, italic);
     }
 
     @ApiStatus.Internal
@@ -65,12 +67,18 @@ public class EditorManager implements PreparableReloadListener {
 
             for (Map.Entry<Editor, ImBoolean> entry : this.editors.entrySet()) {
                 Editor editor = entry.getKey();
-                String group = editor.getGroup() != null ? editor.getGroup() : "Editor";
-                if (ImGui.beginMenu(group)) {
+                Component group = editor.getGroup();
+                if (group == null) {
+                    if (Veil.platform().isDevelopmentEnvironment()) {
+                        Veil.LOGGER.error("Editor '{}' should return Editor#DEFAULT_GROUP instead of null", editor.getClass());
+                    }
+                    group = Editor.DEFAULT_GROUP;
+                }
+                if (ImGui.beginMenu(group.getString())) {
                     ImBoolean enabled = entry.getValue();
 
                     ImGui.beginDisabled(!editor.isEnabled());
-                    if (ImGui.menuItem(editor.getDisplayName(), null, enabled.get())) {
+                    if (ImGui.menuItem(editor.getDisplayName().getString(), null, enabled.get())) {
                         if (!enabled.get()) {
                             this.show(editor);
                         } else {
@@ -86,7 +94,7 @@ public class EditorManager implements PreparableReloadListener {
                 Editor editor = entry.getKey();
                 if (entry.getValue().get() && editor.isMenuBarEnabled()) {
                     ImGui.separator();
-                    ImGui.textColored(0xFFAAAAAA, editor.getDisplayName());
+                    ImGui.textColored(0xFFAAAAAA, editor.getDisplayName().getString());
                     editor.renderMenuBar();
                 }
             }

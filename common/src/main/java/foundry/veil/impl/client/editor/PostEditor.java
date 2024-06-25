@@ -9,6 +9,7 @@ import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiDataType;
 import imgui.flag.ImGuiDragDropFlags;
 import imgui.type.ImInt;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -18,6 +19,11 @@ import java.util.Set;
 
 @ApiStatus.Internal
 public class PostEditor extends SingleWindowEditor {
+
+    public static final Component TITLE = Component.translatable("editor.veil.post.title");
+
+    private static final Component INACTIVE = Component.translatable("editor.veil.post.inactive");
+    private static final Component ACTIVE = Component.translatable("editor.veil.post.active");
 
     private final Set<ResourceLocation> removedPipelines;
 
@@ -40,7 +46,7 @@ public class PostEditor extends SingleWindowEditor {
 
         ImGui.setNextItemWidth(availableWidth / 2);
         ImGui.beginGroup();
-        ImGui.text("Inactive Pipelines:");
+        VeilImGuiUtil.component(INACTIVE);
         if (ImGui.beginListBox("##available_pipelines", availableWidth / 2, 0)) {
             for (ResourceLocation entry : postProcessingManager.getPipelines()) {
                 if (postProcessingManager.isActive(entry)) {
@@ -77,7 +83,7 @@ public class PostEditor extends SingleWindowEditor {
 
         ImGui.setNextItemWidth(availableWidth / 2);
         ImGui.beginGroup();
-        ImGui.text("Active Pipelines:");
+        VeilImGuiUtil.component(ACTIVE);
 
         if (ImGui.beginListBox("##shaders", availableWidth / 2, 0)) {
             for (PostProcessingManager.ProfileEntry entry : postProcessingManager.getActivePipelines()) {
@@ -123,12 +129,12 @@ public class PostEditor extends SingleWindowEditor {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Post Shaders";
+    public Component getDisplayName() {
+        return TITLE;
     }
 
     @Override
-    public @Nullable String getGroup() {
-        return "Renderer";
+    public Component getGroup() {
+        return RENDERER_GROUP;
     }
 }

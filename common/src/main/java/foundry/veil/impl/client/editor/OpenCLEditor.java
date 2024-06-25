@@ -4,13 +4,15 @@ import com.google.common.base.Stopwatch;
 import foundry.veil.Veil;
 import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.imgui.CodeEditor;
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.opencl.*;
 import imgui.ImGui;
 import imgui.flag.ImGuiDataType;
 import imgui.type.ImInt;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
@@ -22,6 +24,16 @@ import static org.lwjgl.opencl.CL10.CL_MEM_WRITE_ONLY;
 
 @ApiStatus.Internal
 public class OpenCLEditor extends SingleWindowEditor {
+
+    public static final Component TITLE = Component.translatable("editor.veil.example.opencl.title");
+
+    private static final Component RUN = Component.translatable("editor.veil.example.opencl.button.run");
+    private static final Component EDIT = Component.translatable("editor.veil.example.opencl.button.edit");
+    private static final Component NO_PLATFORM = Component.translatable("editor.veil.example.opencl.no_platform");
+    private static final Component DEVICE = Component.translatable("editor.veil.example.opencl.device");
+    private static final Component NO_DEVICE = Component.translatable("editor.veil.example.opencl.device.none");
+    private static final Component ELEMENTS = Component.translatable("editor.veil.example.opencl.elements");
+    private static final Component LOCAL_WORK_GROUPS = Component.translatable("editor.veil.example.opencl.local_work_groups");
 
     private final CodeEditor codeEditor;
     private String source;
@@ -38,7 +50,7 @@ public class OpenCLEditor extends SingleWindowEditor {
     private final ImInt workGroups = new ImInt(1);
 
     public OpenCLEditor() {
-        this.codeEditor = new CodeEditor("Save");
+        this.codeEditor = new CodeEditor(I18n.get("gui.veil.save"));
         this.codeEditor.setSaveCallback((source, errorConsumer) -> this.compileProgram(source));
         this.source = """
                 void kernel example(global const int* A, global const int* B, global const int* C, global int* D) {
@@ -130,12 +142,12 @@ public class OpenCLEditor extends SingleWindowEditor {
     protected void renderComponents() {
         VeilOpenCL.PlatformInfo[] platforms = VeilOpenCL.get().getPlatforms();
         if (platforms.length == 0) {
-            ImGui.text("No platforms found");
+            VeilImGuiUtil.component(NO_PLATFORM);
             return;
         }
 
         VeilOpenCL.DeviceInfo deviceInfo = this.environment != null ? this.environment.getDevice() : null;
-        if (ImGui.beginCombo("Device", deviceInfo == null ? "No Device Selected" : deviceInfo.name())) {
+        if (ImGui.beginCombo(DEVICE.getString(), deviceInfo == null ? NO_DEVICE.getString() : deviceInfo.name())) {
             for (VeilOpenCL.PlatformInfo platform : platforms) {
                 for (VeilOpenCL.DeviceInfo device : platform.devices()) {
                     if (device.compilerAvailable() && ImGui.selectable(platform.vendor() + " " + device.name(), deviceInfo == device)) {
@@ -147,14 +159,14 @@ public class OpenCLEditor extends SingleWindowEditor {
         }
 
         ImGui.beginDisabled(deviceInfo == null);
-        if (ImGui.button("Edit Source")) {
+        if (ImGui.button(EDIT.getString())) {
             this.codeEditor.show(null, this.source);
         }
         ImGui.endDisabled();
 
         ImGui.beginDisabled(this.kernel == null);
         ImGui.sameLine();
-        if (ImGui.button("Run")) {
+        if (ImGui.button(RUN.getString())) {
             Stopwatch upload = Stopwatch.createStarted();
             int itemCount = this.elements.get();
             IntBuffer A = MemoryUtil.memAllocInt(itemCount);
@@ -200,13 +212,13 @@ public class OpenCLEditor extends SingleWindowEditor {
         }
         ImGui.endDisabled();
 
-        if (ImGui.dragScalar("Elements", ImGuiDataType.U32, this.elements, 1_000, 0, 100_000_000)) {
+        if (ImGui.dragScalar(ELEMENTS.getString(), ImGuiDataType.U32, this.elements, 1_000, 0, 100_000_000)) {
             this.freeBuffers();
         }
 
         int max = this.kernel != null ? this.kernel.getMaxWorkGroupSize() : Integer.MAX_VALUE;
         ImGui.beginDisabled(this.kernel == null);
-        ImGui.sliderScalar("Local Work Groups", ImGuiDataType.U32, this.workGroups, 1, max);
+        ImGui.sliderScalar(LOCAL_WORK_GROUPS.getString(), ImGuiDataType.U32, this.workGroups, 1, max);
         ImGui.endDisabled();
     }
 
@@ -228,12 +240,12 @@ public class OpenCLEditor extends SingleWindowEditor {
     }
 
     @Override
-    public String getDisplayName() {
-        return "OpenCL Editor";
+    public Component getDisplayName() {
+        return TITLE;
     }
 
     @Override
-    public @Nullable String getGroup() {
-        return "Example";
+    public Component getGroup() {
+        return EXAMPLE_GROUP;
     }
 }

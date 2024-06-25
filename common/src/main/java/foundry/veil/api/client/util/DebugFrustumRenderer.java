@@ -72,7 +72,7 @@ public class DebugFrustumRenderer {
         for (int z = 0; z < 2; z++) {
             for (int x = 0; x < 2; x++) {
                 for (int y = 0; y < 2; y++) {
-                    modelView.transformProject(x * 2 - 1,
+                    modelView.transformPosition(x * 2 - 1,
                             y * 2 - 1,
                             z * 2 - 1,
                             POSITIONS[getIndex(x, y, z)]);

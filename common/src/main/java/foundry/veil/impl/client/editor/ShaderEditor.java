@@ -30,6 +30,7 @@ import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -52,6 +53,16 @@ import static org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER;
 
 @ApiStatus.Internal
 public class ShaderEditor extends SingleWindowEditor implements ResourceManagerReloadListener {
+
+    public static final Component TITLE = Component.translatable("editor.veil.shader.title");
+
+    private static final Component REFRESH = Component.translatable("editor.veil.shader.button.refresh");
+    private static final Component UPLOAD = Component.translatable("editor.veil.shader.button.upload");
+    private static final Component SEARCH = Component.translatable("editor.veil.shader.search");
+    private static final Component SHADER_PROGRAMS = Component.translatable("editor.veil.shader.shader_programs");
+    private static final Component SHADER_DEFINITIONS = Component.translatable("editor.veil.shader.definitions");
+    private static final Component SHADER_DEFINITIONS_HINT = Component.translatable("editor.veil.shader.definitions.hint");
+    private static final Component OPEN_SOURCE = Component.translatable("editor.veil.shader.open_source");
 
     private static final Pattern ERROR_PARSER = Pattern.compile("ERROR: (\\d+):(\\d+): (.+)");
     private static final Pattern LINE_DIRECTIVE_PARSER = Pattern.compile("#line\\s+(\\d+)\\s*(\\d+)?");
@@ -80,7 +91,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
             return compare;
         });
 
-        this.codeEditor = new CodeEditor("Upload");
+        this.codeEditor = new CodeEditor(UPLOAD.getString());
         this.codeEditor.setSaveCallback((source, errorConsumer) -> {
             if (this.selectedProgram == null || !glIsShader(this.editShaderId)) {
                 errorConsumer.accept(0, "Invalid Shader");
@@ -217,25 +228,25 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     }
 
     @Override
-    public String getDisplayName() {
-        return "Shaders";
+    public Component getDisplayName() {
+        return TITLE;
     }
 
     @Override
-    public @Nullable String getGroup() {
-        return "Renderer";
+    public Component getGroup() {
+        return RENDERER_GROUP;
     }
 
     @Override
     protected void renderComponents() {
         this.removedDefinitions.clear();
 
-        ImGui.beginChild("Shader Programs", ImGui.getContentRegionAvailX() * 2 / 3, 0);
-        ImGui.text("Shader Programs");
+        ImGui.beginChild("##shader_programs", ImGui.getContentRegionAvailX() * 2 / 3, 0);
+        VeilImGuiUtil.component(SHADER_PROGRAMS);
 
         TabSource[] sources = TabSource.values();
         if (ImGui.beginTabBar("##controls")) {
-            if (ImGui.tabItemButton("Refresh")) {
+            if (ImGui.tabItemButton(REFRESH.getString())) {
                 this.reloadShaders();
             }
             for (TabSource source : sources) {
@@ -244,7 +255,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 }
 
                 ImGui.beginDisabled(!source.active.getAsBoolean());
-                if (ImGui.beginTabItem(source.displayName)) {
+                if (ImGui.beginTabItem(source.displayName.getString())) {
                     if (this.selectedTab != source.ordinal()) {
                         this.selectedTab = source.ordinal();
                         this.setSelectedProgram(null);
@@ -265,7 +276,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
         }
 
         ImGui.setNextItemWidth(ImGui.getContentRegionAvailX());
-        if (ImGui.inputTextWithHint("##search", "Search...", this.programFilterText)) {
+        if (ImGui.inputTextWithHint("##search", SEARCH.getString(), this.programFilterText)) {
             String regex = this.programFilterText.get();
             this.programFilter = null;
             if (!regex.isBlank()) {
@@ -307,23 +318,23 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
 
         ShaderPreDefinitions definitions = VeilRenderSystem.renderer().getShaderDefinitions();
         ImGui.sameLine();
-        if (ImGui.beginChild("Panel", 0, ImGui.getContentRegionAvailY())) {
-            if (ImGui.beginChild("Open Source", 0, ImGui.getContentRegionAvailY() / 2)) {
-                ImGui.text("Open Source");
+        if (ImGui.beginChild("##panel", 0, ImGui.getContentRegionAvailY())) {
+            if (ImGui.beginChild("##open_source", 0, ImGui.getContentRegionAvailY() / 2)) {
+                VeilImGuiUtil.component(OPEN_SOURCE);
 
-                this.openShaderButton("Fragment Shader", GL_FRAGMENT_SHADER);
-                this.openShaderButton("Vertex Shader", GL_VERTEX_SHADER);
-                this.openShaderButton("Compute Shader", GL_COMPUTE_SHADER);
-                this.openShaderButton("Geometry Shader", GL_GEOMETRY_SHADER);
-                this.openShaderButton("Tesselation Control Shader", GL_TESS_CONTROL_SHADER);
-                this.openShaderButton("Tesselation Evaluation Shader", GL_TESS_EVALUATION_SHADER);
+                this.openShaderButton(GL_FRAGMENT_SHADER);
+                this.openShaderButton(GL_VERTEX_SHADER);
+                this.openShaderButton(GL_COMPUTE_SHADER);
+                this.openShaderButton(GL_GEOMETRY_SHADER);
+                this.openShaderButton(GL_TESS_CONTROL_SHADER);
+                this.openShaderButton(GL_TESS_EVALUATION_SHADER);
             }
             ImGui.endChild();
 
-            if (ImGui.beginChild("Shader Definitions", 0, ImGui.getContentRegionAvailY())) {
-                ImGui.text("Shader Definitions:");
+            if (ImGui.beginChild("##shader_definitions", 0, ImGui.getContentRegionAvailY())) {
+                VeilImGuiUtil.component(SHADER_DEFINITIONS);
                 ImGui.setNextItemWidth(ImGui.getContentRegionAvailX());
-                if (ImGui.inputTextWithHint("##add_definition", "name = value", this.addDefinitionText, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                if (ImGui.inputTextWithHint("##add_definition", SHADER_DEFINITIONS_HINT.getString(), this.addDefinitionText, ImGuiInputTextFlags.EnterReturnsTrue)) {
                     definitions.define(this.addDefinitionText.get().trim());
                     this.addDefinitionText.clear();
                 }
@@ -367,7 +378,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
         this.codeEditor.renderWindow();
     }
 
-    private void openShaderButton(String name, int type) {
+    private void openShaderButton(int type) {
         boolean disabled = this.selectedProgram == null || !this.selectedProgram.shaders.containsKey(type);
         ImGui.beginDisabled(disabled);
 
@@ -375,7 +386,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
             ImGui.pushStyleColor(ImGuiCol.Button, ImGui.getColorU32(ImGuiCol.FrameBg));
         }
 
-        if (ImGui.button(name)) {
+        if (ImGui.button(DeviceInfoViewer.getShaderName(type).getString())) {
             this.setEditShaderSource(this.selectedProgram.programId, this.selectedProgram.shaders.get(type));
         }
 
@@ -415,7 +426,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
     }
 
     private enum TabSource {
-        VANILLA("Vanilla") {
+        VANILLA(Component.translatable("editor.veil.shader.source.vanilla")) {
             @Override
             public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
                 GameRendererAccessor gameRenderer = (GameRendererAccessor) Minecraft.getInstance().gameRenderer;
@@ -429,7 +440,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 registry.accept(new ResourceLocation(blitShader.getName()), blitShader.getId());
             }
         },
-        VANILLA_POST("Vanilla Post") {
+        VANILLA_POST(Component.translatable("editor.veil.shader.source.vanilla_post")) {
             @Override
             public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
                 LevelRendererAccessor levelRenderer = (LevelRendererAccessor) Minecraft.getInstance().levelRenderer;
@@ -451,7 +462,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 }
             }
         },
-        VEIL("Veil") {
+        VEIL(Component.translatable("editor.veil.shader.source.veil")) {
             @Override
             public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
                 Map<ResourceLocation, ShaderProgram> shaders = VeilRenderSystem.renderer().getShaderManager().getShaders();
@@ -461,7 +472,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 VeilImGuiImpl.get().addImguiShaders(registry);
             }
         },
-        VEIL_DEFERRED("Veil Deferred", VeilRenderSystem.renderer().getDeferredRenderer()::isEnabled, () -> true) {
+        VEIL_DEFERRED(Component.translatable("editor.veil.shader.source.veil_deferred"), VeilRenderSystem.renderer().getDeferredRenderer()::isEnabled, () -> true) {
             @Override
             public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
                 Map<ResourceLocation, ShaderProgram> shaders = VeilRenderSystem.renderer().getDeferredRenderer().getDeferredShaderManager().getShaders();
@@ -470,7 +481,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 }
             }
         },
-        IRIS("Iris", IrisShaderMap::isEnabled, IrisShaderMap::isEnabled) {
+        IRIS(Component.translatable("editor.veil.shader.source.iris"), IrisShaderMap::isEnabled, IrisShaderMap::isEnabled) {
             @Override
             public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
                 for (ShaderInstance shader : IrisShaderMap.getLoadedShaders()) {
@@ -479,7 +490,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 }
             }
         },
-        SODIUM("Sodium", SodiumShaderMap::isEnabled, SodiumShaderMap::isEnabled) {
+        SODIUM(Component.translatable("editor.veil.shader.source.sodium"), SodiumShaderMap::isEnabled, SodiumShaderMap::isEnabled) {
             @Override
             public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
                 for (Object2IntMap.Entry<ResourceLocation> entry : SodiumShaderMap.getLoadedShaders().object2IntEntrySet()) {
@@ -487,7 +498,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 }
             }
         },
-        OTHER("Unknown") {
+        OTHER(Component.translatable("editor.veil.shader.source.unknown")) {
             @Override
             public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
                 IntSet programs = new IntOpenHashSet();
@@ -513,15 +524,15 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
             }
         };
 
-        private final String displayName;
+        private final Component displayName;
         private final BooleanSupplier active;
         private final BooleanSupplier visible;
 
-        TabSource(String displayName) {
+        TabSource(Component displayName) {
             this(displayName, () -> true, () -> true);
         }
 
-        TabSource(String displayName, BooleanSupplier active, BooleanSupplier visible) {
+        TabSource(Component displayName, BooleanSupplier active, BooleanSupplier visible) {
             this.displayName = displayName;
             this.active = active;
             this.visible = visible;

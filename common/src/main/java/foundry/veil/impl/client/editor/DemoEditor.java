@@ -4,11 +4,14 @@ import foundry.veil.api.client.editor.Editor;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public class DemoEditor implements Editor {
+
+    public static final Component TITLE = Component.translatable("editor.veil.example.imgui.title");
 
     private final ImBoolean open = new ImBoolean();
 
@@ -27,12 +30,12 @@ public class DemoEditor implements Editor {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Dear ImGui Demo";
+    public Component getDisplayName() {
+        return TITLE;
     }
 
     @Override
-    public @Nullable String getGroup() {
-        return "Example";
+    public Component getGroup() {
+        return EXAMPLE_GROUP;
     }
 }

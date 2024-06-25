@@ -2,6 +2,7 @@ package foundry.veil.impl.client.editor;
 
 import foundry.veil.api.client.editor.EditorAttributeProvider;
 import foundry.veil.api.client.editor.SingleWindowEditor;
+import foundry.veil.api.client.imgui.VeilImGuiUtil;
 import foundry.veil.api.client.registry.LightTypeRegistry;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.deferred.light.Light;
@@ -13,6 +14,7 @@ import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -24,17 +26,26 @@ import java.util.List;
 
 public class LightEditor extends SingleWindowEditor {
 
+    public static final Component TITLE = Component.translatable("editor.veil.deferred_light.title");
+
+    private static final Component ADD = Component.translatable("editor.veil.deferred_light.button.add");
+    private static final Component REMOVE = Component.translatable("editor.veil.deferred_light.button.remove");
+    private static final Component REMOVE_ALL = Component.translatable("editor.veil.deferred_light.button.remove_all");
+    private static final Component REMOVE_ALL_DESC = Component.translatable("editor.veil.deferred_light.button.remove_all.desc");
+    private static final Component SET_POSITION = Component.translatable("editor.veil.deferred_light.button.set_position");
+    private static final Component ATTRIBUTES = Component.translatable("editor.veil.deferred_light.attributes");
+
     private final List<ResourceKey<LightTypeRegistry.LightType<?>>> lightTypes = new ArrayList<>();
     private ResourceKey<LightTypeRegistry.LightType<?>> selectedTab;
 
     @Override
-    public String getDisplayName() {
-        return "Light Editor";
+    public Component getDisplayName() {
+        return TITLE;
     }
 
     @Override
-    public @Nullable String getGroup() {
-        return "Deferred";
+    public @Nullable Component getGroup() {
+        return DEFERRED_GROUP;
     }
 
     @Override
@@ -52,7 +63,7 @@ public class LightEditor extends SingleWindowEditor {
 
         LightTypeRegistry.LightType<?> lightType = LightTypeRegistry.REGISTRY.get(this.selectedTab);
         ImGui.beginDisabled(lightType == null || lightType.debugLightFactory() == null);
-        if (ImGui.button("Add Light") && lightType != null && lightType.debugLightFactory() != null) {
+        if (ImGui.button(ADD.getString()) && lightType != null && lightType.debugLightFactory() != null) {
             LightTypeRegistry.DebugLightFactory factory = lightType.debugLightFactory();
             Minecraft client = Minecraft.getInstance();
             Camera mainCamera = client.gameRenderer.getMainCamera();
@@ -60,30 +71,30 @@ public class LightEditor extends SingleWindowEditor {
         }
         ImGui.endDisabled();
         if (ImGui.isItemHovered(ImGuiHoveredFlags.None)) {
-            ImGui.setTooltip("Add a new " + this.selectedTab.location() + " light to the world");
+            VeilImGuiUtil.setTooltip(Component.translatable("editor.veil.deferred_light.button.add.desc", this.selectedTab.location().toString()));
         }
 
         ImGui.sameLine();
         ImGui.beginDisabled(lightType == null);
-        if (ImGui.button("Remove Lights") && lightType != null) {
+        if (ImGui.button(REMOVE.getString()) && lightType != null) {
             for (Light light : lightRenderer.getLights(lightType)) {
                 lightRenderer.removeLight(light);
             }
         }
         ImGui.endDisabled();
         if (ImGui.isItemHovered(ImGuiHoveredFlags.None)) {
-            ImGui.setTooltip("Removes all " + this.selectedTab.location() + " lights");
+            VeilImGuiUtil.setTooltip(Component.translatable("editor.veil.deferred_light.button.remove.desc", this.selectedTab.location().toString()));
         }
 
         ImGui.sameLine();
-        if (ImGui.button("Remove All Lights")) {
+        if (ImGui.button(REMOVE_ALL.getString())) {
             lightRenderer.free();
         }
         if (ImGui.isItemHovered(ImGuiHoveredFlags.None)) {
-            ImGui.setTooltip("Removes all light types");
+            VeilImGuiUtil.setTooltip(REMOVE_ALL_DESC);
         }
 
-        ImGui.beginTabBar("lights");
+        ImGui.beginTabBar("##lights");
         for (ResourceKey<LightTypeRegistry.LightType<?>> key : this.lightTypes) {
             ResourceLocation id = key.location();
             if (ImGui.beginTabItem(id.toString())) {
@@ -134,12 +145,12 @@ public class LightEditor extends SingleWindowEditor {
             light.setColor(editLightColor[0], editLightColor[1], editLightColor[2]);
         }
 
-        if (ImGui.button("Set Position/Rotation to View")) {
+        if (ImGui.button(SET_POSITION.getString())) {
             light.setTo(Minecraft.getInstance().gameRenderer.getMainCamera());
         }
 
         ImGui.newLine();
-        ImGui.text("Attributes:");
+        VeilImGuiUtil.component(ATTRIBUTES);
 
         if (light instanceof EditorAttributeProvider editorAttributeProvider) {
             editorAttributeProvider.renderImGuiAttributes();

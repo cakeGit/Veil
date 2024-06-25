@@ -91,7 +91,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
             return compare;
         });
 
-        this.codeEditor = new CodeEditor(UPLOAD.getString());
+        this.codeEditor = new CodeEditor(UPLOAD);
         this.codeEditor.setSaveCallback((source, errorConsumer) -> {
             if (this.selectedProgram == null || !glIsShader(this.editShaderId)) {
                 errorConsumer.accept(0, "Invalid Shader");

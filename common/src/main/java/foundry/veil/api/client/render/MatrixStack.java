@@ -16,7 +16,7 @@ public interface MatrixStack {
     /**
      * Clears all transformations.
      */
-    void reset();
+    void clear();
 
     /**
      * Translates the position by the specified amount.
@@ -189,7 +189,7 @@ public interface MatrixStack {
      * @param other The stack to copy
      */
     default void copy(MatrixStack other) {
-        this.copy(other.last());
+        this.copy(other.pose());
     }
 
     /**
@@ -198,7 +198,7 @@ public interface MatrixStack {
      * @param other The pose to copy
      */
     default void copy(PoseStack.Pose other) {
-        PoseStack.Pose pose = this.last();
+        PoseStack.Pose pose = this.pose();
         pose.pose().set(other.pose());
         pose.normal().set(other.normal());
     }
@@ -233,19 +233,19 @@ public interface MatrixStack {
     /**
      * @return The last pose in the stack
      */
-    PoseStack.Pose last();
+    PoseStack.Pose pose();
 
     /**
      * @return The current position matrix
      */
     default Matrix4f position() {
-        return this.last().pose();
+        return this.pose().pose();
     }
 
     /**
      * @return The computed normal matrix from the position
      */
     default Matrix3f normal() {
-        return this.last().normal();
+        return this.pose().normal();
     }
 }

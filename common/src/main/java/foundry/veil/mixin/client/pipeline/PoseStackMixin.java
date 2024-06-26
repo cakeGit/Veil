@@ -57,7 +57,7 @@ public abstract class PoseStackMixin implements MatrixStack {
     private Deque<PoseStack.Pose> poseStack;
 
     @Override
-    public void reset() {
+    public void clear() {
         while (this.poseStack.size() > 1) {
             this.shadow$popPose();
         }
@@ -115,7 +115,7 @@ public abstract class PoseStackMixin implements MatrixStack {
 
     @Override
     public boolean isIdentity() {
-        PoseStack.Pose pose = this.last();
+        PoseStack.Pose pose = this.pose();
         return (pose.pose().properties() & Matrix4fc.PROPERTY_IDENTITY) != 0 && pose.normal().equals(veil$IDENTITY_NORMAL);
     }
 
@@ -135,7 +135,7 @@ public abstract class PoseStackMixin implements MatrixStack {
     }
 
     @Override
-    public PoseStack.Pose last() {
+    public PoseStack.Pose pose() {
         return this.shadow$last();
     }
 }

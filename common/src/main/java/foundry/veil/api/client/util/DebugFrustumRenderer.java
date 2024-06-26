@@ -2,6 +2,8 @@ package foundry.veil.api.client.util;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import foundry.veil.api.client.render.MatrixStack;
+import foundry.veil.api.client.render.VeilRenderBridge;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import org.jetbrains.annotations.NotNull;
@@ -64,6 +66,10 @@ public class DebugFrustumRenderer {
                                      float green,
                                      float blue,
                                      float alpha) {
+        MatrixStack matrixStack = VeilRenderBridge.create(stack);
+        matrixStack.pushMatrix();
+        matrixStack.clear();
+
         stack.pushPose();
         Matrix4f modelView = stack.last().pose();
         modelView.mul(pose.invert(MODELVIEW));

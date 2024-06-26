@@ -1,5 +1,6 @@
 package foundry.veil.impl.client.editor;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import foundry.veil.Veil;
 import foundry.veil.api.client.editor.SingleWindowEditor;
 import foundry.veil.api.client.imgui.CodeEditor;
@@ -98,7 +99,7 @@ public class ShaderEditor extends SingleWindowEditor implements ResourceManagerR
                 return;
             }
 
-            glShaderSource(this.editShaderId, source);
+            GlStateManager.glShaderSource(this.editShaderId, List.of(source));
             glCompileShader(this.editShaderId);
             if (glGetShaderi(this.editShaderId, GL_COMPILE_STATUS) != GL_TRUE) {
                 String log = glGetShaderInfoLog(this.editShaderId);

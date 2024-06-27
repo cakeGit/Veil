@@ -66,10 +66,6 @@ public class DebugFrustumRenderer {
                                      float green,
                                      float blue,
                                      float alpha) {
-        MatrixStack matrixStack = VeilRenderBridge.create(stack);
-        matrixStack.pushMatrix();
-        matrixStack.clear();
-
         stack.pushPose();
         Matrix4f modelView = stack.last().pose();
         modelView.mul(pose.invert(MODELVIEW));

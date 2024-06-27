@@ -16,10 +16,6 @@ public abstract class PoseStackMixin implements MatrixStack {
     @Unique
     private final Quaternionf veil$castQuat = new Quaternionf();
     @Unique
-    private final Matrix4f veil$castTransform = new Matrix4f();
-    @Unique
-    private final Matrix3f veil$castNormal = new Matrix3f();
-    @Unique
     private static final Matrix3f veil$IDENTITY_NORMAL = new Matrix3f();
 
     @Shadow
@@ -47,14 +43,14 @@ public abstract class PoseStackMixin implements MatrixStack {
     public abstract void shadow$setIdentity();
 
     @Shadow
-    public abstract void shadow$mulPoseMatrix(Matrix4f matrix);
-
-    @Shadow
     public abstract PoseStack.Pose shadow$last();
 
     @Shadow
     @Final
     private Deque<PoseStack.Pose> poseStack;
+
+    @Shadow
+    public abstract PoseStack.Pose last();
 
     @Override
     public void clear() {
@@ -65,7 +61,7 @@ public abstract class PoseStackMixin implements MatrixStack {
 
     @Override
     public void translate(float x, float y, float z) {
-        this.shadow$translate(x, y, z);
+        this.pose().pose().translate(x, y, z);
     }
 
     @Override
@@ -104,13 +100,8 @@ public abstract class PoseStackMixin implements MatrixStack {
     }
 
     @Override
-    public void scale(float x, float y, float z) {
+    public void applyScale(float x, float y, float z) {
         this.shadow$scale(x, y, z);
-    }
-
-    @Override
-    public void setIdentity() {
-        this.shadow$setIdentity();
     }
 
     @Override
@@ -121,21 +112,21 @@ public abstract class PoseStackMixin implements MatrixStack {
 
     @Override
     public boolean isEmpty() {
-        return this.shadow$clear();
+        return this.poseStack.size() == 1;
     }
 
     @Override
-    public void pushMatrix() {
+    public void push() {
         this.shadow$pushPose();
     }
 
     @Override
-    public void popMatrix() {
+    public void pop() {
         this.shadow$popPose();
     }
 
     @Override
     public PoseStack.Pose pose() {
-        return this.shadow$last();
+        return this.poseStack.getLast();
     }
 }

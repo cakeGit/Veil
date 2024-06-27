@@ -141,8 +141,8 @@ public interface MatrixStack {
      *
      * @param xyz The scale factor
      */
-    default void scale(double xyz) {
-        this.scale((float) xyz, (float) xyz, (float) xyz);
+    default void applyScale(double xyz) {
+        this.applyScale((float) xyz, (float) xyz, (float) xyz);
     }
 
     /**
@@ -150,8 +150,8 @@ public interface MatrixStack {
      *
      * @param xyz The scale factor
      */
-    default void scale(float xyz) {
-        this.scale(xyz, xyz, xyz);
+    default void applyScale(float xyz) {
+        this.applyScale(xyz, xyz, xyz);
     }
 
     /**
@@ -161,8 +161,8 @@ public interface MatrixStack {
      * @param y The y scale factor
      * @param z The z scale factor
      */
-    default void scale(double x, double y, double z) {
-        this.scale((float) x, (float) y, (float) z);
+    default void applyScale(double x, double y, double z) {
+        this.applyScale((float) x, (float) y, (float) z);
     }
 
     /**
@@ -172,7 +172,7 @@ public interface MatrixStack {
      * @param y The y scale factor
      * @param z The z scale factor
      */
-    void scale(float x, float y, float z);
+    void applyScale(float x, float y, float z);
 
     /**
      * Copies the current transformation of the specified stack into the current transformation of this stack.
@@ -206,7 +206,11 @@ public interface MatrixStack {
     /**
      * Sets the current transformation and normal to identity.
      */
-    void setIdentity();
+    default void setIdentity() {
+        PoseStack.Pose pose = this.pose();
+        pose.pose().identity();
+        pose.normal().identity();
+    }
 
     /**
      * @return Whether the {@link #position()} and {@link #normal()} are identity matrices
@@ -221,14 +225,14 @@ public interface MatrixStack {
     /**
      * Saves the current position and normal transformation for restoring later wit {@link #popMatrix()}.
      */
-    void pushMatrix();
+    void push();
 
     /**
      * Restores a previous position and normal set with {@link #pushMatrix()}.
      *
      * @throws IllegalStateException If there are no more matrix transformations to pop
      */
-    void popMatrix();
+    void pop();
 
     /**
      * @return The last pose in the stack

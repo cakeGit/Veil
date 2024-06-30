@@ -13,6 +13,9 @@ loom {
         useLegacyMixinAp = false
     }
 }
+if (System.getenv('BUILD_NUMBER') != null) {
+    version += "." + System.getenv('BUILD_NUMBER')
+}
 
 // Based on EMI's solution: https://github.com/emilyploszaj/emi/blob/1.21/xplat/mojmap/build.gradle
 

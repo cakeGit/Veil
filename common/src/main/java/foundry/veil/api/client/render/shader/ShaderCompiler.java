@@ -33,7 +33,7 @@ public interface ShaderCompiler extends NativeResource {
      * @throws IOException     If the file could not be found.
      * @throws ShaderException If an error occurs compiling the shader
      */
-    CompiledShader compile(Context context, int type, ResourceLocation id) throws IOException, ShaderException;
+    CompiledShader compile(Context context, int type, ProgramDefinition.SourceType sourceType, ResourceLocation id) throws IOException, ShaderException;
 
     /**
      * Creates a new shader and attempts to attach the specified sources to it.
@@ -46,7 +46,7 @@ public interface ShaderCompiler extends NativeResource {
      * @throws IOException     If an error occurs processing the shader source
      * @throws ShaderException If an error occurs compiling the shader
      */
-    CompiledShader compile(Context context, int type, String source) throws IOException, ShaderException;
+    CompiledShader compile(Context context, int type, ProgramDefinition.SourceType sourceType, String source) throws IOException, ShaderException;
 
     /**
      * Adds the specified pre-processor to the end of the stack.

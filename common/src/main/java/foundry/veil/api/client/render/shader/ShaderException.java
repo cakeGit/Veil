@@ -11,6 +11,10 @@ public class ShaderException extends Exception {
 
     private final String glError;
 
+    public ShaderException(String error) {
+        this(error, null);
+    }
+
     public ShaderException(String error, @Nullable String glError) {
         super(error);
         this.glError = glError;

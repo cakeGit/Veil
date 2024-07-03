@@ -129,6 +129,16 @@ dependencies {
     shade("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
         transitive false
     }
+    shade("org.lwjgl:lwjgl-shaderc:$lwjgl_version") {
+        transitive false
+    }
+
+    shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-linux"
+    shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-linux-arm64"
+    shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-macos"
+    shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-macos-arm64"
+    shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-windows"
+    shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-windows-arm64"
 
 //    runtimeOnly fg.deobf("curse.maven:oculus-581495:4767500")
 //    runtimeOnly fg.deobf("curse.maven:rubidium-574856:4767529")

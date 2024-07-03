@@ -46,6 +46,7 @@ dependencies {
 
     // VanillaGradle makes this impossible... https://github.com/SpongePowered/VanillaGradle/commit/ccc45765d9881747b2c922be7a13c453c32ce9ed
     implementation "org.lwjgl:lwjgl-opencl:$lwjgl_version"
+    implementation "org.lwjgl:lwjgl-shaderc:$lwjgl_version"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'

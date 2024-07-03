@@ -38,24 +38,55 @@ import static org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER;
  * @param shaders               A map of all sources and their OpenGL types for convenience
  * @author Ocelot
  */
-public record ProgramDefinition(@Nullable ResourceLocation vertex,
-                                @Nullable ResourceLocation tesselationControl,
-                                @Nullable ResourceLocation tesselationEvaluation,
-                                @Nullable ResourceLocation geometry,
-                                @Nullable ResourceLocation fragment,
-                                @Nullable ResourceLocation compute,
+public record ProgramDefinition(@Nullable ShaderSource vertex,
+                                @Nullable ShaderSource tesselationControl,
+                                @Nullable ShaderSource tesselationEvaluation,
+                                @Nullable ShaderSource geometry,
+                                @Nullable ShaderSource fragment,
+                                @Nullable ShaderSource compute,
                                 String[] definitions,
                                 Map<String, String> definitionDefaults,
                                 Map<String, ShaderTextureSource> textures,
-                                Int2ObjectMap<ResourceLocation> shaders) {
+                                Int2ObjectMap<ShaderSource> shaders) {
+
+    public record ShaderSource(ResourceLocation location, SourceType sourceType) {
+    }
+
+    public enum SourceType {
+        GLSL, GLSL_SPIRV, SPIRV;
+
+        public static SourceType byName(String sourceType) {
+            for (SourceType value : values()) {
+                if (value.name().equalsIgnoreCase(sourceType)) {
+                    return value;
+                }
+            }
+            throw new JsonSyntaxException("Unknown SourceType: " + sourceType);
+        }
+    }
 
     /**
      * Deserializer for {@link ProgramDefinition}.
      */
     public static class Deserializer implements JsonDeserializer<ProgramDefinition> {
 
-        private String[] deserializeDefinitions(JsonArray json, Map<String, String> defaults) throws JsonParseException {
+        private static @Nullable ShaderSource deserializeSource(JsonObject json, String name, JsonDeserializationContext context) {
+            JsonElement element = json.get(name);
+            if (element == null) {
+                return null;
+            }
 
+            if (element.isJsonObject()) {
+                JsonObject object = element.getAsJsonObject();
+                ResourceLocation path = context.deserialize(object.get("path"), ResourceLocation.class);
+                SourceType sourceType = json.has("source_type") ? SourceType.byName(GsonHelper.getAsString(object, "source_type")) : SourceType.GLSL;
+                return path != null ? new ShaderSource(path, sourceType) : null;
+            }
+
+            return new ShaderSource(context.deserialize(element, ResourceLocation.class), SourceType.GLSL);
+        }
+
+        private String[] deserializeDefinitions(JsonArray json, Map<String, String> defaults) throws JsonParseException {
             List<String> definitions = new ArrayList<>(json.size());
             for (int i = 0; i < json.size(); i++) {
                 JsonElement element = json.get(i);
@@ -97,12 +128,12 @@ public record ProgramDefinition(@Nullable ResourceLocation vertex,
         @Override
         public ProgramDefinition deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException {
             JsonObject json = element.getAsJsonObject();
-            ResourceLocation vertex = context.deserialize(json.get("vertex"), ResourceLocation.class);
-            ResourceLocation tesselationControl = context.deserialize(json.get("tesselation_control"), ResourceLocation.class);
-            ResourceLocation tesselationEvaluation = context.deserialize(json.get("tesselation_evaluation"), ResourceLocation.class);
-            ResourceLocation geometry = context.deserialize(json.get("geometry"), ResourceLocation.class);
-            ResourceLocation fragment = context.deserialize(json.get("fragment"), ResourceLocation.class);
-            ResourceLocation compute = context.deserialize(json.get("compute"), ResourceLocation.class);
+            ShaderSource vertex = deserializeSource(json, "vertex", context);
+            ShaderSource tesselationControl = deserializeSource(json, "tesselation_control", context);
+            ShaderSource tesselationEvaluation = deserializeSource(json, "tesselation_evaluation", context);
+            ShaderSource geometry = deserializeSource(json, "geometry", context);
+            ShaderSource fragment = deserializeSource(json, "fragment", context);
+            ShaderSource compute = deserializeSource(json, "compute", context);
 
             String[] definitions;
             Map<String, String> definitionDefaults;
@@ -117,7 +148,7 @@ public record ProgramDefinition(@Nullable ResourceLocation vertex,
 
             Map<String, ShaderTextureSource> textures = json.has("textures") ? this.deserializeTextures(json.getAsJsonObject("textures")) : Collections.emptyMap();
 
-            Int2ObjectMap<ResourceLocation> sources = new Int2ObjectArrayMap<>();
+            Int2ObjectMap<ShaderSource> sources = new Int2ObjectArrayMap<>();
             if (vertex != null) {
                 sources.put(GL_VERTEX_SHADER, vertex);
             }

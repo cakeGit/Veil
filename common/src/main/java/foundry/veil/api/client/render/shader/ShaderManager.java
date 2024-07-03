@@ -132,9 +132,9 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
                 throw new IllegalStateException("Duplicate shader ignored with ID " + id);
             }
 
-            for (Int2ObjectMap.Entry<ResourceLocation> shader : definition.shaders().int2ObjectEntrySet()) {
+            for (Int2ObjectMap.Entry<ProgramDefinition.ShaderSource> shader : definition.shaders().int2ObjectEntrySet()) {
                 FileToIdConverter typeConverter = this.sourceSet.getTypeConverter(shader.getIntKey());
-                ResourceLocation location = typeConverter.idToFile(shader.getValue());
+                ResourceLocation location = typeConverter.idToFile(shader.getValue().location());
 
                 if (!checkedSources.add(location)) {
                     continue;

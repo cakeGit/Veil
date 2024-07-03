@@ -116,10 +116,11 @@ public class ShaderProgramImpl implements ShaderProgram {
         }
 
         try {
-            Int2ObjectMap<ResourceLocation> shaders = this.definition.shaders();
-            for (Int2ObjectMap.Entry<ResourceLocation> entry : shaders.int2ObjectEntrySet()) {
+            Int2ObjectMap<ProgramDefinition.ShaderSource> shaders = this.definition.shaders();
+            for (Int2ObjectMap.Entry<ProgramDefinition.ShaderSource> entry : shaders.int2ObjectEntrySet()) {
                 int glType = entry.getIntKey();
-                CompiledShader shader = compiler.compile(context, glType, entry.getValue());
+                ProgramDefinition.ShaderSource source = entry.getValue();
+                CompiledShader shader = compiler.compile(context, glType, source.sourceType(), source.location());
                 glAttachShader(this.program, shader.id());
                 this.shaders.put(glType, shader);
             }
@@ -128,7 +129,7 @@ public class ShaderProgramImpl implements ShaderProgram {
             // however mac shaders don't work without a fragment shader. This adds a "dummy" fragment shader
             // on mac specifically for all rendering shaders.
             if (Minecraft.ON_OSX && !shaders.containsKey(GL_COMPUTE_SHADER) && !shaders.containsKey(GL_FRAGMENT_SHADER)) {
-                CompiledShader shader = compiler.compile(context, GL_FRAGMENT_SHADER, "out vec4 fragColor;void main(){fragColor=vec4(1.0);}");
+                CompiledShader shader = compiler.compile(context, GL_FRAGMENT_SHADER, ProgramDefinition.SourceType.GLSL, "out vec4 fragColor;void main(){fragColor=vec4(1.0);}");
                 glAttachShader(this.program, shader.id());
                 this.shaders.put(GL_FRAGMENT_SHADER, shader);
             }

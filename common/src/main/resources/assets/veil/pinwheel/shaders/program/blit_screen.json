@@ -1,4 +1,7 @@
 {
-  "vertex": "veil:blit_screen",
+  "vertex": {
+    "location": "veil:blit_screen",
+    "type": "GLSL_SPIRV"
+  },
   "fragment": "veil:blit_screen"
 }

@@ -106,7 +106,8 @@ public class DirectShaderCompiler implements ShaderCompiler {
         int shader = glCreateShader(type);
         switch (sourceType) {
             case GLSL -> GlStateManager.glShaderSource(shader, List.of(transformed));
-            case GLSL_SPIRV -> VeilShaderUploader.get().compileGLSL(shader, type, this.compilingName != null ? this.compilingName.toString() : "Shader #" + context, transformed);
+            case GLSL_SPIRV -> VeilShaderUploader.get().compile(shader, type, this.compilingName != null ? this.compilingName.toString() : "Shader #" + context, transformed, false);
+            case HLSL_SPIRV -> VeilShaderUploader.get().compile(shader, type, this.compilingName != null ? this.compilingName.toString() : "Shader #" + context, transformed, true);
             case SPIRV -> throw new UnsupportedOperationException("TODO implement");
         }
 

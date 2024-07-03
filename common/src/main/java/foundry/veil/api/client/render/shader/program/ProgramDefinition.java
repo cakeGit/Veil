@@ -53,7 +53,7 @@ public record ProgramDefinition(@Nullable ShaderSource vertex,
     }
 
     public enum SourceType {
-        GLSL, GLSL_SPIRV, SPIRV;
+        GLSL, GLSL_SPIRV, HLSL_SPIRV, SPIRV;
 
         public static SourceType byName(String sourceType) {
             for (SourceType value : values()) {
@@ -79,7 +79,7 @@ public record ProgramDefinition(@Nullable ShaderSource vertex,
             if (element.isJsonObject()) {
                 JsonObject object = element.getAsJsonObject();
                 ResourceLocation path = context.deserialize(object.get("path"), ResourceLocation.class);
-                SourceType sourceType = json.has("source_type") ? SourceType.byName(GsonHelper.getAsString(object, "source_type")) : SourceType.GLSL;
+                SourceType sourceType = json.has("type") ? SourceType.byName(GsonHelper.getAsString(object, "type")) : SourceType.GLSL;
                 return path != null ? new ShaderSource(path, sourceType) : null;
             }
 

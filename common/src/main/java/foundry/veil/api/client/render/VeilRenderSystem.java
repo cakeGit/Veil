@@ -640,12 +640,12 @@ public final class VeilRenderSystem {
 
     @ApiStatus.Internal
     public static void beginFrame() {
-        VeilImGuiImpl.get().begin();
+        VeilImGuiImpl.get().beginFrame();
     }
 
     @ApiStatus.Internal
     public static void endFrame() {
-        VeilImGuiImpl.get().end();
+        VeilImGuiImpl.get().endFrame();
         renderer.getFramebufferManager().clear();
         UNIFORM_BLOCK_STATE.clear();
     }

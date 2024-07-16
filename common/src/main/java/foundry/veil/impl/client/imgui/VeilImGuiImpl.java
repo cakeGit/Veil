@@ -170,10 +170,12 @@ public class VeilImGuiImpl implements VeilImGui {
 
     @Override
     public void free() {
+        this.begin();
         this.implGlfw.dispose();
         this.implGl3.dispose();
         ImGui.destroyContext(this.imGuiContext);
         ImPlot.destroyContext(this.imPlotContext);
+        this.end();
     }
 
     public static void init(long window) {

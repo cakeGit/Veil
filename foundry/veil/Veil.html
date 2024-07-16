@@ -135,6 +135,16 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="api/client/imgui/VeilImGui.html" title="interface in foundry.veil.api.client.imgui">VeilImGui</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#beginImGui()" class="member-name-link">beginImGui</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Enables writing ImGui to the screen.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#endImGui()" class="member-name-link">endImGui</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Disables ImGui writing.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#init()" class="member-name-link">init</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
@@ -232,6 +242,21 @@ loadScripts(document, 'script');</script>
 <h3>init</h3>
 <div class="member-signature"><span class="annotations">@Internal
 </span><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">init</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="beginImGui()">
+<h3>beginImGui</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="api/client/imgui/VeilImGui.html" title="interface in foundry.veil.api.client.imgui">VeilImGui</a></span>&nbsp;<span class="element-name">beginImGui</span>()</div>
+<div class="block"><p>Enables writing ImGui to the screen. This useful for debugging during the normal render loop.</p>
+ <p>Be sure to call <a href="#endImGui()"><code>endImGui()</code></a> when done.</p></div>
+</section>
+</li>
+<li>
+<section class="detail" id="endImGui()">
+<h3>endImGui</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">endImGui</span>()</div>
+<div class="block">Disables ImGui writing. This should be called after done using ImGui during the main render loop.</div>
 </section>
 </li>
 <li>

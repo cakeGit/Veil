@@ -200,8 +200,8 @@ public class DeviceInfoViewer extends SingleWindowEditor {
             VeilOpenCL.DeviceInfo[] devices = platform.devices();
             title(CL_DEVICES);
             for (int j = 0; j < devices.length; j++) {
-                VeilOpenCL.DeviceInfo device = devices[i];
-                if (!ImGui.collapsingHeader(I18n.get("editor.veil.device_info.opencl.device", device.name(), device.id()), i == 0 ? ImGuiTreeNodeFlags.DefaultOpen : 0)) {
+                VeilOpenCL.DeviceInfo device = devices[j];
+                if (!ImGui.collapsingHeader(I18n.get("editor.veil.device_info.opencl.device", device.name(), device.id()), j == 0 ? ImGuiTreeNodeFlags.DefaultOpen : 0)) {
                     continue;
                 }
 

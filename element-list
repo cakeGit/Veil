@@ -30,6 +30,7 @@ foundry.veil.api.client.render.shader.texture
 foundry.veil.api.client.render.texture
 foundry.veil.api.client.tooltip
 foundry.veil.api.client.tooltip.anim
+foundry.veil.api.client.ui.util
 foundry.veil.api.client.util
 foundry.veil.api.event
 foundry.veil.api.molang

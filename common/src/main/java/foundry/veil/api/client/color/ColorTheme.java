@@ -2,12 +2,14 @@ package foundry.veil.api.client.color;
 
 import foundry.veil.api.client.color.theme.IThemeProperty;
 import foundry.veil.api.client.tooltip.Tooltippable;
+import net.minecraft.Util;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * A color theme is a collection of colors. The colors can be accessed by name. Themes are intended to be used for color schemes.
@@ -18,6 +20,12 @@ import java.util.Objects;
  * @author amo
  */
 public class ColorTheme {
+
+    public static final ColorTheme DEFAULT = new ColorTheme() {{
+        addColor("background", Color.VANILLA_TOOLTIP_BACKGROUND);
+        addColor("topBorder", Color.VANILLA_TOOLTIP_BORDER_TOP);
+        addColor("bottomBorder", Color.VANILLA_TOOLTIP_BORDER_BOTTOM);
+    }};
 
     private final Map<String, Color> colors = new HashMap<>();
     private final Map<String, IThemeProperty<?>> properties = new HashMap<>();

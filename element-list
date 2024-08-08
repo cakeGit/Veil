@@ -52,6 +52,7 @@ foundry.veil.api.quasar.emitters.module.update
 foundry.veil.api.quasar.emitters.shape
 foundry.veil.api.quasar.fx
 foundry.veil.api.quasar.particle
+foundry.veil.api.quasar.registry
 foundry.veil.api.resource
 foundry.veil.api.resource.editor
 foundry.veil.api.resource.type

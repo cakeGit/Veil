@@ -47,6 +47,17 @@ public class CodecUtil {
         return DataResult.success(list);
     }
 
+    public static <T> Codec<List<T>> singleOrList(Codec<T> codec) {
+        return Codec.either(
+                codec.flatComapMap(List::of,
+                                l -> l.size() == 1
+                                        ? DataResult.success(l.get(0))
+                                        : DataResult.error(() -> "List must have exactly one element.")),
+                ExtraCodecs.nonEmptyList(codec.listOf()))
+                .xmap(e -> e.map(Function.identity(), Function.identity()),
+                        l -> l.size() == 1 ? Either.left(l) : Either.right(l));
+    }
+  
     /**
      * Creates a codec which can accept either resource locations like `veil:cube`
      * but also accepts legacy-style names like `CUBE` (used when things used to be

@@ -8,14 +8,18 @@ public interface TypeSpecifier {
         if (!token.type().isType()) {
             throw new IllegalArgumentException("Invalid type: " + token);
         }
-        return new SimpleType(token);
+        return new Simple(token);
     }
 
     static TypeSpecifier struct(StructSpecifier structSpecifier) {
         return new Struct(structSpecifier);
     }
 
-    record SimpleType(GlslLexer.Token type) implements TypeSpecifier {
+    static TypeSpecifier named(String name) {
+        return new Name(name);
+    }
+
+    record Simple(GlslLexer.Token type) implements TypeSpecifier {
     }
 
     record Struct(StructSpecifier structSpecifier) implements TypeSpecifier {

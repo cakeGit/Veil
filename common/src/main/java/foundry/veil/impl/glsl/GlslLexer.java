@@ -65,7 +65,9 @@ public final class GlslLexer {
     }
 
     private static final int FLAG_TYPE = 1;
-    private static final int FLAG_MODIFIER = 2;
+    private static final int FLAG_STORAGE_QUALIFIER = 2;
+    private static final int FLAG_CONSTANT_EXPRESSION = 4;
+    private static final int FLAG_ASSIGNMENT_OP = 8;
 
     public enum TokenType {
         DIRECTIVE("#.*"),
@@ -73,7 +75,7 @@ public final class GlslLexer {
         COMMENT("\\/\\/.*"),
         MULTI_COMMENT("\\/\\*(?:.|[\\n\\r])*\\*\\/|\\/\\/(?:.*\\\\[\\n\\r]?)+[\\n\\r]?(?:.*)"),
 
-        CONST("const", FLAG_MODIFIER),
+        CONST("const", FLAG_STORAGE_QUALIFIER),
         BOOL("bool", FLAG_TYPE),
         FLOAT("float", FLAG_TYPE),
         INT("int", FLAG_TYPE),
@@ -122,24 +124,24 @@ public final class GlslLexer {
         DMAT4X3("dmat4x3", FLAG_TYPE),
         DMAT4X4("dmat4x4", FLAG_TYPE),
 
-        CENTROID("centroid", FLAG_MODIFIER),
-        IN("in"),
-        OUT("out"),
-        INOUT("inout"),
-        UNIFORM("uniform"),
-        PATCH("patch"),
-        SAMPLE("sample"),
-        BUFFER("buffer"),
-        SHARED("shared"),
-        COHERENT("cohent"),
-        VOLATILE("volatile", FLAG_MODIFIER),
-        RESTRICT("restrict", FLAG_MODIFIER),
-        READONLY("readonly", FLAG_MODIFIER),
-        WRITEONLY("writeonly", FLAG_MODIFIER),
-        NOPERSPECTIVE("noperspective", FLAG_MODIFIER),
-        FLAT("flat", FLAG_MODIFIER),
-        SMOOTH("smooth",  FLAG_MODIFIER),
-        LAYOUT("layout", FLAG_MODIFIER),
+        CENTROID("centroid", FLAG_STORAGE_QUALIFIER),
+        IN("in", FLAG_STORAGE_QUALIFIER),
+        OUT("out", FLAG_STORAGE_QUALIFIER),
+        INOUT("inout", FLAG_STORAGE_QUALIFIER),
+        UNIFORM("uniform", FLAG_STORAGE_QUALIFIER),
+        PATCH("patch", FLAG_STORAGE_QUALIFIER),
+        SAMPLE("sample", FLAG_STORAGE_QUALIFIER),
+        BUFFER("buffer", FLAG_STORAGE_QUALIFIER),
+        SHARED("shared", FLAG_STORAGE_QUALIFIER),
+        COHERENT("cohent", FLAG_STORAGE_QUALIFIER),
+        VOLATILE("volatile", FLAG_STORAGE_QUALIFIER),
+        RESTRICT("restrict", FLAG_STORAGE_QUALIFIER),
+        READONLY("readonly", FLAG_STORAGE_QUALIFIER),
+        WRITEONLY("writeonly", FLAG_STORAGE_QUALIFIER),
+        NOPERSPECTIVE("noperspective"),
+        FLAT("flat"),
+        SMOOTH("smooth"),
+        LAYOUT("layout"),
 
         ATOMIC_UINT("atomic_uint", FLAG_TYPE),
 
@@ -235,15 +237,17 @@ public final class GlslLexer {
         SWITCH("switch"),
         CASE("case"),
         DEFAULT("default"),
-        SUBROUTINE("subroutine"),
+        SUBROUTINE("subroutine", FLAG_STORAGE_QUALIFIER),
 
         // TYPE_NAME ??
-        FLOATING_CONSTANT("(?:(?:\\d+\\.\\d+|\\d+\\.|\\.\\d+)(?:[eE][+-]?\\d+)?(?:f|F|lf|LF)?)|(?:\\d+)(?:\\.|[eE][+-]?\\d+)(?:f|F|lf|LF)?"),
-        INTEGER_HEXADECIMAL_CONSTANT("0[xX][0-9a-fA-F]*[uU]?"),
-        INTEGER_OCTAL_CONSTANT("0[0-7]*[uU]?"),
-        INTEGER_DECIMAL_CONSTANT("[1-9][\\d]*[uU]?"),
-        // UINTCONSTANT
-        BOOL_CONSTANT("true|false"),
+        FLOATING_CONSTANT("(?:(?:\\d+\\.\\d+|\\d+\\.|\\.\\d+)(?:[eE][+-]?\\d+)?(?:f|F|lf|LF)?)|(?:\\d+)(?:\\.|[eE][+-]?\\d+)(?:f|F|lf|LF)?", FLAG_CONSTANT_EXPRESSION),
+        UINTEGER_HEXADECIMAL_CONSTANT("0[xX][0-9a-fA-F]*[uU]?", FLAG_CONSTANT_EXPRESSION),
+        UINTEGER_OCTAL_CONSTANT("0[0-7]*[uU]?", FLAG_CONSTANT_EXPRESSION),
+        UINTEGER_DECIMAL_CONSTANT("[1-9][\\d]*[uU]?", FLAG_CONSTANT_EXPRESSION),
+        INTEGER_HEXADECIMAL_CONSTANT("0[xX][0-9a-fA-F]*", FLAG_CONSTANT_EXPRESSION),
+        INTEGER_OCTAL_CONSTANT("0[0-7]*", FLAG_CONSTANT_EXPRESSION),
+        INTEGER_DECIMAL_CONSTANT("[1-9][\\d]*", FLAG_CONSTANT_EXPRESSION),
+        BOOL_CONSTANT("true|false", FLAG_CONSTANT_EXPRESSION),
         // FIELD_SELECTION
 
         LEFT_OP("<<"),
@@ -315,6 +319,51 @@ public final class GlslLexer {
 
         public boolean isType() {
             return (this.flags & FLAG_TYPE) != 0;
+        }
+
+        public boolean isStorageQualifier() {
+            return (this.flags & FLAG_STORAGE_QUALIFIER) != 0;
+        }
+
+        public boolean isLayoutQualifier() {
+            return this == LAYOUT;
+        }
+
+        public boolean isPrecisionQualifier() {
+            return this == HIGH_PRECISION || this == MEDIUM_PRECISION || this == LOW_PRECISION;
+        }
+
+        public boolean isInterpolationQualifier() {
+            return this == SMOOTH || this == FLAT || this == NOPERSPECTIVE;
+        }
+
+        public boolean isInvariantQualifier() {
+            return this == INVARIANT;
+        }
+
+        public boolean isPreciseQualifier() {
+            return this == PRECISE;
+        }
+
+        public boolean isAssignmentOperator() {
+            return (this.flags & FLAG_ASSIGNMENT_OP) != 0;
+        }
+
+        public boolean isUnaryOperator() {
+            return this == PLUS || this == DASH || this == BANG || this == TILDE;
+        }
+
+        public boolean isUnaryExpression() {
+            if(this == INC_OP || this == DEC_OP || this.isUnaryOperator()) {
+                return true;
+            }
+
+            // Primary Expression
+            if(this == IDENTIFIER || (this.flags & FLAG_CONSTANT_EXPRESSION) != 0 || this == LEFT_PAREN) {
+                return true;
+            }
+
+            return this.isType();
         }
     }
 }

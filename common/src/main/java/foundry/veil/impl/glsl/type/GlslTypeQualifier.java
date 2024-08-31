@@ -5,15 +5,23 @@ import org.jetbrains.annotations.Nullable;
 
 public interface GlslTypeQualifier {
 
+    static GlslTypeQualifier storage(Storage.Type type) {
+        return new Storage(type, new String[0]);
+    }
+
+    static GlslTypeQualifier storage(String[] typeNames) {
+        return new Storage(Storage.Type.SUBROUTINE, typeNames);
+    }
+
+    static GlslTypeQualifier identifierLayout(String identifier, @Nullable GlslNode constantExpression) {
+        return new Layout(identifier, constantExpression);
+    }
+
+    static GlslTypeQualifier sharedLayout() {
+        return new Layout("shared", null);
+    }
+
     record Storage(Type type, String[] typeNames) implements GlslTypeQualifier {
-
-        public Storage(Type type) {
-            this(type, new String[0]);
-        }
-
-        public Storage(String[] typeNames) {
-            this(Type.SUBROUTINE, typeNames);
-        }
 
         public enum Type {
             CONST,

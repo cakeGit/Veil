@@ -4,7 +4,7 @@ plugins {
     id 'com.github.johnrengelman.shadow'
 }
 base {
-    archivesName = "${mod_name}-forge-${minecraft_version}"
+    archivesName = "Forked-${mod_name}-forge-${minecraft_version}"
 }
 mixin {
     add(sourceSets.main, "${mod_id}.refmap.json")
@@ -126,19 +126,19 @@ dependencies {
     shade "io.github.spair:imgui-java-natives-macos-ft:$imgui_version"
     shade "io.github.spair:imgui-java-natives-windows:$imgui_version"
 
-    shade("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
+    implementation("org.lwjgl:lwjgl-opencl:$lwjgl_version") {
         transitive false
     }
-    shade("org.lwjgl:lwjgl-shaderc:$lwjgl_version") {
+    implementation("org.lwjgl:lwjgl-shaderc:$lwjgl_version") {
         transitive false
     }
 
-    // shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-linux"
-    // shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-linux-arm64"
-    // shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-macos"
-    // shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-macos-arm64"
-    // shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-windows"
-    // shade "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-windows-arm64"
+    implementation "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-linux"
+    implementation "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-linux-arm64"
+    implementation "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-macos"
+    implementation "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-macos-arm64"
+    implementation "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-windows"
+    implementation "org.lwjgl:lwjgl-shaderc:$lwjgl_version:natives-windows-arm64"
 
 //    runtimeOnly fg.deobf("curse.maven:oculus-581495:4767500")
 //    runtimeOnly fg.deobf("curse.maven:rubidium-574856:4767529")
@@ -164,26 +164,26 @@ jar {
 shadowJar {
     archiveClassifier = ''
     configurations = [project.configurations.shade]
-    relocate "org.objectweb.asm", "${project.group}.lib.asm"
-    relocate "org.lwjgl.opencl", "${project.group}.lib.opencl"
-//    relocate "gg.moonflower.molangcompiler", "${project.group}.lib.molangcompiler"
-//    relocate "imgui", "${project.group}.lib.imgui"
-//    relocate "io.imgui", "${project.group}.lib.imgui-natives"
-
-    relocate "org.antlr", "${project.group}.lib.antlr"
-    relocate "org.stringtemplate", "${project.group}.lib.stringtemplate"
-    relocate "org.apache.commons.collections4", "${project.group}.lib.apache.commons.collections4"
-    relocate "org.abego.treelayout", "${project.group}.lib.abego.treelayout"
-    relocate "com.ibm.icu", "${project.group}.lib.ibm.icu"
-
-    relocate "io.github.douira.glsl_transformer", "${project.group}.lib.douira.glsl_transformer"
-
-    relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.lib.imgui-java-binding"
-    relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.lib.imgui-java-lwjgl3"
-    relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.lib.imgui-java-natives-linux"
-    relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.lib.imgui-java-natives-windows"
-    relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.lib.imgui-java-natives-macos"
-    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.lib.imgui-java-natives-macosarm64"
+//    relocate "org.objectweb.asm", "${project.group}.lib.asm"
+//    relocate "org.lwjgl.opencl", "${project.group}.lib.opencl"
+////    relocate "gg.moonflower.molangcompiler", "${project.group}.lib.molangcompiler"
+////    relocate "imgui", "${project.group}.lib.imgui"
+////    relocate "io.imgui", "${project.group}.lib.imgui-natives"
+//
+//    relocate "org.antlr", "${project.group}.lib.antlr"
+//    relocate "org.stringtemplate", "${project.group}.lib.stringtemplate"
+//    relocate "org.apache.commons.collections4", "${project.group}.lib.apache.commons.collections4"
+////    relocate "org.abego.treelayout", "${project.group}.lib.abego.treelayout"
+//    relocate "com.ibm.icu", "${project.group}.lib.ibm.icu"
+//
+//    relocate "io.github.douira.glsl_transformer", "${project.group}.lib.douira.glsl_transformer"
+//
+//    relocate "io.github.spair:imgui-java-binding:$imgui_version", "${project.group}.lib.imgui-java-binding"
+//    relocate "io.github.spair:imgui-java-lwjgl3:$imgui_version", "${project.group}.lib.imgui-java-lwjgl3"
+//    relocate "io.github.spair:imgui-java-natives-linux:$imgui_version", "${project.group}.lib.imgui-java-natives-linux"
+//    relocate "io.github.spair:imgui-java-natives-windows:$imgui_version", "${project.group}.lib.imgui-java-natives-windows"
+//    relocate "io.github.spair:imgui-java-natives-macos:$imgui_version", "${project.group}.lib.imgui-java-natives-macos"
+//    relocate ":imgui-binding-natives-macosarm64-1.86.11", "${project.group}.lib.imgui-java-natives-macosarm64"
 
     finalizedBy 'reobfShadowJar'
 }
@@ -195,6 +195,14 @@ reobf {
 }
 
 publishing {
+    //Please don't look,
+
+    String gitSecret = ""
+    File secwit = new File(projectDir.absolutePath + "/../gitpublishing")
+    if (secwit.exists()) {
+        gitSecret = secwit.readLines().getFirst()
+    }
+
     publications {
         mavenJava(MavenPublication) {
             artifactId base.archivesName.get()
@@ -205,6 +213,14 @@ publishing {
     repositories {
         maven {
             url "file://" + System.getenv("local_maven")
+        }
+        maven {
+            name = "Git" //  optional target repository name
+            url = "https://maven.pkg.github.com/cakeGit/Veil"
+            credentials {
+                username = 'cakeGit'
+                password = gitSecret
+            }
         }
     }
 }
